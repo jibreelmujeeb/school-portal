@@ -1,0 +1,56 @@
+src/
+├── components/
+│   ├── Sidebar.jsx
+│   ├── Topbar.jsx
+│   ├── Layout.jsx
+│   └── ProtectedRoute.jsx
+│
+├── pages/
+│   ├── Auth/
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   ├── ForgotPassword.jsx
+│   │   └── ResetPassword.jsx
+│   │
+│   ├── Student/
+│   │   ├── Dashboard.jsx
+│   │   ├── Courses.jsx
+│   │   ├── Assignments.jsx
+│   │   ├── Grades.jsx
+│   │   ├── Attendance.jsx
+│   │   ├── Timetable.jsx
+│   │   ├── Fees.jsx
+│   │   ├── Announcements.jsx
+│   │   └── Profile.jsx
+│   │
+│   ├── Teacher/
+│   │   ├── Dashboard.jsx
+│   │   ├── Classes.jsx
+│   │   ├── Assignments.jsx
+│   │   ├── Attendance.jsx
+│   │   ├── Grades.jsx
+│   │   └── Profile.jsx
+│   │
+│   ├── Admin/
+│   │   ├── Dashboard.jsx
+│   │   ├── Students.jsx
+│   │   ├── Teachers.jsx
+│   │   ├── Classes.jsx
+│   │   ├── Subjects.jsx
+│   │   ├── Fees.jsx
+│   │   ├── Reports.jsx
+│   │   ├── Announcements.jsx
+│   │   └── Settings.jsx
+│   │
+│   └── Public/
+│       ├── Home.jsx
+│       ├── About.jsx
+│       ├── Contact.jsx
+│       └── Admissions.jsx
+│
+├── routes/
+│   ├── AppRoutes.jsx
+│   └── 
+│
+├── App.jsx
+└── main.jsx
