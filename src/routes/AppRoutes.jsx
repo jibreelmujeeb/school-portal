@@ -7,9 +7,17 @@ import Login from "../pages/Auth/Login";
 // Student pages
 import StudentDashboard from "../pages/Student/StudentDashboard";
 import Courses from "../pages/Student/Courses";
+import StudentAssignments from "../pages/Student/Assignments";
+import StudentAttendance from "../pages/Student/Attendance";
+import StudentFees from "../pages/Student/Fees";
+import StudentProfile from "../pages/Student/Profile";
+import StudentTimetable from "../pages/Student/Timetable";
+import Profile from "../pages/Student/Profile";
+
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
+
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/AdminDashboard";
@@ -40,6 +48,12 @@ const AppRoutes = () => {
             <Routes>
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="courses" element={<Courses />} />
+              <Route path="assignments" element={<StudentAssignments />} />
+              <Route path="attendance" element={<StudentAttendance />} />
+              <Route path="fees" element={<StudentFees />} />
+              <Route path="profile" element={<StudentProfile />} />
+              <Route path="timetable" element={<StudentTimetable />} />
+              <Route path="profile" element={<StudentProfile/>} />
             </Routes>
           </Layout>
         }
@@ -52,6 +66,8 @@ const AppRoutes = () => {
           <Layout role="teacher">
             <Routes>
               <Route path="dashboard" element={<TeacherDashboard />} />
+              
+
             </Routes>
           </Layout>
         }
