@@ -12,22 +12,27 @@ const Sidebar = ({ role, color }) => {
         {role.charAt(0).toUpperCase() + role.slice(1)} Portal
       </div>
       <nav className="flex-1 p-3 space-y-1">
-        {menus.map((menu, idx) => (
-          <NavLink
-            key={idx}
-            to={menu.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? `text-${color}-600 bg-${color}-50 font-medium`
-                  : "text-gray-700 hover:bg-gray-100"
-              }`
-            }
-          >
-            <span className="w-5 h-5">{menu.icon}</span>
-            {menu.name}
-          </NavLink>
-        ))}
+        {menus.map((menu, idx) => {
+          const Icon = menu.icon;
+          return (
+            <NavLink
+              key={idx}
+              to={menu.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? `text-${color}-600 bg-${color}-50 font-medium`
+                    : "text-gray-700 hover:bg-gray-100"
+                }`
+              }
+            >
+              <span className="w-5 h-5 flex items-center justify-center">
+                <Icon className="w-5 h-5" />
+              </span>
+              {menu.name}
+            </NavLink>
+          );
+        })}
       </nav>
     </aside>
   );

@@ -13,10 +13,23 @@ import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/AdminDashboard";
+import Home from "../pages/Public/Home";
+import AdminStudents from "../pages/Admin/Students";
+import AdminClasses from "../pages/Admin/Classes";
+import AdminFees from "../pages/Admin/Fees";
+import AdminReports from "../pages/Admin/Reports";
+import AdminSettings from "../pages/Admin/Settings";
+import AdminTeachers from "../pages/Admin/Teachers";
+import AdminSubjects from "../pages/Admin/Subjects";
+import AdminAnnouncements from "../pages/Admin/Announcements";
+
 
 const AppRoutes = () => {
   return (
     <Routes>
+
+       <Route path="/" element={<Home />} />
+
       <Route path="/login" element={<Login />} />
 
       {/* STUDENT ROUTES */}
@@ -51,6 +64,14 @@ const AppRoutes = () => {
           <Layout role="admin">
             <Routes>
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="students" element={<AdminStudents />} />
+              <Route path="classes" element={<AdminClasses />} />
+              <Route path="fees" element={<AdminFees/>} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="settings" element={<AdminSettings/>} />
+              <Route path="teachers" element={<AdminTeachers />} />
+              <Route path="subjects" element={<AdminSubjects />} />
+              <Route path="announcements" element={<AdminAnnouncements />} />
             </Routes>
           </Layout>
         }

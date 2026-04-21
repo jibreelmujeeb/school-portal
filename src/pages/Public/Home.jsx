@@ -1,5 +1,5 @@
 import React from "react";
-import PublicLayout from "../../components/PublicLayout";
+// import PublicLayout from "../../components/PublicLayout";
 import { Link } from "react-router-dom";
 import {
   GraduationCap,
@@ -8,6 +8,7 @@ import {
   ClipboardList,
   ArrowRight,
 } from "lucide-react";
+import About from "./About";
 
 const Home = () => {
   const features = [
@@ -47,8 +48,9 @@ const Home = () => {
   ];
 
   return (
-    <PublicLayout>
-      {/* HERO */}
+    // <PublicLayout>
+    <>
+          {/* HERO */}
       <section className="px-6 py-20 max-w-5xl mx-auto text-center">
         <div className="flex justify-center mb-6">
           <div className="p-4 rounded-full bg-blue-50">
@@ -148,7 +150,12 @@ const Home = () => {
           </Link>
         </div>
       </section>
-    </PublicLayout>
+      <section>
+        <About />
+      </section>
+    </>
+
+    // </PublicLayout>
   );
 };
 

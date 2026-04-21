@@ -1,5 +1,5 @@
 import React from "react";
-import PublicLayout from "../../components/PublicLayout";
+// import PublicLayout from "../../components/PublicLayout";
 import {
   School,
   Target,
@@ -11,7 +11,7 @@ import {
 
 const About = () => {
   return (
-    <PublicLayout>
+    <>
       {/* HERO */}
       <section className="px-6 py-16 max-w-5xl mx-auto text-center">
         <div className="flex justify-center mb-6">
@@ -107,7 +107,7 @@ const About = () => {
           </div>
         </div>
       </section>
-    </PublicLayout>
+    </>
   );
 };
 
