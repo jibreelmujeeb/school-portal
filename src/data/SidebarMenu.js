@@ -70,6 +70,8 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/student/attendance", icon: CalendarDays },
     { name: "Fees", path: "/student/fees", icon: CreditCard },
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
+    { name: "Profile", path: "/student/profile", icon: Users },
+    { name: "Timetable", path: "/student/timetable", icon: BookOpen },
   ],
 
   teacher: [
@@ -79,6 +81,8 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/teacher/attendance", icon: CalendarDays },
     { name: "Grades", path: "/teacher/grades", icon: GraduationCap },
     { name: "Announcements", path: "/teacher/announcements", icon: Megaphone },
+    { name: "Profile", path: "/teacher/profile", icon: Users },
+    
   ],
 
   admin: [
@@ -91,5 +95,7 @@ export const sidebarMenus = {
     { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
     { name: "Settings", path: "/admin/settings", icon: Settings },
+    { name: "Grades", path: "/admin/grades", icon: GraduationCap },
+    { name: "Profile", path: "/admin/profile", icon: Users },
   ],
 };

@@ -3,6 +3,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "../components/Layout";
 import Login from "../pages/Auth/Login"; 
+import Home from "../pages/Public/Home";
 
 // Student pages
 import StudentDashboard from "../pages/Student/StudentDashboard";
@@ -12,7 +13,9 @@ import StudentAttendance from "../pages/Student/Attendance";
 import StudentFees from "../pages/Student/Fees";
 import StudentProfile from "../pages/Student/Profile";
 import StudentTimetable from "../pages/Student/Timetable";
-import Profile from "../pages/Student/Profile";
+import StudentAnnouncements from "../pages/Student/Announcement";
+import StudentGrades from "../pages/Student/StudentGrades";
+
 
 
 // Teacher pages
@@ -21,7 +24,6 @@ import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/AdminDashboard";
-import Home from "../pages/Public/Home";
 import AdminStudents from "../pages/Admin/Students";
 import AdminClasses from "../pages/Admin/Classes";
 import AdminFees from "../pages/Admin/Fees";
@@ -30,6 +32,8 @@ import AdminSettings from "../pages/Admin/Settings";
 import AdminTeachers from "../pages/Admin/Teachers";
 import AdminSubjects from "../pages/Admin/Subjects";
 import AdminAnnouncements from "../pages/Admin/Announcements";
+import AdminGrades from "../pages/Admin/Grade";
+import AdminProfile from "../pages/Admin/Profile";
 
 
 const AppRoutes = () => {
@@ -53,7 +57,8 @@ const AppRoutes = () => {
               <Route path="fees" element={<StudentFees />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="timetable" element={<StudentTimetable />} />
-              <Route path="profile" element={<StudentProfile/>} />
+              <Route path="grades" element={<StudentGrades/>} />
+              <Route path="announcements" element={<StudentAnnouncements/>} />
             </Routes>
           </Layout>
         }
@@ -87,7 +92,9 @@ const AppRoutes = () => {
               <Route path="settings" element={<AdminSettings/>} />
               <Route path="teachers" element={<AdminTeachers />} />
               <Route path="subjects" element={<AdminSubjects />} />
-              <Route path="announcements" element={<AdminAnnouncements />} />
+              <Route path="announcements" element={<AdminAnnouncements />} /> 
+              <Route path="grades" element={<AdminGrades />} /> 
+              <Route path="profile" element={<AdminProfile />} /> 
             </Routes>
           </Layout>
         }
