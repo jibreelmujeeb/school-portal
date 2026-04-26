@@ -43,6 +43,7 @@
 //     { name: "Reports", path: "/admin/reports", icon: <ClipboardList /> },
 //     { name: "Announcements", path: "/admin/announcements", icon: <Megaphone /> },
 //     { name: "Settings", path: "/admin/settings", icon: <Settings /> },
+
 //   ],
 // };
 
@@ -72,6 +73,7 @@ export const sidebarMenus = {
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
     { name: "Profile", path: "/student/profile", icon: Users },
     { name: "Timetable", path: "/student/timetable", icon: BookOpen },
+      { name: "Results", path: "/student/results", icon: BookOpen },
   ],
 
   teacher: [
@@ -82,6 +84,7 @@ export const sidebarMenus = {
     { name: "Grades", path: "/teacher/grades", icon: GraduationCap },
     { name: "Announcements", path: "/teacher/announcements", icon: Megaphone },
     { name: "Profile", path: "/teacher/profile", icon: Users },
+    { name: "Results", path: "/teacher/results", icon: BookOpen },
     
   ],
 
@@ -97,5 +100,6 @@ export const sidebarMenus = {
     { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "Grades", path: "/admin/grades", icon: GraduationCap },
     { name: "Profile", path: "/admin/profile", icon: Users },
+    {name: "Results", path: "/admin/results", icon: BookOpen },
   ],
 };
