@@ -15,8 +15,8 @@ import StudentProfile from "../pages/Student/Profile";
 import StudentTimetable from "../pages/Student/Timetable";
 import StudentAnnouncements from "../pages/Student/Announcement";
 import StudentGrades from "../pages/Student/StudentGrades";
-
-
+import StudentResult from "../pages/Student/Results";
+ 
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -60,6 +60,7 @@ const AppRoutes = () => {
               <Route path="timetable" element={<StudentTimetable />} />
               <Route path="grades" element={<StudentGrades/>} />
               <Route path="announcements" element={<StudentAnnouncements/>} />
+              <Route path="results" element={<StudentResult />} />
             </Routes>
           </Layout>
         }
