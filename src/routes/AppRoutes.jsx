@@ -20,6 +20,7 @@ import StudentResult from "../pages/Student/Results";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
+import TeacherAnnouncements from "../pages/Teacher/Announcement";
 
 
 // Admin pages
@@ -73,8 +74,7 @@ const AppRoutes = () => {
           <Layout role="teacher">
             <Routes>
               <Route path="dashboard" element={<TeacherDashboard />} />
-              
-
+               <Route path="announcements" element={<TeacherAnnouncements />} />
             </Routes>
           </Layout>
         }
