@@ -21,6 +21,13 @@ import StudentResult from "../pages/Student/Results";
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
 import TeacherAnnouncements from "../pages/Teacher/Announcement";
+import TeacherAttendance from "../pages/Teacher/Attendance";
+import TeacherClasses from "../pages/Teacher/Classes";
+import TeacherGrades from "../pages/Teacher/Grades";
+import TeacherProfile from "../pages/Teacher/Profile";
+import TeacherResults from "../pages/Teacher/Results";
+import TeacherAssignments from "../pages/Teacher/TeacherAssignments";
+
 
 
 // Admin pages
@@ -36,6 +43,7 @@ import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminGrades from "../pages/Admin/Grade";
 import AdminProfile from "../pages/Admin/Profile";
 import AdminResults from "../pages/Admin/Results";
+
 
 
 const AppRoutes = () => {
@@ -75,6 +83,12 @@ const AppRoutes = () => {
             <Routes>
               <Route path="dashboard" element={<TeacherDashboard />} />
                <Route path="announcements" element={<TeacherAnnouncements />} />
+              <Route path="attendance" element={<TeacherAttendance />} />
+              <Route path="classes" element={<TeacherClasses />} />
+              <Route path="grades" element={<TeacherGrades />} />
+              <Route path="profile" element={<TeacherProfile />} />
+              <Route path="results" element={<TeacherResults />} />
+              <Route path="assignments" element={<TeacherAssignments />} />
             </Routes>
           </Layout>
         }
