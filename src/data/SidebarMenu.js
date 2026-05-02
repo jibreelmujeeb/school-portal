@@ -74,6 +74,8 @@ export const sidebarMenus = {
     { name: "Profile", path: "/student/profile", icon: Users },
     { name: "Timetable", path: "/student/timetable", icon: BookOpen },
       { name: "Results", path: "/student/results", icon: BookOpen },
+      { name: "Settings", path: "/student/settings", icon: Settings },
+      { name: "Notifications", path: "/student/notifications", icon: Settings },
   ],
 
   teacher: [
@@ -85,6 +87,8 @@ export const sidebarMenus = {
     { name: "Announcements", path: "/teacher/announcements", icon: Megaphone },
     { name: "Profile", path: "/teacher/profile", icon: Users },
     { name: "Results", path: "/teacher/results", icon: BookOpen },
+    { name: "Settings", path: "/teacher/settings", icon: Settings },
+    { name: "Notifications", path: "/teacher/notifications", icon: Settings },
     
   ],
 
