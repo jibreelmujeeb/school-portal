@@ -16,6 +16,8 @@ import StudentTimetable from "../pages/Student/Timetable";
 import StudentAnnouncements from "../pages/Student/Announcement";
 import StudentGrades from "../pages/Student/StudentGrades";
 import StudentResult from "../pages/Student/Results";
+import StudentSettings from "../pages/Student/Settings";
+import StudentNotifications from "../pages/Student/Notifications";
  
 
 // Teacher pages
@@ -27,7 +29,8 @@ import TeacherGrades from "../pages/Teacher/Grades";
 import TeacherProfile from "../pages/Teacher/Profile";
 import TeacherResults from "../pages/Teacher/Results";
 import TeacherAssignments from "../pages/Teacher/TeacherAssignments";
-
+import TeacherSettings from "../pages/Teacher/Settings";
+import TeacherNotifications from "../pages/Teacher/Notifications";
 
 
 // Admin pages
@@ -70,6 +73,8 @@ const AppRoutes = () => {
               <Route path="grades" element={<StudentGrades/>} />
               <Route path="announcements" element={<StudentAnnouncements/>} />
               <Route path="results" element={<StudentResult />} />
+              <Route path="settings" element={<StudentSettings />} />
+              <Route path="notifications" element={<StudentNotifications />} />
             </Routes>
           </Layout>
         }
@@ -89,6 +94,8 @@ const AppRoutes = () => {
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="results" element={<TeacherResults />} />
               <Route path="assignments" element={<TeacherAssignments />} />
+              <Route path="settings" element={<TeacherSettings/>} />
+              <Route path="notifications" element={<TeacherNotifications />} />
             </Routes>
           </Layout>
         }
