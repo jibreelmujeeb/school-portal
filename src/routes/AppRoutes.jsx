@@ -46,7 +46,11 @@ import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminGrades from "../pages/Admin/Grade";
 import AdminProfile from "../pages/Admin/Profile";
 import AdminResults from "../pages/Admin/Results";
+import ParentDashboard from "../pages/Parents/ParentDashboard";
 
+
+// Parent pages
+import ParentDashboardDashboard from "../pages/Parents/ParentDashboard";
 
 
 const AppRoutes = () => {
@@ -119,6 +123,18 @@ const AppRoutes = () => {
               <Route path="grades" element={<AdminGrades />} /> 
               <Route path="profile" element={<AdminProfile />} /> 
               <Route path="results" element={<AdminResults />} /> 
+            </Routes>
+          </Layout>
+        }
+      />
+
+        {/* PARENT ROUTES */}
+      <Route
+        path="/parent/*"
+        element={
+          <Layout role="parent">
+            <Routes>
+              <Route path="dashboard" element={<ParentDashboardDashboard />} /> 
             </Routes>
           </Layout>
         }
