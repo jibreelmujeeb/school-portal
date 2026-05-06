@@ -106,4 +106,8 @@ export const sidebarMenus = {
     { name: "Profile", path: "/admin/profile", icon: Users },
     {name: "Results", path: "/admin/results", icon: BookOpen },
   ],
+
+  Parent:[
+    { name: "Dashboard", path: "/parent/dashboard", icon: LayoutDashboard },
+  ],
 };
