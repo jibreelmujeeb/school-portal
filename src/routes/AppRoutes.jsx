@@ -46,7 +46,6 @@ import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminGrades from "../pages/Admin/Grade";
 import AdminProfile from "../pages/Admin/Profile";
 import AdminResults from "../pages/Admin/Results";
-import ParentDashboard from "../pages/Parents/ParentDashboard";
 
 
 // Parent pages
