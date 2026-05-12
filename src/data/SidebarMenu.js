@@ -109,5 +109,6 @@ export const sidebarMenus = {
   parent: [
     { name: "Dashboard", path: "/parent/dashboard", icon: LayoutDashboard },
     { name: "Results", path: "/parent/results", icon: BookOpen },
+    { name: "Fees", path: "/parent/fees", icon: CreditCard },
   ],
 };
