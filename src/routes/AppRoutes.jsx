@@ -52,6 +52,7 @@ import AdminResults from "../pages/Admin/Results";
 import ParentDashboard from "../pages/Parents/ParentDashboard";
 import ParentResults from "../pages/Parents/Results ";
 import ParentFees from "../pages/Parents/Fees";
+import ParentNotifications from "../pages/Parents/Notification";
 
 
 const AppRoutes = () => {
@@ -138,6 +139,7 @@ const AppRoutes = () => {
               <Route path="dashboard" element={<ParentDashboard/>} /> 
               <Route path="results" element={<ParentResults />} /> 
               <Route path="fees" element={<ParentFees />} /> 
+              <Route path="notifications" element={<ParentNotifications />} /> 
             </Routes>
           </Layout>
         }
