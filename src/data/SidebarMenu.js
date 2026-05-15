@@ -112,6 +112,7 @@ export const sidebarMenus = {
     { name: "Fees", path: "/parent/fees", icon: CreditCard },
     { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
     { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
+    { name: "Profile", path: "/parent/profile", icon: Users },
 
   ],
 };
