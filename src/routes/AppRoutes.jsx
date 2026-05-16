@@ -55,6 +55,7 @@ import ParentFees from "../pages/Parents/Fees";
 import ParentNotifications from "../pages/Parents/Notification";
 import ParentAttendance from "../pages/Parents/Attendance";
 import ParentProfile from "../pages/Parents/Profile";
+import ParentSettings from "../pages/Parents/Settings";
 
 
 const AppRoutes = () => {
@@ -144,6 +145,7 @@ const AppRoutes = () => {
               <Route path="notifications" element={<ParentNotifications />} /> 
                <Route path="attendance" element={<ParentAttendance />} /> 
                 <Route path="profile" element={<ParentProfile />} /> 
+                <Route path="settings" element={<ParentSettings />} />
             </Routes>
           </Layout>
         }
