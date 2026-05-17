@@ -114,6 +114,7 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
     { name: "Profile", path: "/parent/profile", icon: Users },
     { name: "Settings", path: "/parent/settings", icon: Settings },
+    { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
 
   ],
 };
