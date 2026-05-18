@@ -115,6 +115,7 @@ export const sidebarMenus = {
     { name: "Profile", path: "/parent/profile", icon: Users },
     { name: "Settings", path: "/parent/settings", icon: Settings },
     { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
+    { name: "Assignments", path: "/parent/assignments", icon: ClipboardList },
 
   ],
 };
