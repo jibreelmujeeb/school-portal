@@ -104,6 +104,7 @@ export const sidebarMenus = {
     { name: "Grades", path: "/admin/grades", icon: GraduationCap },
     { name: "Profile", path: "/admin/profile", icon: Users },
     { name: "Results", path: "/admin/results", icon: BookOpen },
+    { name: "Courses", path: "/admin/courses", icon: BookOpen },
   ],
 
   parent: [
