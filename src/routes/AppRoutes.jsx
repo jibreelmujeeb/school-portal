@@ -49,6 +49,7 @@ import AdminResults from "../pages/Admin/Results";
 import AdminCourses from "../pages/Admin/Courses";
 import AdminTimetable from "../pages/Admin/Timetable";
 import AdminRevenue from "../pages/Admin/Revenue";
+import AdminAttendance from "../pages/Admin/Attendance";
 
 
 // Parent pages
@@ -136,6 +137,7 @@ const AppRoutes = () => {
               <Route path="courses" element={<AdminCourses />} />
               <Route path="timetable" element={<AdminTimetable />} />
               <Route path="revenue" element={<AdminRevenue />} />
+              <Route path="attendance" element={<AdminAttendance />} />
             </Routes>
           </Layout>
         }
