@@ -51,7 +51,7 @@ import AdminTimetable from "../pages/Admin/Timetable";
 import AdminRevenue from "../pages/Admin/Revenue";
 import AdminAttendance from "../pages/Admin/Attendance";
 import AdminFinance from "../pages/Admin/Finance";
-
+import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard";
 
 // Parent pages
 import ParentDashboard from "../pages/Parents/ParentDashboard";
@@ -140,6 +140,7 @@ const AppRoutes = () => {
               <Route path="revenue" element={<AdminRevenue />} />
               <Route path="attendance" element={<AdminAttendance />} />
               <Route path="finance" element={<AdminFinance />} />
+              <Route path="analytics" element={<AnalyticsDashboard />} />
             </Routes>
           </Layout>
         }

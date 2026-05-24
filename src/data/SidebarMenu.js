@@ -93,6 +93,7 @@ export const sidebarMenus = {
 
   admin: [
     { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Analytics", path: "/admin/analytics", icon: LayoutDashboard },
     { name: "Students", path: "/admin/students", icon: Users },
     { name: "Teachers", path: "/admin/teachers", icon: Briefcase },
     { name: "Classes", path: "/admin/classes", icon: BookOpen },
