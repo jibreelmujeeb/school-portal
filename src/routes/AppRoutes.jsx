@@ -18,6 +18,7 @@ import StudentGrades from "../pages/Student/StudentGrades";
 import StudentResult from "../pages/Student/Results";
 import StudentSettings from "../pages/Student/Settings";
 import StudentNotifications from "../pages/Student/Notifications";
+import StudentSuggestion from "../pages/Student/Suggestion";
  
 
 // Teacher pages
@@ -91,6 +92,7 @@ const AppRoutes = () => {
               <Route path="results" element={<StudentResult />} />
               <Route path="settings" element={<StudentSettings />} />
               <Route path="notifications" element={<StudentNotifications />} />
+              <Route path="suggestion" element={<StudentSuggestion />} />
             </Routes>
           </Layout>
         }

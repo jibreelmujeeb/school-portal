@@ -76,6 +76,7 @@ export const sidebarMenus = {
     { name: "Results", path: "/student/results", icon: BookOpen },
     { name: "Settings", path: "/student/settings", icon: Settings },
     { name: "Notifications", path: "/student/notifications", icon: Settings },
+    { name: "Suggestion", path: "/student/suggestion", icon: Settings },
   ],
 
   teacher: [
