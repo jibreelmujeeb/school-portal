@@ -123,6 +123,7 @@ export const sidebarMenus = {
     { name: "Settings", path: "/parent/settings", icon: Settings },
     { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Assignments", path: "/parent/assignments", icon: ClipboardList },
+    { name: "Suggestion", path: "/parent/suggestion", icon: Settings },
 
   ],
 };

@@ -64,6 +64,7 @@ import ParentProfile from "../pages/Parents/Profile";
 import ParentSettings from "../pages/Parents/Settings";
 import ParentAnnouncements from "../pages/Parents/Announcement";
 import ParentAssignments from "../pages/Parents/Assignment";
+import ParentSuggestion from "../pages/Parents/Suggestion";
 
 
 const AppRoutes = () => {
@@ -163,6 +164,7 @@ const AppRoutes = () => {
                 <Route path="settings" element={<ParentSettings />} />
                 <Route path="announcements" element={<ParentAnnouncements />} />
                 <Route path="assignments" element={<ParentAssignments />} />
+                <Route path="suggestion" element={<ParentSuggestion />} />
             </Routes>
           </Layout>
         }
