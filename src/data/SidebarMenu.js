@@ -90,6 +90,7 @@ export const sidebarMenus = {
     { name: "Results", path: "/teacher/results", icon: BookOpen },
     { name: "Settings", path: "/teacher/settings", icon: Settings },
     { name: "Notifications", path: "/teacher/notifications", icon: Settings },
+    { name: "Suggestion", path: "/teacher/suggestion", icon: Settings },
   ],
 
   admin: [
