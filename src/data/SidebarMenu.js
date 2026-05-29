@@ -112,6 +112,7 @@ export const sidebarMenus = {
     { name: "Revenue", path: "/admin/revenue", icon: CreditCard },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
+    { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
   ],
 
   parent: [
