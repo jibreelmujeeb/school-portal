@@ -66,17 +66,17 @@ export const sidebarMenus = {
   student: [
     { name: "Dashboard", path: "/student/dashboard", icon: LayoutDashboard },
     { name: "Courses", path: "/student/courses", icon: BookOpen },
+    { name: "Timetable", path: "/student/timetable", icon: BookOpen },
     { name: "Assignments", path: "/student/assignments", icon: ClipboardList },
+     { name: "Attendance", path: "/student/attendance", icon: CalendarDays },
     { name: "Grades", path: "/student/grades", icon: GraduationCap },
-    { name: "Attendance", path: "/student/attendance", icon: CalendarDays },
+     { name: "Results", path: "/student/results", icon: BookOpen },
     { name: "Fees", path: "/student/fees", icon: CreditCard },
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
+     { name: "Suggestion", path: "/student/suggestion", icon: Settings },
+      { name: "Notifications", path: "/student/notifications", icon: Settings },
     { name: "Profile", path: "/student/profile", icon: Users },
-    { name: "Timetable", path: "/student/timetable", icon: BookOpen },
-    { name: "Results", path: "/student/results", icon: BookOpen },
     { name: "Settings", path: "/student/settings", icon: Settings },
-    { name: "Notifications", path: "/student/notifications", icon: Settings },
-    { name: "Suggestion", path: "/student/suggestion", icon: Settings },
   ],
 
   teacher: [
