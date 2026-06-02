@@ -118,14 +118,14 @@ export const sidebarMenus = {
   parent: [
     { name: "Dashboard", path: "/parent/dashboard", icon: LayoutDashboard },
     { name: "Results", path: "/parent/results", icon: BookOpen },
-    { name: "Fees", path: "/parent/fees", icon: CreditCard },
-    { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
-    { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
-    { name: "Profile", path: "/parent/profile", icon: Users },
-    { name: "Settings", path: "/parent/settings", icon: Settings },
-    { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Assignments", path: "/parent/assignments", icon: ClipboardList },
+     { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
+    { name: "Fees", path: "/parent/fees", icon: CreditCard },
+    { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/parent/suggestion", icon: Settings },
+    { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
+     { name: "Profile", path: "/parent/profile", icon: Users },
+    { name: "Settings", path: "/parent/settings", icon: Settings },
 
   ],
 };
