@@ -105,14 +105,14 @@ export const sidebarMenus = {
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
       { name: "Revenue", path: "/admin/revenue", icon: CreditCard },
     { name: "Reports", path: "/admin/reports", icon: ClipboardList },
-    { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
      { name: "Results", path: "/admin/results", icon: BookOpen },
     { name: "Grades", path: "/admin/grades", icon: GraduationCap },
-    { name: "Profile", path: "/admin/profile", icon: Users },
-     { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
+     { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
+     { name: "Profile", path: "/admin/profile", icon: Users },
+    { name: "Settings", path: "/admin/settings", icon: Settings },
   ],
 
   parent: [
