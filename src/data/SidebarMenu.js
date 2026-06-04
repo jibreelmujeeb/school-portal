@@ -66,6 +66,7 @@ export const sidebarMenus = {
   student: [
     { name: "Dashboard", path: "/student/dashboard", icon: LayoutDashboard },
     { name: "Courses", path: "/student/courses", icon: BookOpen },
+     { name: "Subjects", path: "/student/subjects", icon: FileText },
     { name: "Timetable", path: "/student/timetable", icon: BookOpen },
     { name: "Assignments", path: "/student/assignments", icon: ClipboardList },
      { name: "Attendance", path: "/student/attendance", icon: CalendarDays },
