@@ -112,6 +112,7 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
      { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
+       { name: "Notifications", path: "/admin/notifications", icon: Settings },
      { name: "Profile", path: "/admin/profile", icon: Users },
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ],

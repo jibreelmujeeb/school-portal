@@ -56,6 +56,7 @@ import AdminAttendance from "../pages/Admin/Attendance";
 import AdminFinance from "../pages/Admin/Finance";
 import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard";
 import AdminSuggestion from "../pages/Admin/Suggestion";
+import AdminNotifications from "../pages/Admin/Notification";
 
 
 // Parent pages
@@ -151,6 +152,7 @@ const AppRoutes = () => {
               <Route path="finance" element={<AdminFinance />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="suggestion" element={<AdminSuggestion />} />
+              <Route path="notifications" element={<AdminNotifications />} />
             </Routes>
           </Layout>
         }
