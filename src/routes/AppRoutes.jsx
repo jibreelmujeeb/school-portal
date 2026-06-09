@@ -5,6 +5,7 @@ import Layout from "../components/Layout";
 import Login from "../pages/Auth/Login"; 
 import Home from "../pages/Public/Home";
 
+
 // Student pages
 import StudentDashboard from "../pages/Student/StudentDashboard";
 import Courses from "../pages/Student/Courses";
@@ -24,6 +25,7 @@ import StudentELibrary from "../pages/Student/ELibrary";
 import StudentLibrary from "../pages/Student/Library";
 import StudentLaboratory from "../pages/Student/Laboratory";
 
+
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
 import TeacherAnnouncements from "../pages/Teacher/Announcement";
@@ -36,7 +38,7 @@ import TeacherAssignments from "../pages/Teacher/TeacherAssignments";
 import TeacherSettings from "../pages/Teacher/Settings";
 import TeacherNotifications from "../pages/Teacher/Notifications";
 import TeacherSuggestion from "../pages/Teacher/Suggestion";
-
+import TeacherSubjects from "../pages/Teacher/Subjects";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/AdminDashboard";
@@ -127,6 +129,7 @@ const AppRoutes = () => {
               <Route path="settings" element={<TeacherSettings/>} />
               <Route path="notifications" element={<TeacherNotifications />} />
               <Route path="suggestion" element={<TeacherSuggestion />} />
+              <Route path="subjects" element={<TeacherSubjects />} />
             </Routes>
           </Layout>
         }
