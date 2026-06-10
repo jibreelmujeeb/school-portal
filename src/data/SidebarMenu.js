@@ -123,6 +123,7 @@ export const sidebarMenus = {
 
   parent: [
     { name: "Dashboard", path: "/parent/dashboard", icon: LayoutDashboard },
+    { name: "Subjects", path: "/parent/subjects", icon: FileText },
     { name: "Results", path: "/parent/results", icon: BookOpen },
     { name: "Assignments", path: "/parent/assignments", icon: ClipboardList },
      { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
