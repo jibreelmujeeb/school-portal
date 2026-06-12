@@ -120,6 +120,7 @@ export const sidebarMenus = {
      { name: "Profile", path: "/admin/profile", icon: Users },
     { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
+   { name: "Library", path: "/admin/library", icon: BookOpen },
   ],
 
   parent: [

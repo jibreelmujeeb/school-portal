@@ -62,6 +62,7 @@ import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard";
 import AdminSuggestion from "../pages/Admin/Suggestion";
 import AdminNotifications from "../pages/Admin/Notification";
 import AdminELibrary from "../pages/Admin/ELibrary";
+import AdminLibrary from "../pages/Admin/Library";
 
 
 // Parent pages
@@ -163,6 +164,7 @@ const AppRoutes = () => {
               <Route path="suggestion" element={<AdminSuggestion />} />
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="e-library" element={<AdminELibrary />} />
+              <Route path="library" element={<AdminLibrary />} />
             </Routes>
           </Layout>
         }
