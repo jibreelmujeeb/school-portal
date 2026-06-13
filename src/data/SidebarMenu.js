@@ -121,6 +121,7 @@ export const sidebarMenus = {
     { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
    { name: "Library", path: "/admin/library", icon: BookOpen },
+   { name: "Laboratory", path: "/admin/laboratory", icon: BookOpen },
   ],
 
   parent: [
