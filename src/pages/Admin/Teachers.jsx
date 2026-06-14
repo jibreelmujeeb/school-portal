@@ -1,34 +1,18 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { GraduationCap, Search, Plus, Pencil, Trash2, X } from "lucide-react";
-
-const initialTeachersData = [
-  {
-    id: "TCH-001",
-    name: "Mr. Ade",
-    email: "ade@example.com",
-    class: "SS2",
-    status: "Active",
-  },
-  {
-    id: "TCH-002",
-    name: "Mrs. Bello",
-    email: "bello@example.com",
-    class: "JSS3",
-    status: "Active",
-  },
-  {
-    id: "TCH-003",
-    name: "Mr. James",
-    email: "james@example.com",
-    class: "SS1",
-    status: "Inactive",
-  },
-];
+import {
+  addTeacher,
+  deleteTeacher,
+  updateTeacher,
+} from "../../store/teachersSlice";
 
 const AdminTeachers = () => {
   const [search, setSearch] = useState("");
-  const [teachers, setTeachers] = useState(initialTeachersData);
+  const dispatch = useDispatch();
+  const teachers = useSelector((state) => state.teachers.items);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTeacherId, setEditingTeacherId] = useState(null);
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -44,10 +28,33 @@ const AdminTeachers = () => {
   const statusStyle = (status) =>
     status === "Active" ? "text-green-600" : "text-red-600";
 
-  const openModal = () => setIsModalOpen(true);
+  const openAddModal = () => {
+    setEditingTeacherId(null);
+    setFormData({
+      id: "",
+      name: "",
+      email: "",
+      class: "",
+      status: "Active",
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (teacher) => {
+    setEditingTeacherId(teacher.id);
+    setFormData({
+      id: teacher.id,
+      name: teacher.name,
+      email: teacher.email,
+      class: teacher.class,
+      status: teacher.status,
+    });
+    setIsModalOpen(true);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingTeacherId(null);
     setFormData({
       id: "",
       name: "",
@@ -68,20 +75,30 @@ const AdminTeachers = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    setTeachers((currentTeachers) => [
-      {
-        id:
-          formData.id ||
-          `TCH-${String(currentTeachers.length + 1).padStart(3, "0")}`,
-        name: formData.name,
-        email: formData.email,
-        class: formData.class,
-        status: formData.status,
-      },
-      ...currentTeachers,
-    ]);
+    const teacherPayload = {
+      id: formData.id || `TCH-${String(teachers.length + 1).padStart(3, "0")}`,
+      name: formData.name,
+      email: formData.email,
+      class: formData.class,
+      status: formData.status,
+    };
+
+    if (editingTeacherId) {
+      dispatch(
+        updateTeacher({
+          originalId: editingTeacherId,
+          teacher: teacherPayload,
+        }),
+      );
+    } else {
+      dispatch(addTeacher(teacherPayload));
+    }
 
     closeModal();
+  };
+
+  const handleDelete = (teacherId) => {
+    dispatch(deleteTeacher(teacherId));
   };
 
   return (
@@ -98,7 +115,7 @@ const AdminTeachers = () => {
         {/* ADD BUTTON */}
         <button
           type="button"
-          onClick={openModal}
+          onClick={openAddModal}
           className="flex items-center gap-2 px-5 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition"
         >
           <Plus className="w-4 h-4" />
@@ -133,9 +150,9 @@ const AdminTeachers = () => {
         </div>
 
         {/* BODY */}
-        {filteredTeachers.map((teacher, idx) => (
+        {filteredTeachers.map((teacher) => (
           <div
-            key={idx}
+            key={teacher.id}
             className="grid md:grid-cols-6 gap-2 p-4 border-b border-gray-100 text-sm items-center"
           >
             {/* NAME */}
@@ -160,11 +177,19 @@ const AdminTeachers = () => {
 
             {/* ACTIONS */}
             <div className="flex items-center gap-3">
-              <button className="text-gray-600 hover:text-blue-600">
+              <button
+                type="button"
+                onClick={() => openEditModal(teacher)}
+                className="text-gray-600 hover:text-blue-600"
+              >
                 <Pencil className="w-4 h-4" />
               </button>
 
-              <button className="text-gray-600 hover:text-red-600">
+              <button
+                type="button"
+                onClick={() => handleDelete(teacher.id)}
+                className="text-gray-600 hover:text-red-600"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -190,9 +215,13 @@ const AdminTeachers = () => {
           >
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold">Add Teacher</h2>
+                <h2 className="text-xl font-semibold">
+                  {editingTeacherId ? "Edit Teacher" : "Add Teacher"}
+                </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Fill in the teacher details below.
+                  {editingTeacherId
+                    ? "Update the teacher details below."
+                    : "Fill in the teacher details below."}
                 </p>
               </div>
 
@@ -294,7 +323,7 @@ const AdminTeachers = () => {
                   type="submit"
                   className="rounded-full bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700"
                 >
-                  Save Teacher
+                  {editingTeacherId ? "Update Teacher" : "Save Teacher"}
                 </button>
               </div>
             </form>
