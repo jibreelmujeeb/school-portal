@@ -1,29 +1,20 @@
 import React, { useState } from "react";
-import {
-  BookOpen,
-  Search,
-  Plus,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, Search, Plus, Pencil, Trash2 } from "lucide-react";
 
 const subjectsData = [
   {
     name: "Mathematics",
     code: "MTH101",
-    class: "SS2",
     teacher: "Mr. Ade",
   },
   {
     name: "English",
     code: "ENG102",
-    class: "JSS3",
     teacher: "Mrs. Bello",
   },
   {
     name: "Physics",
     code: "PHY103",
-    class: "SS1",
     teacher: "Mr. James",
   },
 ];
@@ -32,19 +23,15 @@ const AdminSubjects = () => {
   const [search, setSearch] = useState("");
 
   const filteredSubjects = subjectsData.filter((sub) =>
-    sub.name.toLowerCase().includes(search.toLowerCase())
+    sub.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="space-y-10">
-
       {/* HEADER */}
       <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold">
-            Subjects
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold">Subjects</h1>
           <p className="text-sm text-gray-600 mt-2">
             Manage subjects and assignments
           </p>
@@ -73,12 +60,10 @@ const AdminSubjects = () => {
 
       {/* TABLE */}
       <section className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
-
         {/* HEADER */}
-        <div className="hidden md:grid grid-cols-5 text-sm text-gray-500 border-b border-gray-200 p-4">
+        <div className="hidden md:grid grid-cols-4 text-sm text-gray-500 border-b border-gray-200 p-4">
           <span>Subject</span>
           <span>Code</span>
-          <span>Class</span>
           <span>Teacher</span>
           <span>Actions</span>
         </div>
@@ -87,7 +72,7 @@ const AdminSubjects = () => {
         {filteredSubjects.map((sub, idx) => (
           <div
             key={idx}
-            className="grid md:grid-cols-5 gap-2 p-4 border-b border-gray-100 text-sm items-center"
+            className="grid md:grid-cols-4 gap-2 p-4 border-b border-gray-100 text-sm items-center"
           >
             {/* NAME */}
             <div className="flex items-center gap-2 font-medium">
@@ -97,9 +82,6 @@ const AdminSubjects = () => {
 
             {/* CODE */}
             <span>{sub.code}</span>
-
-            {/* CLASS */}
-            <span>{sub.class}</span>
 
             {/* TEACHER */}
             <span>{sub.teacher}</span>
@@ -116,7 +98,6 @@ const AdminSubjects = () => {
             </div>
           </div>
         ))}
-
       </section>
 
       {/* EMPTY STATE */}
@@ -125,7 +106,6 @@ const AdminSubjects = () => {
           No subjects found.
         </div>
       )}
-
     </div>
   );
 };
