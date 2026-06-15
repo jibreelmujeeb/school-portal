@@ -32,6 +32,7 @@ const classesData = [
 const AdminClasses = () => {
   const [classes, setClasses] = useState(classesData);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     teacher: "",
@@ -47,6 +48,14 @@ const AdminClasses = () => {
       students: "",
       department: "",
     });
+  };
+
+  const openClassDetails = (cls) => {
+    setSelectedClass(cls);
+  };
+
+  const closeClassDetails = () => {
+    setSelectedClass(null);
   };
 
   const handleChange = (event) => {
@@ -125,7 +134,11 @@ const AdminClasses = () => {
             </div>
 
             {/* ACTION */}
-            <button className="mt-5 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition">
+            <button
+              type="button"
+              onClick={() => openClassDetails(cls)}
+              className="mt-5 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition"
+            >
               View Class <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -136,6 +149,93 @@ const AdminClasses = () => {
       {classes.length === 0 && (
         <div className="text-center text-sm text-gray-500">
           No classes available.
+        </div>
+      )}
+
+      {selectedClass && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={closeClassDetails}
+        >
+          <div
+            className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-blue-600">
+                  <School className="w-5 h-5" />
+                  <span className="text-sm font-medium">Class Overview</span>
+                </div>
+                <h2 className="mt-2 text-2xl font-semibold">
+                  {selectedClass.name}
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Review the assigned teacher and class structure details.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeClassDetails}
+                className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close class details"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border border-gray-200 p-4">
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <GraduationCap className="w-4 h-4" />
+                  Teacher
+                </div>
+                <p className="mt-2 text-base font-medium text-gray-900">
+                  {selectedClass.teacher}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 p-4">
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <Users className="w-4 h-4" />
+                  Students
+                </div>
+                <p className="mt-2 text-base font-medium text-gray-900">
+                  {selectedClass.students}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 p-4">
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <School className="w-4 h-4" />
+                  Department
+                </div>
+                <p className="mt-2 text-base font-medium text-gray-900">
+                  {selectedClass.department}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-700">Quick summary</p>
+              <p className="mt-2 text-sm text-gray-600">
+                {selectedClass.name} is assigned to {selectedClass.teacher} with{" "}
+                {selectedClass.students} students currently enrolled under the{" "}
+                {selectedClass.department} department.
+              </p>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={closeClassDetails}
+                className="rounded-full bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
