@@ -18,6 +18,7 @@ import {
   CartesianGrid,
   BarChart,
   Bar,
+  Legend,
 } from "recharts";
 
 const termChartData = [
@@ -26,16 +27,23 @@ const termChartData = [
   { term: "Term 3", students: 2600 },
 ];
 
-const revenueData = [
-  { month: "Jan", revenue: 200000 },
-  { month: "Feb", revenue: 400000 },
-  { month: "Mar", revenue: 300000 },
-  { month: "Apr", revenue: 500000 },
-  { month: "May", revenue: 700000 },
+const monthlyRevenueData = [
+  { month: "Jan", male: 120000, female: 85000 },
+  { month: "Feb", male: 150000, female: 98000 },
+  { month: "Mar", male: 130000, female: 105000 },
+  { month: "Apr", male: 170000, female: 108000 },
+  { month: "May", male: 190000, female: 125000 },
+];
+
+const termRevenueData = [
+  { term: "Term 1", male: 450000, female: 320000 },
+  { term: "Term 2", male: 520000, female: 410000 },
+  { term: "Term 3", male: 610000, female: 470000 },
 ];
 
 const AdminAnalyticsDashboard = () => {
   const [timeframe, setTimeframe] = useState("Term");
+  const [revenueView, setRevenueView] = useState("Monthly");
 
   const yearlyData = useMemo(() => {
     return [
@@ -186,21 +194,77 @@ const AdminAnalyticsDashboard = () => {
 
         {/* REVENUE CHART */}
         <div className="border border-gray-200 rounded-2xl p-5 bg-white">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold">Revenue Analytics</h2>
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Revenue Analytics</h2>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Monthly financial performance
-            </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {revenueView === "Monthly"
+                  ? "Monthly revenue by gender"
+                  : "Term revenue by gender"}
+              </p>
+            </div>
+
+            <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm">
+              <select
+                value={revenueView}
+                onChange={(e) => setRevenueView(e.target.value)}
+                className="bg-transparent text-sm outline-none"
+                aria-label="Select revenue view"
+              >
+                <option value="Monthly">Monthly</option>
+                <option value="Term">Term</option>
+              </select>
+            </div>
           </div>
 
-          <div className="w-full h-[300px]">
+          <div className="w-full h-[300px] rounded-3xl border border-slate-100 bg-slate-50 p-4 shadow-sm">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueData}>
-                <XAxis dataKey="month" />
-                <Tooltip />
-
-                <Bar dataKey="revenue" radius={[10, 10, 0, 0]} />
+              <BarChart
+                data={
+                  revenueView === "Monthly"
+                    ? monthlyRevenueData
+                    : termRevenueData
+                }
+                margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis
+                  dataKey={revenueView === "Monthly" ? "month" : "term"}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#64748B", fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#64748B", fontSize: 12 }}
+                  width={35}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #E5E7EB",
+                    boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+                  }}
+                  formatter={(value) => [
+                    `₦${value.toLocaleString()}`,
+                    revenueView === "Monthly" ? "Revenue" : "Revenue",
+                  ]}
+                />
+                <Legend verticalAlign="top" height={36} />
+                <Bar
+                  dataKey="male"
+                  name="Male"
+                  fill="#4F46E5"
+                  radius={[10, 10, 0, 0]}
+                />
+                <Bar
+                  dataKey="female"
+                  name="Female"
+                  fill="#EC4899"
+                  radius={[10, 10, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
