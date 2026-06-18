@@ -10,6 +10,8 @@ import {
 
 const initialPayments = [
   {
+    id: "TRK-1001",
+    paymentType: "School Fees",
     student: "John Doe",
     email: "john.doe@studentportal.com",
     class: "SS2",
@@ -18,6 +20,8 @@ const initialPayments = [
     status: "Paid",
   },
   {
+    id: "TRK-1002",
+    paymentType: "Transportation",
     student: "Aisha Bello",
     email: "aisha.bello@studentportal.com",
     class: "JSS3",
@@ -26,6 +30,8 @@ const initialPayments = [
     status: "Pending",
   },
   {
+    id: "TRK-1003",
+    paymentType: "Lab Fee",
     student: "Michael James",
     email: "michael.james@studentportal.com",
     class: "SS1",
@@ -41,7 +47,7 @@ const AdminFees = () => {
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
   const filteredPayments = payments.filter((item) =>
-    `${item.student} ${item.email}`
+    `${item.student} ${item.email} ${item.id} ${item.paymentType}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
@@ -126,7 +132,7 @@ const AdminFees = () => {
           <Search className="w-5 h-5 text-gray-500 mr-2" />
           <input
             type="text"
-            placeholder="Search by student or email..."
+            placeholder="Search by student, email, type, or tracker..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full outline-none text-sm bg-transparent"
@@ -136,27 +142,29 @@ const AdminFees = () => {
 
       {/* TABLE */}
       <section className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
-        <div className="hidden md:grid grid-cols-6 text-sm text-gray-500 border-b border-gray-200 p-4">
+        <div className="hidden md:grid grid-cols-7 text-sm text-gray-500 border-b border-gray-200 p-4">
           <span>Student</span>
+          <span>Type</span>
+          <span>Tracker ID</span>
           <span>Class</span>
           <span>Amount</span>
-          <span>Date</span>
           <span>Status</span>
           <span>Action</span>
         </div>
 
         {filteredPayments.map((item) => (
           <div
-            key={item.student}
-            className="grid md:grid-cols-6 gap-2 p-4 border-b border-gray-100 text-sm items-center"
+            key={item.id}
+            className="grid md:grid-cols-7 gap-2 p-4 border-b border-gray-100 text-sm items-center"
           >
             <div>
               <p className="font-medium">{item.student}</p>
               <p className="text-xs text-gray-500">{item.email}</p>
             </div>
+            <span>{item.paymentType}</span>
+            <span className="font-medium text-blue-600">{item.id}</span>
             <span>{item.class}</span>
             <span>{item.amount}</span>
-            <span>{item.date}</span>
 
             <div
               className={`flex items-center gap-2 ${getStatusStyle(item.status)}`}
@@ -231,12 +239,16 @@ const AdminFees = () => {
             <div className="space-y-3">
               {payments.map((payment) => (
                 <div
-                  key={payment.student}
+                  key={payment.id}
                   className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-medium">{payment.student}</p>
-                    <p className="text-xs text-gray-500">{payment.email}</p>
+                    <p className="font-medium">
+                      {payment.id} • {payment.paymentType}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {payment.student} • {payment.email}
+                    </p>
                     <p className="text-xs text-gray-500">
                       {payment.class} • {payment.amount}
                     </p>
