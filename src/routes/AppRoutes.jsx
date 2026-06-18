@@ -2,9 +2,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "../components/Layout";
-import Login from "../pages/Auth/Login"; 
+import Login from "../pages/Auth/Login";
 import Home from "../pages/Public/Home";
-
 
 // Student pages
 import StudentDashboard from "../pages/Student/StudentDashboard";
@@ -24,7 +23,6 @@ import StudentSubjects from "../pages/Student/Subjects";
 import StudentELibrary from "../pages/Student/ELibrary";
 import StudentLibrary from "../pages/Student/Library";
 import StudentLaboratory from "../pages/Student/Laboratory";
-
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -55,7 +53,6 @@ import AdminProfile from "../pages/Admin/Profile";
 import AdminResults from "../pages/Admin/Results";
 import AdminCourses from "../pages/Admin/Courses";
 import AdminTimetable from "../pages/Admin/Timetable";
-import AdminRevenue from "../pages/Admin/Revenue";
 import AdminAttendance from "../pages/Admin/Attendance";
 import AdminFinance from "../pages/Admin/Finance";
 import AnalyticsDashboard from "../pages/Admin/AnalyticsDashboard";
@@ -64,7 +61,6 @@ import AdminNotifications from "../pages/Admin/Notification";
 import AdminELibrary from "../pages/Admin/ELibrary";
 import AdminLibrary from "../pages/Admin/Library";
 import AdminLaboratory from "../pages/Admin/Laboratory";
-
 
 // Parent pages
 import ParentDashboard from "../pages/Parents/ParentDashboard";
@@ -82,8 +78,7 @@ import ParentSubjects from "../pages/Parents/Subjects";
 const AppRoutes = () => {
   return (
     <Routes>
-
-       <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -100,8 +95,8 @@ const AppRoutes = () => {
               <Route path="fees" element={<StudentFees />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="timetable" element={<StudentTimetable />} />
-              <Route path="grades" element={<StudentGrades/>} />
-              <Route path="announcements" element={<StudentAnnouncements/>} />
+              <Route path="grades" element={<StudentGrades />} />
+              <Route path="announcements" element={<StudentAnnouncements />} />
               <Route path="results" element={<StudentResult />} />
               <Route path="settings" element={<StudentSettings />} />
               <Route path="notifications" element={<StudentNotifications />} />
@@ -122,14 +117,14 @@ const AppRoutes = () => {
           <Layout role="teacher">
             <Routes>
               <Route path="dashboard" element={<TeacherDashboard />} />
-               <Route path="announcements" element={<TeacherAnnouncements />} />
+              <Route path="announcements" element={<TeacherAnnouncements />} />
               <Route path="attendance" element={<TeacherAttendance />} />
               <Route path="classes" element={<TeacherClasses />} />
               <Route path="grades" element={<TeacherGrades />} />
               <Route path="profile" element={<TeacherProfile />} />
               <Route path="results" element={<TeacherResults />} />
               <Route path="assignments" element={<TeacherAssignments />} />
-              <Route path="settings" element={<TeacherSettings/>} />
+              <Route path="settings" element={<TeacherSettings />} />
               <Route path="notifications" element={<TeacherNotifications />} />
               <Route path="suggestion" element={<TeacherSuggestion />} />
               <Route path="subjects" element={<TeacherSubjects />} />
@@ -147,18 +142,17 @@ const AppRoutes = () => {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="students" element={<AdminStudents />} />
               <Route path="classes" element={<AdminClasses />} />
-              <Route path="fees" element={<AdminFees/>} />
+              <Route path="fees" element={<AdminFees />} />
               <Route path="reports" element={<AdminReports />} />
-              <Route path="settings" element={<AdminSettings/>} />
+              <Route path="settings" element={<AdminSettings />} />
               <Route path="teachers" element={<AdminTeachers />} />
               <Route path="subjects" element={<AdminSubjects />} />
-              <Route path="announcements" element={<AdminAnnouncements />} /> 
-              <Route path="grades" element={<AdminGrades />} /> 
-              <Route path="profile" element={<AdminProfile />} /> 
-              <Route path="results" element={<AdminResults />} /> 
+              <Route path="announcements" element={<AdminAnnouncements />} />
+              <Route path="grades" element={<AdminGrades />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="results" element={<AdminResults />} />
               <Route path="courses" element={<AdminCourses />} />
               <Route path="timetable" element={<AdminTimetable />} />
-              <Route path="revenue" element={<AdminRevenue />} />
               <Route path="attendance" element={<AdminAttendance />} />
               <Route path="finance" element={<AdminFinance />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
@@ -172,23 +166,23 @@ const AppRoutes = () => {
         }
       />
 
-        {/* PARENT ROUTES */}
+      {/* PARENT ROUTES */}
       <Route
         path="/parent/*"
         element={
           <Layout role="parent">
             <Routes>
-              <Route path="dashboard" element={<ParentDashboard/>} /> 
-              <Route path="results" element={<ParentResults />} /> 
-              <Route path="fees" element={<ParentFees />} /> 
-              <Route path="notifications" element={<ParentNotifications />} /> 
-               <Route path="attendance" element={<ParentAttendance />} /> 
-                <Route path="profile" element={<ParentProfile />} /> 
-                <Route path="settings" element={<ParentSettings />} />
-                <Route path="announcements" element={<ParentAnnouncements />} />
-                <Route path="assignments" element={<ParentAssignments />} />
-                <Route path="suggestion" element={<ParentSuggestion />} />
-                <Route path="subjects" element={<ParentSubjects />} />
+              <Route path="dashboard" element={<ParentDashboard />} />
+              <Route path="results" element={<ParentResults />} />
+              <Route path="fees" element={<ParentFees />} />
+              <Route path="notifications" element={<ParentNotifications />} />
+              <Route path="attendance" element={<ParentAttendance />} />
+              <Route path="profile" element={<ParentProfile />} />
+              <Route path="settings" element={<ParentSettings />} />
+              <Route path="announcements" element={<ParentAnnouncements />} />
+              <Route path="assignments" element={<ParentAssignments />} />
+              <Route path="suggestion" element={<ParentSuggestion />} />
+              <Route path="subjects" element={<ParentSubjects />} />
             </Routes>
           </Layout>
         }
