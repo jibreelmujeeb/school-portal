@@ -44,9 +44,30 @@ const attendanceData = [
 const formatPercent = (value) => `${value}%`;
 
 const reportRows = [
-  { name: "Monthly Revenue", date: "2026-04-01", type: "Finance" },
-  { name: "Student Performance", date: "2026-04-02", type: "Academic" },
-  { name: "Attendance Report", date: "2026-04-03", type: "Attendance" },
+  {
+    name: "Monthly Revenue",
+    date: "2026-04-01",
+    type: "Finance",
+    summary: "Overview of total income received during the month.",
+  },
+  {
+    name: "Term Revenue",
+    date: "2026-04-04",
+    type: "Finance",
+    summary: "Comparison of revenue collected across academic terms.",
+  },
+  {
+    name: "Student Performance",
+    date: "2026-04-02",
+    type: "Academic",
+    summary: "Academic results and progress analysis for enrolled students.",
+  },
+  {
+    name: "Attendance Report",
+    date: "2026-04-03",
+    type: "Attendance",
+    summary: "Daily attendance trends and participation rates.",
+  },
 ];
 
 const formatCsvValue = (value) => {
@@ -61,9 +82,18 @@ const formatCsvValue = (value) => {
 
 const AdminReports = () => {
   const [revenueRange, setRevenueRange] = React.useState("Monthly");
+  const [selectedReport, setSelectedReport] = React.useState(null);
 
   const revenueData =
     revenueRange === "Term" ? termRevenueData : monthlyRevenueData;
+
+  const openReportDetails = (report) => {
+    setSelectedReport(report);
+  };
+
+  const closeReportDetails = () => {
+    setSelectedReport(null);
+  };
 
   const handleExportReport = () => {
     const summaryRows = [
@@ -302,13 +332,69 @@ const AdminReports = () => {
               <span>{item.date}</span>
               <span className="text-gray-600">{item.type}</span>
 
-              <button className="text-blue-600 text-sm hover:underline">
+              <button
+                type="button"
+                onClick={() => openReportDetails(item)}
+                className="text-blue-600 text-sm hover:underline text-left"
+              >
                 View
               </button>
             </div>
           ))}
         </div>
       </section>
+
+      {selectedReport && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={closeReportDetails}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Report Details</p>
+                <h3 className="text-xl font-semibold">{selectedReport.name}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeReportDetails}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close report details"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3 text-sm text-gray-700">
+              <div>
+                <span className="font-medium text-gray-500">Date:</span>{" "}
+                {selectedReport.date}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Type:</span>{" "}
+                {selectedReport.type}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Summary:</span>{" "}
+                {selectedReport.summary}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={closeReportDetails}
+                className="px-4 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
