@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  FileText,
-  Search,
-  ArrowDownToLine,
-} from "lucide-react";
+import { FileText, Search, ArrowDownToLine } from "lucide-react";
 
 const resultsData = [
   {
@@ -29,52 +25,125 @@ const resultsData = [
   },
 ];
 
+const gradeDetails = {
+  "John Doe": [
+    { subject: "Mathematics", score: 78, grade: "B" },
+    { subject: "English", score: 82, grade: "A" },
+    { subject: "Science", score: 70, grade: "B" },
+  ],
+  "Aisha Bello": [
+    { subject: "Mathematics", score: 92, grade: "A" },
+    { subject: "English", score: 88, grade: "A" },
+    { subject: "Science", score: 78, grade: "B" },
+  ],
+  "Michael James": [
+    { subject: "Mathematics", score: 61, grade: "C" },
+    { subject: "English", score: 68, grade: "B" },
+    { subject: "Science", score: 66, grade: "B" },
+  ],
+};
+
 const AdminResults = () => {
   const [search, setSearch] = useState("");
+  const [selectedClass, setSelectedClass] = useState("All");
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
-  const filteredResults = resultsData.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const classOptions = [
+    "All",
+    ...new Set(resultsData.map((item) => item.class)),
+  ];
+
+  const filteredResults = resultsData.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchesClass =
+      selectedClass === "All" || item.class === selectedClass;
+    return matchesSearch && matchesClass;
+  });
+
+  const toggleView = (name) => {
+    setSelectedStudent((current) => (current === name ? null : name));
+  };
+
+  const handleExport = () => {
+    const headers = ["Student", "Class", "Total", "Average", "Position"];
+    const rows = filteredResults.map((item) => [
+      item.name,
+      item.class,
+      item.total,
+      item.average,
+      item.position,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((value) => `"${value}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `results-${selectedClass.toLowerCase()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-10">
-
       {/* HEADER */}
       <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold">
-            Results
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold">Results</h1>
           <p className="text-sm text-gray-600 mt-2">
             Manage and generate student result sheets
           </p>
         </div>
 
         {/* EXPORT */}
-        <button className="flex items-center gap-2 px-5 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-2 px-5 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition"
+        >
           <ArrowDownToLine className="w-4 h-4" />
           Export Results
         </button>
       </section>
 
-      {/* SEARCH */}
-      <section className="max-w-md">
-        <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-600 transition">
-          <Search className="w-5 h-5 text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="Search student..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full outline-none text-sm bg-transparent"
-          />
+      {/* FILTERS */}
+      <section className="flex flex-col sm:flex-row gap-3">
+        <div className="max-w-md w-full">
+          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-600 transition">
+            <Search className="w-5 h-5 text-gray-500 mr-2" />
+            <input
+              type="text"
+              placeholder="Search student..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full outline-none text-sm bg-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48">
+          <select
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-600"
+          >
+            {classOptions.map((className) => (
+              <option key={className} value={className}>
+                {className === "All" ? "All Classes" : className}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
 
       {/* TABLE */}
       <section className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
-
         {/* HEADER */}
         <div className="hidden md:grid grid-cols-6 text-sm text-gray-500 border-b border-gray-200 p-4">
           <span>Student</span>
@@ -101,12 +170,44 @@ const AdminResults = () => {
             <span>{item.average}%</span>
             <span>{item.position}</span>
 
-            <button className="text-blue-600 text-sm hover:underline">
-              View
+            <button
+              onClick={() => toggleView(item.name)}
+              className="text-blue-600 text-sm hover:underline"
+            >
+              {selectedStudent === item.name ? "Hide" : "View"}
             </button>
           </div>
         ))}
 
+        {selectedStudent && (
+          <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800">
+                Grade Details for {selectedStudent}
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500">
+                    <th className="pb-2 pr-4">Subject</th>
+                    <th className="pb-2 pr-4">Score</th>
+                    <th className="pb-2">Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gradeDetails[selectedStudent]?.map((entry, index) => (
+                    <tr key={index} className="border-t border-gray-200">
+                      <td className="py-2 pr-4">{entry.subject}</td>
+                      <td className="py-2 pr-4">{entry.score}%</td>
+                      <td className="py-2">{entry.grade}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* EMPTY */}
@@ -115,7 +216,6 @@ const AdminResults = () => {
           No results found.
         </div>
       )}
-
     </div>
   );
 };

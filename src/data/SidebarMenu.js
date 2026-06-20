@@ -110,7 +110,6 @@ export const sidebarMenus = {
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
     { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Results", path: "/admin/results", icon: BookOpen },
-    { name: "Grades", path: "/admin/grades", icon: GraduationCap },
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
