@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText, Search, ArrowDownToLine } from "lucide-react";
+import { FileText, Search, ArrowDownToLine, Filter } from "lucide-react";
 
 const resultsData = [
   {
@@ -127,18 +127,21 @@ const AdminResults = () => {
           </div>
         </div>
 
-        <div className="w-full sm:w-48">
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-600"
-          >
-            {classOptions.map((className) => (
-              <option key={className} value={className}>
-                {className === "All" ? "All Classes" : className}
-              </option>
-            ))}
-          </select>
+        <div className="w-full sm:w-44">
+          <div className="relative">
+            <Filter className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-blue-600" />
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full appearance-none border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:border-blue-600"
+            >
+              {classOptions.map((className) => (
+                <option key={className} value={className}>
+                  {className === "All" ? "Filter" : className}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </section>
 
