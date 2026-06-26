@@ -60,6 +60,7 @@ import AdminNotifications from "../pages/Admin/Notification";
 import AdminELibrary from "../pages/Admin/ELibrary";
 import AdminLibrary from "../pages/Admin/Library";
 import AdminLaboratory from "../pages/Admin/Laboratory";
+import AdminGallery from "../pages/Admin/Gallery";
 
 // Parent pages
 import ParentDashboard from "../pages/Parents/ParentDashboard";
@@ -159,6 +160,7 @@ const AppRoutes = () => {
               <Route path="e-library" element={<AdminELibrary />} />
               <Route path="library" element={<AdminLibrary />} />
               <Route path="laboratory" element={<AdminLaboratory />} />
+              <Route path="gallery" element={<AdminGallery />} />
             </Routes>
           </Layout>
         }
