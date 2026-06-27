@@ -23,6 +23,7 @@ import StudentSubjects from "../pages/Student/Subjects";
 import StudentELibrary from "../pages/Student/ELibrary";
 import StudentLibrary from "../pages/Student/Library";
 import StudentLaboratory from "../pages/Student/Laboratory";
+import StudentAssignmentSubmission from "../pages/Student/AssignmentSubmission";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -74,6 +75,7 @@ import ParentAnnouncements from "../pages/Parents/Announcement";
 import ParentAssignments from "../pages/Parents/Assignment";
 import ParentSuggestion from "../pages/Parents/Suggestion";
 import ParentSubjects from "../pages/Parents/Subjects";
+import StudentAssignmentSubmissionPage from "../pages/Student/AssignmentSubmission";
 
 const AppRoutes = () => {
   return (
@@ -105,6 +107,7 @@ const AppRoutes = () => {
               <Route path="e-library" element={<StudentELibrary />} />
               <Route path="library" element={<StudentLibrary />} />
               <Route path="laboratory" element={<StudentLaboratory />} />
+               <Route path="assignmentSubmission" element={<StudentAssignmentSubmission />} />
             </Routes>
           </Layout>
         }
