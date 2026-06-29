@@ -25,6 +25,7 @@ import StudentLibrary from "../pages/Student/Library";
 import StudentLaboratory from "../pages/Student/Laboratory";
 import StudentAssignmentSubmission from "../pages/Student/AssignmentSubmission";
 import StudentTranscript from "../pages/Student/Transcript";
+import StudentLearningMaterials from "../pages/Student/LearningMaterials";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -110,6 +111,7 @@ const AppRoutes = () => {
               <Route path="laboratory" element={<StudentLaboratory />} />
                <Route path="assignmentSubmission" element={<StudentAssignmentSubmission />} />
                <Route path="transcript" element={<StudentTranscript />} />
+              <Route path="learning-materials" element={<StudentLearningMaterials />} />
             </Routes>
           </Layout>
         }
