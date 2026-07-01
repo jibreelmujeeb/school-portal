@@ -27,6 +27,7 @@ import StudentAssignmentSubmission from "../pages/Student/AssignmentSubmission";
 import StudentTranscript from "../pages/Student/Transcript";
 import StudentLearningMaterials from "../pages/Student/LearningMaterials";
 import StudentPaymentHistory from "../pages/Student/PaymentHistory";
+import StudentPaymentReceipt from "../pages/Student/PaymentReceipt";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -78,7 +79,6 @@ import ParentAnnouncements from "../pages/Parents/Announcement";
 import ParentAssignments from "../pages/Parents/Assignment";
 import ParentSuggestion from "../pages/Parents/Suggestion";
 import ParentSubjects from "../pages/Parents/Subjects";
-import StudentAssignmentSubmissionPage from "../pages/Student/AssignmentSubmission";
 
 const AppRoutes = () => {
   return (
@@ -114,6 +114,7 @@ const AppRoutes = () => {
                <Route path="transcript" element={<StudentTranscript />} />
               <Route path="learning-materials" element={<StudentLearningMaterials />} />
               <Route path="payment-history" element={<StudentPaymentHistory />} />
+              <Route path="payment-receipt" element={<StudentPaymentReceipt />} />
             </Routes>
           </Layout>
         }

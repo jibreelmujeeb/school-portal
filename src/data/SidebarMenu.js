@@ -85,6 +85,7 @@ export const sidebarMenus = {
     { name: "Transcript", path: "/student/transcript", icon: BookOpen },
     { name: "Learning Materials", path: "/student/learning-materials", icon: BookOpen },
     { name: "Payment History", path: "/student/payment-history", icon: CreditCard },
+    { name: "Payment Receipt", path: "/student/payment-receipt", icon: CreditCard },
   ],
 
   teacher: [
