@@ -113,7 +113,7 @@ const AppRoutes = () => {
                <Route path="assignmentSubmission" element={<StudentAssignmentSubmission />} />
                <Route path="transcript" element={<StudentTranscript />} />
               <Route path="learning-materials" element={<StudentLearningMaterials />} />
-              <Route path="payment-history" element={<StudentFees />} />
+              <Route path="payment-history" element={<StudentPaymentHistory />} />
             </Routes>
           </Layout>
         }
