@@ -28,6 +28,7 @@ import StudentTranscript from "../pages/Student/Transcript";
 import StudentLearningMaterials from "../pages/Student/LearningMaterials";
 import StudentPaymentHistory from "../pages/Student/PaymentHistory";
 import StudentPaymentReceipt from "../pages/Student/PaymentReceipt";
+import StudentReportCard from "../pages/Student/ReportCard";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -115,6 +116,7 @@ const AppRoutes = () => {
               <Route path="learning-materials" element={<StudentLearningMaterials />} />
               <Route path="payment-history" element={<StudentPaymentHistory />} />
               <Route path="payment-receipt" element={<StudentPaymentReceipt />} />
+              <Route path="report-card" element={<StudentReportCard />} />
             </Routes>
           </Layout>
         }
