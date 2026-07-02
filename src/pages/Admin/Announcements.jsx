@@ -24,7 +24,7 @@ const announcementsData = [
 ];
 
 const AdminAnnouncements = () => {
-  const [announcements, setAnnouncements] = useState(announcementsData);
+  const [announcements] = useState(announcementsData);
 
   return (
     <div className="space-y-10">

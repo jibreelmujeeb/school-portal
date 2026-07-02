@@ -1,129 +1,106 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   CheckCircle,
   XCircle,
-  Clock,
   BarChart3,
 } from "lucide-react";
-
-const attendanceData = [
-  { date: "2026-04-01", status: "Present" },
-  { date: "2026-04-02", status: "Absent" },
-  { date: "2026-04-03", status: "Late" },
-  { date: "2026-04-04", status: "Present" },
-  { date: "2026-04-05", status: "Present" },
-];
+import { studentApi } from "../../api/client";
+import { useAuth } from "../../auth/useAuth";
 
 const StudentAttendance = () => {
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "Present":
-        return "text-green-600";
-      case "Absent":
-        return "text-red-600";
-      case "Late":
-        return "text-orange-600";
-      default:
-        return "text-gray-600";
-    }
-  };
+  const { accessToken } = useAuth();
+  const [records, setRecords] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Present":
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case "Absent":
-        return <XCircle className="w-4 h-4 text-red-600" />;
-      case "Late":
-        return <Clock className="w-4 h-4 text-orange-600" />;
-      default:
-        return null;
+  const summary = useMemo(() => {
+    const present = records.filter((record) => record.status === "PRESENT").length;
+    const absent = records.filter((record) => record.status === "ABSENT").length;
+    const rate = records.length > 0 ? Math.round((present / records.length) * 100) : 0;
+    return { present, absent, rate };
+  }, [records]);
+
+  const loadAttendance = useCallback(async () => {
+    if (!accessToken) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const payload = await studentApi.attendance(accessToken);
+      setRecords(payload.records);
+    } catch (err) {
+      setError(err.message || "Unable to load attendance.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [accessToken]);
+
+  useEffect(() => {
+    void loadAttendance();
+  }, [loadAttendance]);
 
   return (
-    <div className="space-y-10">
-      
-      {/* HEADER */}
+    <div className="space-y-8">
       <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Attendance
-        </h1>
-        <p className="text-sm text-gray-600 mt-2">
-          Track your attendance records
-        </p>
+        <h1 className="text-2xl font-semibold sm:text-3xl">Attendance</h1>
+        <p className="mt-2 text-sm text-gray-600">Track your attendance records</p>
       </section>
 
-      {/* SUMMARY */}
-      <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-        
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center gap-3">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-5">
+          <BarChart3 className="h-5 w-5 text-blue-600" />
           <div>
             <p className="text-sm text-gray-500">Attendance</p>
-            <h2 className="text-lg font-semibold">92%</h2>
+            <h2 className="text-lg font-semibold">{summary.rate}%</h2>
           </div>
         </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-600" />
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-5">
+          <CheckCircle className="h-5 w-5 text-green-600" />
           <div>
             <p className="text-sm text-gray-500">Present</p>
-            <h2 className="text-lg font-semibold">18</h2>
+            <h2 className="text-lg font-semibold">{summary.present}</h2>
           </div>
         </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center gap-3">
-          <XCircle className="w-5 h-5 text-red-600" />
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-5">
+          <XCircle className="h-5 w-5 text-red-600" />
           <div>
             <p className="text-sm text-gray-500">Absent</p>
-            <h2 className="text-lg font-semibold">2</h2>
+            <h2 className="text-lg font-semibold">{summary.absent}</h2>
           </div>
         </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center gap-3">
-          <Clock className="w-5 h-5 text-orange-600" />
-          <div>
-            <p className="text-sm text-gray-500">Late</p>
-            <h2 className="text-lg font-semibold">1</h2>
-          </div>
-        </div>
-
       </section>
 
-      {/* ATTENDANCE LIST */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Attendance Records
-        </h2>
-
-        <div className="border border-gray-200 rounded-2xl bg-white divide-y">
-          {attendanceData.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-            >
-              {/* DATE */}
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CalendarDays className="w-4 h-4" />
-                {item.date}
+      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        {isLoading ? (
+          <div className="p-6 text-sm text-gray-500">Loading attendance...</div>
+        ) : records.length === 0 ? (
+          <div className="p-6 text-sm text-gray-500">No attendance records found.</div>
+        ) : (
+          records.map((record) => (
+            <div key={record.id} className="flex items-center justify-between border-b border-gray-100 p-4 text-sm last:border-b-0">
+              <div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <CalendarDays className="h-4 w-4" />
+                  {record.date}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">{record.class.name}</p>
               </div>
-
-              {/* STATUS */}
-              <div
-                className={`flex items-center gap-2 text-sm ${getStatusStyle(
-                  item.status
-                )}`}
-              >
-                {getStatusIcon(item.status)}
-                {item.status}
+              <div className={`flex items-center gap-2 ${record.status === "PRESENT" ? "text-green-600" : "text-red-600"}`}>
+                {record.status === "PRESENT" ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                {record.status === "PRESENT" ? "Present" : "Absent"}
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </section>
-
     </div>
   );
 };

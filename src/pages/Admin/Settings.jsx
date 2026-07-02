@@ -1,144 +1,97 @@
 import React from "react";
-import {
-  User,
-  School,
-  Lock,
-  Bell,
-  Save,
-} from "lucide-react";
+import { Bell, Lock, School, User } from "lucide-react";
+import { useAuth } from "../../auth/useAuth";
 
 const AdminSettings = () => {
-  return (
-    <div className="space-y-10">
+  const { user } = useAuth();
 
-      {/* HEADER */}
+  return (
+    <div className="space-y-8">
       <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Settings
-        </h1>
-        <p className="text-sm text-gray-600 mt-2">
+        <h1 className="text-2xl font-semibold sm:text-3xl">Settings</h1>
+        <p className="mt-2 text-sm text-gray-600">
           Manage system preferences and account settings
         </p>
       </section>
 
-      {/* SCHOOL INFO */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <School className="w-5 h-5 text-blue-600" />
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <School className="h-5 w-5 text-blue-600" />
           School Information
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          
           <input
             type="text"
             placeholder="School Name"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className="rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
           />
-
           <input
             type="text"
             placeholder="Address"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className="rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
           />
-
           <input
             type="email"
             placeholder="School Email"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className="rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
           />
-
           <input
             type="text"
             placeholder="Phone Number"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className="rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
           />
-
         </div>
       </section>
 
-      {/* ADMIN PROFILE */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-green-600" />
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <User className="h-5 w-5 text-green-600" />
           Admin Profile
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          
           <input
             type="text"
-            placeholder="Full Name"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-green-600"
+            value={user ? `${user.firstName} ${user.lastName}` : ""}
+            readOnly
+            className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm outline-none"
           />
-
           <input
             type="email"
-            placeholder="Email Address"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-green-600"
+            value={user?.email || ""}
+            readOnly
+            className="rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm outline-none"
           />
-
         </div>
       </section>
 
-      {/* SECURITY */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Lock className="w-5 h-5 text-red-600" />
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <Lock className="h-5 w-5 text-red-600" />
           Security
         </h2>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          
-          <input
-            type="password"
-            placeholder="New Password"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-red-600"
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-red-600"
-          />
-
-        </div>
+        <p className="text-sm text-gray-600">
+          Password management will be added in the security step.
+        </p>
       </section>
 
-      {/* NOTIFICATIONS */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Bell className="w-5 h-5 text-orange-600" />
+      <section className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <Bell className="h-5 w-5 text-orange-600" />
           Notifications
         </h2>
-
         <div className="space-y-3">
-          
-          <label className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3">
-            <span className="text-sm text-gray-600">
-              Email Notifications
-            </span>
+          <label className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+            <span className="text-sm text-gray-600">Email Notifications</span>
             <input type="checkbox" className="accent-blue-600" />
           </label>
-
-          <label className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3">
-            <span className="text-sm text-gray-600">
-              SMS Notifications
-            </span>
+          <label className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+            <span className="text-sm text-gray-600">SMS Notifications</span>
             <input type="checkbox" className="accent-blue-600" />
           </label>
-
         </div>
       </section>
-
-      {/* SAVE BUTTON */}
-      <section className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
-          <Save className="w-4 h-4" />
-          Save Changes
-        </button>
-      </section>
-
     </div>
   );
 };
