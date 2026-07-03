@@ -29,6 +29,7 @@ import StudentLearningMaterials from "../pages/Student/LearningMaterials";
 import StudentPaymentHistory from "../pages/Student/PaymentHistory";
 import StudentPaymentReceipt from "../pages/Student/PaymentReceipt";
 import StudentReportCard from "../pages/Student/ReportCard";
+import StudentCertificate from "../pages/Student/Certificate";
 
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
@@ -117,6 +118,7 @@ const AppRoutes = () => {
               <Route path="payment-history" element={<StudentPaymentHistory />} />
               <Route path="payment-receipt" element={<StudentPaymentReceipt />} />
               <Route path="report-card" element={<StudentReportCard />} />
+              <Route path="certificate" element={<StudentCertificate />} />
             </Routes>
           </Layout>
         }
