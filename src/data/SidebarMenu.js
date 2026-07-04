@@ -103,6 +103,7 @@ export const sidebarMenus = {
     { name: "Notifications", path: "/teacher/notifications", icon: Settings },
     { name: "Profile", path: "/teacher/profile", icon: Users },
     { name: "Settings", path: "/teacher/settings", icon: Settings },
+    {name: "grading", path: "/teacher/grading", icon: GraduationCap},
   ],
 
   admin: [
