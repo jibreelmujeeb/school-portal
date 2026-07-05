@@ -45,6 +45,7 @@ import TeacherNotifications from "../pages/Teacher/Notifications";
 import TeacherSuggestion from "../pages/Teacher/Suggestion";
 import TeacherSubjects from "../pages/Teacher/Subjects";
 import TeacherAssignmentGrading from "../pages/Teacher/AssignmentGrading";
+import TeacherLessonNote from "../pages/Teacher/LessonNote";
 
 
 // Admin pages
@@ -145,6 +146,7 @@ const AppRoutes = () => {
               <Route path="suggestion" element={<TeacherSuggestion />} />
               <Route path="subjects" element={<TeacherSubjects />} />
               <Route path="assignment-grading" element={<TeacherAssignmentGrading />} />
+              <Route path="lesson-note" element={<TeacherLessonNote />} />
               
             </Routes>
           </Layout>
