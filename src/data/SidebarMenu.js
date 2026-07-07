@@ -106,6 +106,7 @@ export const sidebarMenus = {
     { name: "Assignment Grading", path: "/teacher/assignment-grading", icon: ClipboardList },
     { name: "Lesson Note", path: "/teacher/lesson-note", icon: BookOpen },
     { name: "Students List", path: "/teacher/students-list", icon: Users },
+    { name: "Student Grading", path: "/teacher/student-grading", icon: GraduationCap },
   ],
 
   admin: [

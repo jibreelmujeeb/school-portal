@@ -47,6 +47,7 @@ import TeacherSubjects from "../pages/Teacher/Subjects";
 import TeacherAssignmentGrading from "../pages/Teacher/AssignmentGrading";
 import TeacherLessonNote from "../pages/Teacher/LessonNote";
 import TeacherStudentsList from "../pages/Teacher/StudentsList";
+import TeacherStudentGrading from "../pages/Teacher/StudentGrading";
 
 
 // Admin pages
@@ -149,7 +150,7 @@ const AppRoutes = () => {
               <Route path="assignment-grading" element={<TeacherAssignmentGrading />} />
               <Route path="lesson-note" element={<TeacherLessonNote />} />
               <Route path="students-list" element={<TeacherStudentsList />} />
-              
+              <Route path="student-grading" element={<TeacherStudentGrading />} />
             </Routes>
           </Layout>
         }
