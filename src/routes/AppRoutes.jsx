@@ -86,6 +86,8 @@ import ParentAnnouncements from "../pages/Parents/Announcement";
 import ParentAssignments from "../pages/Parents/Assignment";
 import ParentSuggestion from "../pages/Parents/Suggestion";
 import ParentSubjects from "../pages/Parents/Subjects";
+import ParentChildrenOverview from "../pages/Parents/ChildrenOverview";
+
 
 const AppRoutes = () => {
   return (
@@ -206,6 +208,7 @@ const AppRoutes = () => {
               <Route path="assignments" element={<ParentAssignments />} />
               <Route path="suggestion" element={<ParentSuggestion />} />
               <Route path="subjects" element={<ParentSubjects />} />
+              <Route path="children-overview" element={<ParentChildrenOverview />} />
             </Routes>
           </Layout>
         }
