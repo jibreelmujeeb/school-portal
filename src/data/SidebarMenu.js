@@ -147,5 +147,6 @@ export const sidebarMenus = {
     { name: "Profile", path: "/parent/profile", icon: Users },
     { name: "Settings", path: "/parent/settings", icon: Settings },
     { name: "Children Overview", path: "/parent/children-overview", icon: Users },
+    { name: "Child Profile", path: "/parent/child-profile", icon: Users },
   ],
 };

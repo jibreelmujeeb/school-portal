@@ -87,6 +87,8 @@ import ParentAssignments from "../pages/Parents/Assignment";
 import ParentSuggestion from "../pages/Parents/Suggestion";
 import ParentSubjects from "../pages/Parents/Subjects";
 import ParentChildrenOverview from "../pages/Parents/ChildrenOverview";
+import ParentChildProfile from "../pages/Parents/ChildProfile";
+
 
 
 const AppRoutes = () => {
@@ -209,6 +211,7 @@ const AppRoutes = () => {
               <Route path="suggestion" element={<ParentSuggestion />} />
               <Route path="subjects" element={<ParentSubjects />} />
               <Route path="children-overview" element={<ParentChildrenOverview />} />
+              <Route path="child-profile" element={<ParentChildProfile />} />
             </Routes>
           </Layout>
         }
