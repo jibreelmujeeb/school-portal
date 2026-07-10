@@ -88,6 +88,7 @@ import ParentSuggestion from "../pages/Parents/Suggestion";
 import ParentSubjects from "../pages/Parents/Subjects";
 import ParentChildrenOverview from "../pages/Parents/ChildrenOverview";
 import ParentChildProfile from "../pages/Parents/ChildProfile";
+import ParentPaymentHistory from "../pages/Parents/PaymentHistory";
 
 
 
@@ -212,6 +213,7 @@ const AppRoutes = () => {
               <Route path="subjects" element={<ParentSubjects />} />
               <Route path="children-overview" element={<ParentChildrenOverview />} />
               <Route path="child-profile" element={<ParentChildProfile />} />
+              <Route path="payment-history" element={<ParentPaymentHistory />} />
             </Routes>
           </Layout>
         }
