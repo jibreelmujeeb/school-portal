@@ -89,6 +89,7 @@ import ParentSubjects from "../pages/Parents/Subjects";
 import ParentChildrenOverview from "../pages/Parents/ChildrenOverview";
 import ParentChildProfile from "../pages/Parents/ChildProfile";
 import ParentPaymentHistory from "../pages/Parents/PaymentHistory";
+import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
 
 
 
@@ -214,6 +215,8 @@ const AppRoutes = () => {
               <Route path="children-overview" element={<ParentChildrenOverview />} />
               <Route path="child-profile" element={<ParentChildProfile />} />
               <Route path="payment-history" element={<ParentPaymentHistory />} />
+              <Route path="payment-receipt" element={<ParentPaymentReceipt />} />
+              
             </Routes>
           </Layout>
         }
