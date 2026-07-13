@@ -115,6 +115,7 @@ export const sidebarMenus = {
     { name: "Students", path: "/admin/students", icon: Users },
     { name: "Teachers", path: "/admin/teachers", icon: Briefcase },
     { name: "Parents", path: "/admin/parents", icon: Users },
+    { name: "Staff", path: "/admin/staff", icon: Users },
     { name: "Classes", path: "/admin/classes", icon: BookOpen },
     { name: "Subjects", path: "/admin/subjects", icon: FileText },
     { name: "Courses", path: "/admin/courses", icon: BookOpen },
