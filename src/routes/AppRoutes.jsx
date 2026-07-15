@@ -76,6 +76,7 @@ import AdminGallery from "../pages/Admin/Gallery";
 import AdminParentsManagement from "../pages/Admin/ParentsManagement";
 import AdminStaffManagement from "../pages/Admin/StaffManagement";
 import AdminUsersRoleAndPermission from "../pages/Admin/UsersRoleAndPermission";
+import AdminDepartments from "../pages/Admin/Departments";
 
 // Parent pages
 import ParentDashboard from "../pages/Parents/ParentDashboard";
@@ -196,6 +197,7 @@ const AppRoutes = () => {
               <Route path="parents" element={<AdminParentsManagement />} />
               <Route path="staff" element={<AdminStaffManagement />} />
               <Route path="users-role-permission" element={<AdminUsersRoleAndPermission />} />
+              <Route path="departments" element={<AdminDepartments />} />
             </Routes>
           </Layout>
         }
