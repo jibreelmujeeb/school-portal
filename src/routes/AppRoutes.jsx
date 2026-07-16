@@ -77,6 +77,8 @@ import AdminParentsManagement from "../pages/Admin/ParentsManagement";
 import AdminStaffManagement from "../pages/Admin/StaffManagement";
 import AdminUsersRoleAndPermission from "../pages/Admin/UsersRoleAndPermission";
 import AdminDepartments from "../pages/Admin/Departments";
+import AdminGrading from "../pages/Admin/Grading";
+
 
 // Parent pages
 import ParentDashboard from "../pages/Parents/ParentDashboard";
@@ -198,6 +200,7 @@ const AppRoutes = () => {
               <Route path="staff" element={<AdminStaffManagement />} />
               <Route path="users-role-permission" element={<AdminUsersRoleAndPermission />} />
               <Route path="departments" element={<AdminDepartments />} />
+              <Route path="grading" element={<AdminGrading />} />
             </Routes>
           </Layout>
         }

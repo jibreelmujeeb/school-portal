@@ -125,6 +125,7 @@ export const sidebarMenus = {
     { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Results", path: "/admin/results", icon: BookOpen },
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
+    { name: "Grading", path: "/admin/grading", icon: GraduationCap },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
     { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
