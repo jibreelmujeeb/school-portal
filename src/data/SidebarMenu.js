@@ -137,6 +137,7 @@ export const sidebarMenus = {
     { name: "Laboratory", path: "/admin/laboratory", icon: BookOpen },
     { name: "Gallery", path: "/admin/gallery", icon: BookOpen },
     { name: "Users Role & Permission", path: "/admin/users-role-permission", icon: Settings },
+    { name: "Admission Application", path: "/admin/admission-application", icon: Users }
   ],
 
   parent: [
