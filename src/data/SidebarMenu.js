@@ -139,6 +139,7 @@ export const sidebarMenus = {
     { name: "Users Role & Permission", path: "/admin/users-role-permission", icon: Settings },
     { name: "Admission Application", path: "/admin/admission-application", icon: Users },
     { name: "Admission Approval", path: "/admin/admission-approval", icon: Users }, 
+    { name: "Admission Rejection", path: "/admin/admission-rejection", icon: Users },
   ],
 
   parent: [
