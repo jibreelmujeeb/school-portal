@@ -140,6 +140,7 @@ export const sidebarMenus = {
     { name: "Admission Application", path: "/admin/admission-application", icon: Users },
     { name: "Admission Approval", path: "/admin/admission-approval", icon: Users }, 
     { name: "Admission Rejection", path: "/admin/admission-rejection", icon: Users },
+    { name: "Scholarship", path: "/admin/scholarship", icon: Users },
   ],
 
   parent: [
