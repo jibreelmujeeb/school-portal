@@ -160,4 +160,8 @@ export const sidebarMenus = {
     { name: "Payment History", path: "/parent/payment-history", icon: CreditCard },
     { name: "Payment Receipt", path: "/parent/payment-receipt", icon: CreditCard },
   ],
+
+  accountant: [
+    { name: "Dashboard", path: "/accountant/dashboard", icon: LayoutDashboard },
+  ],
 };

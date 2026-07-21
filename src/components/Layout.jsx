@@ -10,6 +10,7 @@ const Layout = ({ children, role }) => {
     teacher: "green",
     admin: "indigo",
     parent: "orange",
+    accountant: "teal",
   };
 
   const color = roleColors[role] || "gray";

@@ -102,6 +102,10 @@ import ParentPaymentHistory from "../pages/Parents/PaymentHistory";
 import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
 
 
+// Accountant pages
+import AccountantDashboard from "../pages/Accountant/AccountantDashboard";
+
+
 
 const AppRoutes = () => {
   return (
@@ -236,6 +240,18 @@ const AppRoutes = () => {
               <Route path="payment-history" element={<ParentPaymentHistory />} />
               <Route path="payment-receipt" element={<ParentPaymentReceipt />} />
               
+            </Routes>
+          </Layout>
+        }
+      />
+
+      {/* ACCOUNTANT ROUTES */}
+      <Route
+        path="/accountant/*"
+        element={
+          <Layout role="accountant">
+            <Routes>
+              <Route path="dashboard" element={<AccountantDashboard />} />
             </Routes>
           </Layout>
         }
