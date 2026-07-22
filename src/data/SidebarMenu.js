@@ -163,5 +163,6 @@ export const sidebarMenus = {
 
   accountant: [
     { name: "Dashboard", path: "/accountant/dashboard", icon: LayoutDashboard },
+    { name: "Fees Collection", path: "/accountant/fees-collection", icon: CreditCard },
   ],
 };

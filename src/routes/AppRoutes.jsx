@@ -104,6 +104,7 @@ import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
 
 // Accountant pages
 import AccountantDashboard from "../pages/Accountant/AccountantDashboard";
+import AccountantFeesCollection from "../pages/Accountant/FeesCollection";
 
 
 
@@ -252,6 +253,7 @@ const AppRoutes = () => {
           <Layout role="accountant">
             <Routes>
               <Route path="dashboard" element={<AccountantDashboard />} />
+              <Route path="fees-collection" element={<AccountantFeesCollection />} />
             </Routes>
           </Layout>
         }
