@@ -105,6 +105,7 @@ import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
 // Accountant pages
 import AccountantDashboard from "../pages/Accountant/AccountantDashboard";
 import AccountantFeesCollection from "../pages/Accountant/FeesCollection";
+import AccountantExpenses from "../pages/Accountant/Expenses";
 
 
 
@@ -254,6 +255,7 @@ const AppRoutes = () => {
             <Routes>
               <Route path="dashboard" element={<AccountantDashboard />} />
               <Route path="fees-collection" element={<AccountantFeesCollection />} />
+              <Route path="expenses" element={<AccountantExpenses />} />
             </Routes>
           </Layout>
         }
