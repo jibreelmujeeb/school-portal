@@ -165,6 +165,6 @@ export const sidebarMenus = {
     { name: "Dashboard", path: "/accountant/dashboard", icon: LayoutDashboard },
     { name: "Fees Collection", path: "/accountant/fees-collection", icon: CreditCard },
     { name: "Expenses", path: "/accountant/expenses", icon: CreditCard },
-    
+    { name: "Payment Verification", path: "/accountant/payment-verification", icon: CreditCard },
   ],
 };
