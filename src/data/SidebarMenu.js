@@ -167,5 +167,6 @@ export const sidebarMenus = {
     { name: "Expenses", path: "/accountant/expenses", icon: CreditCard },
     { name: "Payment Verification", path: "/accountant/payment-verification", icon: CreditCard },
     { name: "Financial Report", path: "/accountant/financial-report", icon: ClipboardList },
+    { name: "Students Debtors", path: "/accountant/students-debtors", icon: Users },
   ],
 };

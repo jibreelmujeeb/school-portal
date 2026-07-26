@@ -31,6 +31,7 @@ import StudentPaymentReceipt from "../pages/Student/PaymentReceipt";
 import StudentReportCard from "../pages/Student/ReportCard";
 import StudentCertificate from "../pages/Student/Certificate";
 
+
 // Teacher pages
 import TeacherDashboard from "../pages/Teacher/TeacherDashboard";
 import TeacherAnnouncements from "../pages/Teacher/Announcement";
@@ -108,6 +109,7 @@ import AccountantFeesCollection from "../pages/Accountant/FeesCollection";
 import AccountantExpenses from "../pages/Accountant/Expenses";
 import AccountantPaymentVerification from "../pages/Accountant/PaymentVerification";
 import AccountantFinancialReport from "../pages/Accountant/FinancialReport";
+import AccountantStudentsDebtors from "../pages/Accountant/StudentsDebtors";
 
 
 const AppRoutes = () => {
@@ -259,6 +261,7 @@ const AppRoutes = () => {
               <Route path="expenses" element={<AccountantExpenses />} />
               <Route path="payment-verification" element={<AccountantPaymentVerification />} />
               <Route path="financial-report" element={<AccountantFinancialReport />} />
+              <Route path="students-debtors" element={<AccountantStudentsDebtors />} />
             </Routes>
           </Layout>
         }
