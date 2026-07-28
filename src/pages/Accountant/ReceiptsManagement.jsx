@@ -64,7 +64,7 @@ export default function ReceiptManagementPage() {
 
         <div className="border rounded-3xl p-5">
           <FileText className="text-blue-600 mb-3" />
-          <h2 className="text-2xl font-bold">5,246</h2>
+          <h2 className="text-2xl font-bold">5,247</h2>
           <p>Total Receipts</p>
         </div>
 
