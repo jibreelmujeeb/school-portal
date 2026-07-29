@@ -112,6 +112,7 @@ import AccountantFinancialReport from "../pages/Accountant/FinancialReport";
 import AccountantStudentsDebtors from "../pages/Accountant/StudentsDebtors";
 import AccountantReceiptsManagement from "../pages/Accountant/ReceiptsManagement";
 import AccountantProfile from "../pages/Accountant/Profile";
+import AccountantSettings from "../pages/Accountant/Settings";
 
 
 const AppRoutes = () => {
@@ -266,6 +267,7 @@ const AppRoutes = () => {
               <Route path="students-debtors" element={<AccountantStudentsDebtors />} />
               <Route path="receipts-management" element={<AccountantReceiptsManagement />} />
               <Route path="profile" element={<AccountantProfile />} />
+              <Route path="settings" element={<AccountantSettings />} />
             </Routes>
           </Layout>
         }
