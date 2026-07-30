@@ -171,5 +171,6 @@ export const sidebarMenus = {
     { name: "Receipts Management", path: "/accountant/receipts-management", icon: CreditCard },
     { name: "Profile", path: "/accountant/profile", icon: Users },
     { name: "Settings", path: "/accountant/settings", icon: Settings },
+    { name: "Notifications", path: "/accountant/notifications", icon: Megaphone },
   ],
 };
