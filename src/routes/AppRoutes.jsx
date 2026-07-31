@@ -114,6 +114,7 @@ import AccountantReceiptsManagement from "../pages/Accountant/ReceiptsManagement
 import AccountantProfile from "../pages/Accountant/Profile";
 import AccountantSettings from "../pages/Accountant/Settings";
 import AccountantNotifications from "../pages/Accountant/Notifications";
+import AccountantAnnouncements from "../pages/Accountant/Announcement";
 
 
 const AppRoutes = () => {
@@ -270,6 +271,7 @@ const AppRoutes = () => {
               <Route path="profile" element={<AccountantProfile />} />
               <Route path="settings" element={<AccountantSettings />} />
               <Route path="notifications" element={<AccountantNotifications />} />
+              <Route path="announcements" element={<AccountantAnnouncements />} />
             </Routes>
           </Layout>
         }

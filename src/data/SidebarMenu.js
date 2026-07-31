@@ -172,5 +172,6 @@ export const sidebarMenus = {
     { name: "Profile", path: "/accountant/profile", icon: Users },
     { name: "Settings", path: "/accountant/settings", icon: Settings },
     { name: "Notifications", path: "/accountant/notifications", icon: Megaphone },
+    { name: "Announcements", path: "/accountant/announcements", icon: Megaphone },
   ],
 };
