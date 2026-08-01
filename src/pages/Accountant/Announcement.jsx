@@ -121,6 +121,7 @@ export default function AccountantAnnouncementsPage() {
       {/* Table */}
 
       <div className="border rounded-3xl overflow-hidden overflow-x-auto">
+        
 
         <table className="w-full min-w-[1100px]">
 
