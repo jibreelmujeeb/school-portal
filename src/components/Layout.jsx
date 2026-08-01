@@ -11,6 +11,7 @@ const Layout = ({ children, role }) => {
     admin: "indigo",
     parent: "orange",
     accountant: "teal",
+    librarian: "purple",
   };
 
   const color = roleColors[role] || "gray";

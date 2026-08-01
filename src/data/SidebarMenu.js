@@ -174,4 +174,7 @@ export const sidebarMenus = {
     { name: "Notifications", path: "/accountant/notifications", icon: Megaphone },
     { name: "Announcements", path: "/accountant/announcements", icon: Megaphone },
   ],
+  librarian: [
+    { name: "Dashboard", path: "/librarian/dashboard", icon: LayoutDashboard },
+  ]
 };

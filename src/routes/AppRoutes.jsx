@@ -117,6 +117,10 @@ import AccountantNotifications from "../pages/Accountant/Notifications";
 import AccountantAnnouncements from "../pages/Accountant/Announcement";
 
 
+// Librarian pages
+import LibrarianDashboard from "../pages/Librarian/LibrarianDashboard";
+
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -272,6 +276,18 @@ const AppRoutes = () => {
               <Route path="settings" element={<AccountantSettings />} />
               <Route path="notifications" element={<AccountantNotifications />} />
               <Route path="announcements" element={<AccountantAnnouncements />} />
+            </Routes>
+          </Layout>
+        }
+      />
+
+      {/* LIBRARIAN ROUTES */}
+      <Route
+        path="/librarian/*"
+        element={
+          <Layout role="librarian">
+            <Routes>
+              <Route path="dashboard" element={<LibrarianDashboard />} />
             </Routes>
           </Layout>
         }
