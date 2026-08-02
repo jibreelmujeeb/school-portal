@@ -119,6 +119,7 @@ import AccountantAnnouncements from "../pages/Accountant/Announcement";
 
 // Librarian pages
 import LibrarianDashboard from "../pages/Librarian/LibrarianDashboard";
+import LibrarianBooksManagement from "../pages/Librarian/BooksManagement";
 
 
 const AppRoutes = () => {
@@ -288,6 +289,7 @@ const AppRoutes = () => {
           <Layout role="librarian">
             <Routes>
               <Route path="dashboard" element={<LibrarianDashboard />} />
+              <Route path="books-management" element={<LibrarianBooksManagement />} />
             </Routes>
           </Layout>
         }
