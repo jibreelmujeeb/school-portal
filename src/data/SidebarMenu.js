@@ -177,5 +177,6 @@ export const sidebarMenus = {
   librarian: [
     { name: "Dashboard", path: "/librarian/dashboard", icon: LayoutDashboard },
     { name: "Books Management", path: "/librarian/books-management", icon: BookOpen },
+    { name: "Borrowed Books", path: "/librarian/borrowed-books", icon: BookOpen },
   ]
 };
