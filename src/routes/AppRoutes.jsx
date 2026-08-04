@@ -121,6 +121,7 @@ import AccountantAnnouncements from "../pages/Accountant/Announcement";
 import LibrarianDashboard from "../pages/Librarian/LibrarianDashboard";
 import LibrarianBooksManagement from "../pages/Librarian/BooksManagement";
 import LibrarianBorrowedBooks from "../pages/Librarian/BorrowedBooks";
+import LibrarianReturnBooks from "../pages/Librarian/ReturnBooks";
 
 
 const AppRoutes = () => {
@@ -292,6 +293,7 @@ const AppRoutes = () => {
               <Route path="dashboard" element={<LibrarianDashboard />} />
               <Route path="books-management" element={<LibrarianBooksManagement />} />
               <Route path="borrowed-books" element={<LibrarianBorrowedBooks />} />
+              <Route path="return-books" element={<LibrarianReturnBooks />} />
             </Routes>
           </Layout>
         }
