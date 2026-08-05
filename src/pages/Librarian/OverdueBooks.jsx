@@ -39,7 +39,6 @@ export default function OverdueBooksPage() {
 
         <div className="border rounded-2xl p-5">
           <AlertTriangle className="text-orange-600 mb-2"/>
-          
           <h2 className="text-2xl font-bold">21</h2>
           <p>Critical</p>
         </div>
