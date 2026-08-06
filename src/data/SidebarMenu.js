@@ -180,5 +180,6 @@ export const sidebarMenus = {
     { name: "Borrowed Books", path: "/librarian/borrowed-books", icon: BookOpen },
     { name: "Return Books", path: "/librarian/return-books", icon: BookOpen },
     { name: "Overdue Books", path: "/librarian/overdue-books", icon: BookOpen },
+    { name: "Library Reports", path: "/librarian/library-reports", icon: ClipboardList }
   ]
 };
