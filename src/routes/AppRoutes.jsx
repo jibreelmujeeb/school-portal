@@ -126,6 +126,7 @@ import LibrarianOverdueBooks from "../pages/Librarian/OverdueBooks";
 import LibrarianLibraryReports from "../pages/Librarian/LibraryReports";
 import LibrarianFinesManagement from "../pages/Librarian/FinesManagement";
 import LibrarianDamagedBooks from "../pages/Librarian/DamagedBooks";
+import LibrarianBooksRequest from "../pages/Librarian/BooksRequest";
 
 
 const AppRoutes = () => {
@@ -302,6 +303,7 @@ const AppRoutes = () => {
               <Route path="library-reports" element={<LibrarianLibraryReports />} />
               <Route path="fines-management" element={<LibrarianFinesManagement />} />
               <Route path="damaged-books" element={<LibrarianDamagedBooks />} />
+              <Route path="book-requests" element={<LibrarianBooksRequest />} />
             </Routes>
           </Layout>
         }
