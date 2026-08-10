@@ -183,6 +183,7 @@ export const sidebarMenus = {
     { name: "Overdue Books", path: "/librarian/overdue-books", icon: BookOpen },
     { name: "Library Reports", path: "/librarian/library-reports", icon: ClipboardList },
     { name: "Fines Management", path: "/librarian/fines-management", icon: CreditCard },
+    { name: "Reservation", path: "/librarian/reservation", icon: BookOpen },
     { name: "Damaged Books", path: "/librarian/damaged-books", icon: BookOpen }
   ]
 };
