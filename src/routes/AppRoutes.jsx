@@ -129,6 +129,7 @@ import LibrarianDamagedBooks from "../pages/Librarian/DamagedBooks";
 import LibrarianBooksRequest from "../pages/Librarian/BooksRequest";
 import LibrarianReservation from "../pages/Librarian/Reservation";
 import LibrarianProfile from "../pages/Librarian/Profile";
+import LibrarianSettings from "../pages/Librarian/Settings";
 
 
 const AppRoutes = () => {
@@ -308,6 +309,7 @@ const AppRoutes = () => {
               <Route path="book-requests" element={<LibrarianBooksRequest />} />
               <Route path="reservation" element={<LibrarianReservation />} />
               <Route path="profile" element={<LibrarianProfile />} />
+              <Route path="settings" element={<LibrarianSettings />} />
             </Routes>
           </Layout>
         }

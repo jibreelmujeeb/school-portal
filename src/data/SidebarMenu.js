@@ -186,5 +186,6 @@ export const sidebarMenus = {
     { name: "Reservation", path: "/librarian/reservation", icon: BookOpen },
     { name: "Damaged Books", path: "/librarian/damaged-books", icon: BookOpen },
     { name: "Profile", path: "/librarian/profile", icon: Users },
+    { name: "Settings", path: "/librarian/settings", icon: Settings },
   ]
 };
