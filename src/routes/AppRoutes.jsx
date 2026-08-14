@@ -131,6 +131,7 @@ import LibrarianReservation from "../pages/Librarian/Reservation";
 import LibrarianProfile from "../pages/Librarian/Profile";
 import LibrarianSettings from "../pages/Librarian/Settings";
 import LibrarianNotification from "../pages/Librarian/Notification";
+import LibrarianAnnouncements from "../pages/Librarian/Announcement";
 
 
 const AppRoutes = () => {
@@ -312,6 +313,7 @@ const AppRoutes = () => {
               <Route path="profile" element={<LibrarianProfile />} />
               <Route path="settings" element={<LibrarianSettings />} />
               <Route path="notifications" element={<LibrarianNotification />} />
+              <Route path="announcements" element={<LibrarianAnnouncements />} />
             </Routes>
           </Layout>
         }

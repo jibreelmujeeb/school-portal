@@ -188,5 +188,6 @@ export const sidebarMenus = {
     { name: "Profile", path: "/librarian/profile", icon: Users },
     { name: "Settings", path: "/librarian/settings", icon: Settings },
     { name: "Notifications", path: "/librarian/notifications", icon: Megaphone },
+    { name: "Announcements", path: "/librarian/announcements", icon: Megaphone },
   ]
 };
