@@ -189,5 +189,6 @@ export const sidebarMenus = {
     { name: "Settings", path: "/librarian/settings", icon: Settings },
     { name: "Notifications", path: "/librarian/notifications", icon: Megaphone },
     { name: "Announcements", path: "/librarian/announcements", icon: Megaphone },
+    { name: "Library Statistics", path: "/librarian/library-statistics", icon: BookOpen },
   ]
 };
