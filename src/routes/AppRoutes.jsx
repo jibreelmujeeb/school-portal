@@ -133,6 +133,7 @@ import LibrarianSettings from "../pages/Librarian/Settings";
 import LibrarianNotification from "../pages/Librarian/Notification";
 import LibrarianAnnouncements from "../pages/Librarian/Announcement";
 import LibrarianLibraryStatistics from "../pages/Librarian/LibraryStatistics";
+import LibrarianElibraryManagement from "../pages/Librarian/ElibraryManagement";
 
 const AppRoutes = () => {
   return (
@@ -315,6 +316,7 @@ const AppRoutes = () => {
               <Route path="notifications" element={<LibrarianNotification />} />
               <Route path="announcements" element={<LibrarianAnnouncements />} />
               <Route path="library-statistics" element={<LibrarianLibraryStatistics />} />
+              <Route path="e-library-management" element={<LibrarianElibraryManagement />} />
             </Routes>
           </Layout>
         }
