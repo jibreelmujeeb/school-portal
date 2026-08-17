@@ -190,6 +190,7 @@ export const sidebarMenus = {
     { name: "Notifications", path: "/librarian/notifications", icon: Megaphone },
     { name: "Announcements", path: "/librarian/announcements", icon: Megaphone },
     { name: "Library Statistics", path: "/librarian/library-statistics", icon: BookOpen },
+    { name: "Library Catalog", path: "/librarian/library-catalog", icon: BookOpen },
     { name: "E-Library Management", path: "/librarian/e-library-management", icon: BookOpen },
   ]
 };
