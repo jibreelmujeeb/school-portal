@@ -137,6 +137,7 @@ import LibrarianElibraryManagement from "../pages/Librarian/ElibraryManagement";
 import LibrarianLibraryCatalog from "../pages/Librarian/LibraryCatalog";
 import LibrarianLibraryEvents from "../pages/Librarian/LibraryEvents";
 import LibrarianLibraryPolicies from "../pages/Librarian/LibraryPolicies";
+import LibrarianLibraryResources from "../pages/Librarian/LibraryResources";
 
 const AppRoutes = () => {
   return (
@@ -323,6 +324,7 @@ const AppRoutes = () => {
               <Route path="library-catalog" element={<LibrarianLibraryCatalog />} />
               <Route path="library-events" element={<LibrarianLibraryEvents />} />
               <Route path="library-policies" element={<LibrarianLibraryPolicies />} />
+              <Route path="library-resources" element={<LibrarianLibraryResources />} />
             </Routes>
           </Layout>
         }

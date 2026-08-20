@@ -193,6 +193,7 @@ export const sidebarMenus = {
     { name: "Library Catalog", path: "/librarian/library-catalog", icon: BookOpen },
     { name: "Library Events", path: "/librarian/library-events", icon: BookOpen },
     { name: "Library Policies", path: "/librarian/library-policies", icon: BookOpen },
+    { name: "Library Resources", path: "/librarian/library-resources", icon: BookOpen },
     { name: "E-Library Management", path: "/librarian/e-library-management", icon: BookOpen },
   ]
 };
