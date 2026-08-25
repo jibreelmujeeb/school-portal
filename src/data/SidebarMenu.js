@@ -170,6 +170,7 @@ export const sidebarMenus = {
     { name: "Students Debtors", path: "/accountant/students-debtors", icon: Users },
     { name: "Receipts Management", path: "/accountant/receipts-management", icon: CreditCard },
     { name: "Budgeting", path: "/accountant/budgeting", icon: CreditCard },
+    { name: "Payroll", path: "/accountant/payroll", icon: CreditCard },
     { name: "Payment History", path: "/accountant/payment-history", icon: CreditCard },
     { name: "Profile", path: "/accountant/profile", icon: Users },
     { name: "Settings", path: "/accountant/settings", icon: Settings },

@@ -117,6 +117,7 @@ import AccountantNotifications from "../pages/Accountant/Notifications";
 import AccountantAnnouncements from "../pages/Accountant/Announcement";
 import AccountantPaymentHistory from "../pages/Accountant/PaymentHistory";
 import AccountantBudgeting from "../pages/Accountant/Budgeting";
+import AccountantPayroll from "../pages/Accountant/Payroll";
 
 
 // Librarian pages
@@ -300,6 +301,7 @@ const AppRoutes = () => {
               <Route path="announcements" element={<AccountantAnnouncements />} />
               <Route path="payment-history" element={<AccountantPaymentHistory />} />
               <Route path="budgeting" element={<AccountantBudgeting />} />
+              <Route path="payroll" element={<AccountantPayroll />} />
             </Routes>
           </Layout>
         }
