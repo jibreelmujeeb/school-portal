@@ -172,6 +172,7 @@ export const sidebarMenus = {
     { name: "Budgeting", path: "/accountant/budgeting", icon: CreditCard },
     { name: "Payroll", path: "/accountant/payroll", icon: CreditCard },
     { name: "Audit Trail", path: "/accountant/audit-trail", icon: ClipboardList },
+    { name: "Financial Forecasting", path: "/accountant/financial-forecasting", icon: ClipboardList },
     { name: "Payment History", path: "/accountant/payment-history", icon: CreditCard },
     { name: "Profile", path: "/accountant/profile", icon: Users },
     { name: "Settings", path: "/accountant/settings", icon: Settings },
