@@ -31,8 +31,8 @@ export default function AccountantBankReconciliationPage() {
       date: "24 Aug 2026",
       description: "Payment",
       reference: "PAY-82912",
-      bankAmount: 100000,
-      bookAmount: 100000,
+      bankAmount: 10000,
+      bookAmount: 10000,
       status: "Matched",
     },
     {
