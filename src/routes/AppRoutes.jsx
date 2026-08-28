@@ -120,6 +120,7 @@ import AccountantBudgeting from "../pages/Accountant/Budgeting";
 import AccountantPayroll from "../pages/Accountant/Payroll";
 import AccountantAuditTrail from "../pages/Accountant/AuditTrail";
 import AccountantFinancialForecasting from "../pages/Accountant/FinancialForecasting";
+import AccountantBankReconciliation from "../pages/Accountant/BankReconciliation";
 
 
 // Librarian pages
@@ -306,6 +307,7 @@ const AppRoutes = () => {
               <Route path="payroll" element={<AccountantPayroll />} />
               <Route path="audit-trail" element={<AccountantAuditTrail />} />
               <Route path="financial-forecasting" element={<AccountantFinancialForecasting />} />
+              <Route path="bank-reconciliation" element={<AccountantBankReconciliation />} />
             </Routes>
           </Layout>
         }
