@@ -84,6 +84,7 @@ import AdminAdmissionApproval from "../pages/Admin/AdmissionApproval";
 import AdminAdmissionRejection from "../pages/Admin/AdmissionRejection";
 import AdminScholarship from "../pages/Admin/Scholarship";
 import AdminSchoolSetting from "../pages/Admin/SchoolSettings";
+import AdminSessionManagement from "../pages/Admin/SessionManagement";
 
 
 // Parent pages
@@ -255,6 +256,7 @@ const AppRoutes = () => {
               <Route path="admission-rejection" element={<AdminAdmissionRejection />} />
               <Route path="scholarship" element={<AdminScholarship />} />
               <Route path="school-setting" element={<AdminSchoolSetting />} />
+              <Route path="session-management" element={<AdminSessionManagement />} />
             </Routes>
           </Layout>
         }
