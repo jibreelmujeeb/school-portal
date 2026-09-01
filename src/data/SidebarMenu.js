@@ -144,6 +144,7 @@ export const sidebarMenus = {
     { name: "School Setting", path: "/admin/school-setting", icon: Settings },
     { name: "Session Management", path: "/admin/session-management", icon: Settings },
     { name: "Term Management", path: "/admin/term-management", icon: Settings },
+    { name: "Backup & Restore", path: "/admin/backup-restore", icon: Settings },
   ],
 
   parent: [

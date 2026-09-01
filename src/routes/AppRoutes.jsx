@@ -86,6 +86,7 @@ import AdminScholarship from "../pages/Admin/Scholarship";
 import AdminSchoolSetting from "../pages/Admin/SchoolSettings";
 import AdminSessionManagement from "../pages/Admin/SessionManagement";
 import AdminTermManagement from "../pages/Admin/TermManagement";
+import AdminBackupRestore from "../pages/Admin/BackupRestore";
 
 
 // Parent pages
@@ -259,6 +260,7 @@ const AppRoutes = () => {
               <Route path="school-setting" element={<AdminSchoolSetting />} />
               <Route path="session-management" element={<AdminSessionManagement />} />
               <Route path="term-management" element={<AdminTermManagement />} />
+              <Route path="backup-restore" element={<AdminBackupRestore />} />
             </Routes>
           </Layout>
         }
