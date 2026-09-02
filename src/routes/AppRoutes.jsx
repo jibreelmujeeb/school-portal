@@ -87,6 +87,7 @@ import AdminSchoolSetting from "../pages/Admin/SchoolSettings";
 import AdminSessionManagement from "../pages/Admin/SessionManagement";
 import AdminTermManagement from "../pages/Admin/TermManagement";
 import AdminBackupRestore from "../pages/Admin/BackupRestore";
+import AdminSystemSettings from "../pages/Admin/SystemSettings";
 
 
 // Parent pages
@@ -261,6 +262,7 @@ const AppRoutes = () => {
               <Route path="session-management" element={<AdminSessionManagement />} />
               <Route path="term-management" element={<AdminTermManagement />} />
               <Route path="backup-restore" element={<AdminBackupRestore />} />
+              <Route path="system-settings" element={<AdminSystemSettings />} />
             </Routes>
           </Layout>
         }
