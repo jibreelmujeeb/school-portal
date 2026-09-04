@@ -142,6 +142,7 @@ export const sidebarMenus = {
     { name: "Admission Rejection", path: "/admin/admission-rejection", icon: Users },
     { name: "Scholarship", path: "/admin/scholarship", icon: Users },
     { name: "Scholarship Approval", path: "/admin/scholarship-approval", icon: Users },
+    { name: "Scholarship Rejection", path: "/admin/scholarship-rejection", icon: Users },
     { name: "School Setting", path: "/admin/school-setting", icon: Settings },
     { name: "Session Management", path: "/admin/session-management", icon: Settings },
     { name: "Term Management", path: "/admin/term-management", icon: Settings },
