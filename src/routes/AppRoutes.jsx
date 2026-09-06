@@ -110,6 +110,7 @@ import ParentChildrenOverview from "../pages/Parents/ChildrenOverview";
 import ParentChildProfile from "../pages/Parents/ChildProfile";
 import ParentPaymentHistory from "../pages/Parents/PaymentHistory";
 import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
+import ParentHolidayManagement from "../pages/Parents/HolidayManagement";
 
 
 // Accountant pages
@@ -297,7 +298,7 @@ const AppRoutes = () => {
               <Route path="child-profile" element={<ParentChildProfile />} />
               <Route path="payment-history" element={<ParentPaymentHistory />} />
               <Route path="payment-receipt" element={<ParentPaymentReceipt />} />
-              
+              <Route path="holiday-management" element={<ParentHolidayManagement />} />
             </Routes>
           </Layout>
         }

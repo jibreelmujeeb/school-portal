@@ -159,6 +159,7 @@ export const sidebarMenus = {
     { name: "Assignments", path: "/parent/assignments", icon: ClipboardList },
     { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
     { name: "Fees", path: "/parent/fees", icon: CreditCard },
+    { name: "Holiday Management", path: "/parent/holiday-management", icon: Settings },
     { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/parent/suggestion", icon: Settings },
     { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
