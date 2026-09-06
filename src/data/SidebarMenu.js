@@ -73,6 +73,7 @@ export const sidebarMenus = {
     { name: "Grades", path: "/student/grades", icon: GraduationCap },
     { name: "Results", path: "/student/results", icon: BookOpen },
     { name: "Fees", path: "/student/fees", icon: CreditCard },
+    { name: "Holiday Management", path: "/student/holiday-management", icon: CalendarDays },
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/student/suggestion", icon: Settings },
     { name: "Notifications", path: "/student/notifications", icon: Settings },
