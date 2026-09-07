@@ -15,8 +15,8 @@ const holidays = [
     id: "HOL-001",
     name: "Independence Day",
     type: "Public Holiday",
-    startDate: "2026-10-01",
-    endDate: "2026-10-01",
+    startDate: "2026-10-02",
+    endDate: "2026-10-02",
     session: "2026/2027",
     term: "First Term",
     description:
@@ -60,7 +60,7 @@ const children = [
   },
   {
     id: "STU-002",
-    name: "Ibrahim Bello",
+    name: "Musa Bello",
     className: "JSS 1B",
   },
 ];
