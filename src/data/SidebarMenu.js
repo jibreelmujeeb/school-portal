@@ -99,6 +99,7 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/teacher/attendance", icon: CalendarDays },
     { name: "Results", path: "/teacher/results", icon: BookOpen },
     { name: "Grades", path: "/teacher/grades", icon: GraduationCap },
+    { name: "Holiday Management", path: "/teacher/holiday-management", icon: CalendarDays },
     { name: "Suggestion", path: "/teacher/suggestion", icon: Settings },
     { name: "Announcements", path: "/teacher/announcements", icon: Megaphone },
     { name: "Notifications", path: "/teacher/notifications", icon: Settings },
