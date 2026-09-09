@@ -214,5 +214,6 @@ export const sidebarMenus = {
     { name: "Library Inventory", path: "/librarian/library-inventory", icon: BookOpen },
     { name: "Library Membership", path: "/librarian/library-membership", icon: Users },
     { name: "E-Library Management", path: "/librarian/e-library-management", icon: BookOpen },
+    { name: "Holiday Management", path: "/librarian/holiday-management", icon: BookOpen }
   ]
 };
