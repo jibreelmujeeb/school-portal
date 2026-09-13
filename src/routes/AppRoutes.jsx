@@ -134,6 +134,7 @@ import AccountantAuditTrail from "../pages/Accountant/AuditTrail";
 import AccountantFinancialForecasting from "../pages/Accountant/FinancialForecasting";
 import AccountantBankReconciliation from "../pages/Accountant/BankReconciliation";
 import AccountantHolidayManagement from "../pages/Accountant/HolidayManagement";
+import AccountantInvoice from "../pages/Accountant/Invoice";
 
 
 // Librarian pages
@@ -335,6 +336,7 @@ const AppRoutes = () => {
               <Route path="financial-forecasting" element={<AccountantFinancialForecasting />} />
               <Route path="bank-reconciliation" element={<AccountantBankReconciliation />} />
               <Route path="holiday-management" element={<AccountantHolidayManagement />} />
+              <Route path="invoice" element={<AccountantInvoice />} />
             </Routes>
           </Layout>
         }
