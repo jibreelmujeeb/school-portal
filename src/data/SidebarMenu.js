@@ -124,6 +124,7 @@ export const sidebarMenus = {
     { name: "Subjects", path: "/admin/subjects", icon: FileText },
     { name: "Courses", path: "/admin/courses", icon: BookOpen },
     { name: "Fees", path: "/admin/fees", icon: CreditCard },
+    { name: "Invoice", path: "/admin/invoice", icon: CreditCard },
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
     { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Results", path: "/admin/results", icon: BookOpen },
