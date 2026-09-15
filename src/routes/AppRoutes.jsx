@@ -32,6 +32,7 @@ import StudentReportCard from "../pages/Student/ReportCard";
 import StudentCertificate from "../pages/Student/Certificate";
 import StudentHolidayManagement from "../pages/Student/HolidayManagement";
 import StudentInvoice from "../pages/Student/Invoice";
+import StudentOutStandingFees from "../pages/Student/OutStandingFees";
 
 
 // Teacher pages
@@ -202,6 +203,7 @@ const AppRoutes = () => {
               <Route path="certificate" element={<StudentCertificate />} />
               <Route path="holiday-management" element={<StudentHolidayManagement />} />
               <Route path="invoice" element={<StudentInvoice />} />
+              <Route path="outstanding-fees" element={<StudentOutStandingFees />} />
             </Routes>
           </Layout>
         }

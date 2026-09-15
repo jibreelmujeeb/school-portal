@@ -74,6 +74,7 @@ export const sidebarMenus = {
     { name: "Results", path: "/student/results", icon: BookOpen },
     { name: "Fees", path: "/student/fees", icon: CreditCard },
     { name: "Invoice", path: "/student/invoice", icon: CreditCard },
+    { name: "Outstanding Fees", path: "/student/outstanding-fees", icon: CreditCard },
     { name: "Holiday Management", path: "/student/holiday-management", icon: CalendarDays },
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/student/suggestion", icon: Settings },
