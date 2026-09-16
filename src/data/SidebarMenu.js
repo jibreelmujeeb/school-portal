@@ -164,6 +164,7 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/parent/attendance", icon: CalendarDays },
     { name: "Fees", path: "/parent/fees", icon: CreditCard },
     { name: "Invoice", path: "/parent/invoice", icon: CreditCard },
+    { name: "Outstanding Fees", path: "/parent/outstanding-fees", icon: CreditCard },
     { name: "Holiday Management", path: "/parent/holiday-management", icon: Settings },
     { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/parent/suggestion", icon: Settings },

@@ -115,6 +115,7 @@ import ParentPaymentHistory from "../pages/Parents/PaymentHistory";
 import ParentPaymentReceipt from "../pages/Parents/PaymentReciept";
 import ParentHolidayManagement from "../pages/Parents/HolidayManagement";
 import ParentInvoice from "../pages/Parents/Invoice";
+import ParentOutstandingFees from "../pages/Parents/OutStandingFees";
 
 
 // Accountant pages
@@ -311,6 +312,7 @@ const AppRoutes = () => {
               <Route path="payment-receipt" element={<ParentPaymentReceipt />} />
               <Route path="holiday-management" element={<ParentHolidayManagement />} />
               <Route path="invoice" element={<ParentInvoice />} />
+              <Route path="outstanding-fees" element={<ParentOutstandingFees />} />
             </Routes>
           </Layout>
         }
