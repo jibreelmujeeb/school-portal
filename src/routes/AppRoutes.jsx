@@ -138,6 +138,7 @@ import AccountantFinancialForecasting from "../pages/Accountant/FinancialForecas
 import AccountantBankReconciliation from "../pages/Accountant/BankReconciliation";
 import AccountantHolidayManagement from "../pages/Accountant/HolidayManagement";
 import AccountantInvoice from "../pages/Accountant/Invoice";
+import AccountantOutstandingFees from "../pages/Accountant/OutStandingFees";
 
 
 // Librarian pages
@@ -343,6 +344,7 @@ const AppRoutes = () => {
               <Route path="bank-reconciliation" element={<AccountantBankReconciliation />} />
               <Route path="holiday-management" element={<AccountantHolidayManagement />} />
               <Route path="invoice" element={<AccountantInvoice />} />
+              <Route path="outstanding-fees" element={<AccountantOutstandingFees />} />
             </Routes>
           </Layout>
         }
