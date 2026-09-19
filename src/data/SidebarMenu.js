@@ -137,7 +137,6 @@ export const sidebarMenus = {
     { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
     { name: "Notifications", path: "/admin/notifications", icon: Settings },
     { name: "Profile", path: "/admin/profile", icon: Users },
-    { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
     { name: "Library", path: "/admin/library", icon: BookOpen },
     { name: "Laboratory", path: "/admin/laboratory", icon: BookOpen },
@@ -149,11 +148,12 @@ export const sidebarMenus = {
     { name: "Scholarship", path: "/admin/scholarship", icon: Users },
     { name: "Scholarship Approval", path: "/admin/scholarship-approval", icon: Users },
     { name: "Scholarship Rejection", path: "/admin/scholarship-rejection", icon: Users },
-    { name: "School Setting", path: "/admin/school-setting", icon: Settings },
     { name: "Session Management", path: "/admin/session-management", icon: Settings },
     { name: "Term Management", path: "/admin/term-management", icon: Settings },
     { name: "Holiday Management", path: "/admin/holiday-management", icon: Settings },
     { name: "Backup & Restore", path: "/admin/backup-restore", icon: Settings },
+     { name: "School Setting", path: "/admin/school-setting", icon: Settings },
+     { name: "Settings", path: "/admin/settings", icon: Settings },
     { name: "System Settings", path: "/admin/system-settings", icon: Settings }
   ],
 
