@@ -104,13 +104,13 @@ export const sidebarMenus = {
     { name: "Suggestion", path: "/teacher/suggestion", icon: Settings },
     { name: "Announcements", path: "/teacher/announcements", icon: Megaphone },
     { name: "Notifications", path: "/teacher/notifications", icon: Settings },
-    { name: "Profile", path: "/teacher/profile", icon: Users },
-    { name: "Settings", path: "/teacher/settings", icon: Settings },
     { name: "Lesson Note", path: "/teacher/lesson-note", icon: BookOpen },
     { name: "Students List", path: "/teacher/students-list", icon: Users },
     { name: "Grades", path: "/teacher/grades", icon: GraduationCap },
     { name: "Student Grading", path: "/teacher/student-grading", icon: GraduationCap },
     { name: "Assignment Grading", path: "/teacher/assignment-grading", icon: ClipboardList },
+    { name: "Profile", path: "/teacher/profile", icon: Users },
+    { name: "Settings", path: "/teacher/settings", icon: Settings },
   ],
 
   admin: [
