@@ -79,8 +79,6 @@ export const sidebarMenus = {
     { name: "Announcements", path: "/student/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/student/suggestion", icon: Settings },
     { name: "Notifications", path: "/student/notifications", icon: Settings },
-    { name: "Profile", path: "/student/profile", icon: Users },
-    { name: "Settings", path: "/student/settings", icon: Settings },
     { name: "E-Library", path: "/student/e-library", icon: BookOpen },
     { name: "Library", path: "/student/library", icon: BookOpen },
     { name: "Laboratory", path: "/student/laboratory", icon: BookOpen },
@@ -91,6 +89,8 @@ export const sidebarMenus = {
     { name: "Payment Receipt", path: "/student/payment-receipt", icon: CreditCard },
     { name: "Report Card", path: "/student/report-card", icon: BookOpen },
     { name: "Certificate", path: "/student/certificate", icon: BookOpen },
+    { name: "Profile", path: "/student/profile", icon: Users },
+    { name: "Settings", path: "/student/settings", icon: Settings },
   ],
 
   teacher: [
