@@ -169,13 +169,13 @@ export const sidebarMenus = {
     { name: "Holiday Management", path: "/parent/holiday-management", icon: Settings },
     { name: "Announcements", path: "/parent/announcements", icon: Megaphone },
     { name: "Suggestion", path: "/parent/suggestion", icon: Settings },
-    { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
-    { name: "Profile", path: "/parent/profile", icon: Users },
-    { name: "Settings", path: "/parent/settings", icon: Settings },
     { name: "Children Overview", path: "/parent/children-overview", icon: Users },
     { name: "Child Profile", path: "/parent/child-profile", icon: Users },
     { name: "Payment History", path: "/parent/payment-history", icon: CreditCard },
     { name: "Payment Receipt", path: "/parent/payment-receipt", icon: CreditCard },
+    { name: "Notifications", path: "/parent/notifications", icon: Megaphone },
+    { name: "Profile", path: "/parent/profile", icon: Users },
+    { name: "Settings", path: "/parent/settings", icon: Settings },
   ],
 
   accountant: [
