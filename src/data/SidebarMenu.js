@@ -211,8 +211,6 @@ export const sidebarMenus = {
     { name: "Fines Management", path: "/librarian/fines-management", icon: CreditCard },
     { name: "Reservation", path: "/librarian/reservation", icon: BookOpen },
     { name: "Damaged Books", path: "/librarian/damaged-books", icon: BookOpen },
-    { name: "Profile", path: "/librarian/profile", icon: Users },
-    { name: "Settings", path: "/librarian/settings", icon: Settings },
     { name: "Notifications", path: "/librarian/notifications", icon: Megaphone },
     { name: "Announcements", path: "/librarian/announcements", icon: Megaphone },
     { name: "Library Statistics", path: "/librarian/library-statistics", icon: BookOpen },
@@ -223,6 +221,8 @@ export const sidebarMenus = {
     { name: "Library Inventory", path: "/librarian/library-inventory", icon: BookOpen },
     { name: "Library Membership", path: "/librarian/library-membership", icon: Users },
     { name: "E-Library Management", path: "/librarian/e-library-management", icon: BookOpen },
-    { name: "Holiday Management", path: "/librarian/holiday-management", icon: BookOpen }
+    { name: "Holiday Management", path: "/librarian/holiday-management", icon: BookOpen },
+    { name: "Profile", path: "/librarian/profile", icon: Users },
+    { name: "Settings", path: "/librarian/settings", icon: Settings },
   ]
 };
