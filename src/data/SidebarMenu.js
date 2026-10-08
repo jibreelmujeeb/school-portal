@@ -195,10 +195,10 @@ export const sidebarMenus = {
     { name: "Financial Forecasting", path: "/accountant/financial-forecasting", icon: ClipboardList },
     { name: "Payment History", path: "/accountant/payment-history", icon: CreditCard },
     { name: "Bank Reconciliation", path: "/accountant/bank-reconciliation", icon: CreditCard },
-    { name: "Profile", path: "/accountant/profile", icon: Users },
-    { name: "Settings", path: "/accountant/settings", icon: Settings },
     { name: "Notifications", path: "/accountant/notifications", icon: Megaphone },
     { name: "Announcements", path: "/accountant/announcements", icon: Megaphone },
+    { name: "Profile", path: "/accountant/profile", icon: Users },
+    { name: "Settings", path: "/accountant/settings", icon: Settings },
   ],
   librarian: [
     { name: "Dashboard", path: "/librarian/dashboard", icon: LayoutDashboard },
