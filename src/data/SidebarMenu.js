@@ -135,8 +135,6 @@ export const sidebarMenus = {
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Suggestion", path: "/admin/suggestion", icon: Settings },
     { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
-    { name: "Notifications", path: "/admin/notifications", icon: Settings },
-    { name: "Profile", path: "/admin/profile", icon: Users },
     { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
     { name: "Library", path: "/admin/library", icon: BookOpen },
     { name: "Laboratory", path: "/admin/laboratory", icon: BookOpen },
@@ -152,9 +150,11 @@ export const sidebarMenus = {
     { name: "Term Management", path: "/admin/term-management", icon: Settings },
     { name: "Holiday Management", path: "/admin/holiday-management", icon: Settings },
     { name: "Backup & Restore", path: "/admin/backup-restore", icon: Settings },
-     { name: "School Setting", path: "/admin/school-setting", icon: Settings },
-     { name: "Settings", path: "/admin/settings", icon: Settings },
-    { name: "System Settings", path: "/admin/system-settings", icon: Settings }
+    { name: "School Setting", path: "/admin/school-setting", icon: Settings },
+    { name: "Settings", path: "/admin/settings", icon: Settings },
+    { name: "System Settings", path: "/admin/system-settings", icon: Settings },
+    { name: "Notifications", path: "/admin/notifications", icon: Settings },
+    { name: "Profile", path: "/admin/profile", icon: Users },
   ],
 
   parent: [
