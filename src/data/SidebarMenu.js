@@ -133,7 +133,6 @@ export const sidebarMenus = {
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Grading", path: "/admin/grading", icon: GraduationCap },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
-    { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
     { name: "Laboratory", path: "/admin/laboratory", icon: BookOpen },
     { name: "Gallery", path: "/admin/gallery", icon: BookOpen },
     { name: "Users Role & Permission", path: "/admin/users-role-permission", icon: Settings },
@@ -155,6 +154,7 @@ export const sidebarMenus = {
     { name: "Notifications", path: "/admin/notifications", icon: Settings },
     { name: "Profile", path: "/admin/profile", icon: Users },
     { name: "Library", path: "/admin/library", icon: BookOpen },
+    { name: "E-Library", path: "/admin/e-library", icon: BookOpen },
   ],
 
   parent: [
