@@ -116,6 +116,7 @@ export const sidebarMenus = {
   admin: [
     { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Analytics", path: "/admin/analytics", icon: LayoutDashboard },
+    { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Students", path: "/admin/students", icon: Users },
     { name: "Teachers", path: "/admin/teachers", icon: Briefcase },
     { name: "Parents", path: "/admin/parents", icon: Users },
@@ -128,7 +129,6 @@ export const sidebarMenus = {
     { name: "Invoice", path: "/admin/invoice", icon: CreditCard },
     { name: "Outstanding Fees", path: "/admin/outstanding-fees", icon: CreditCard },
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
-    { name: "Reports", path: "/admin/reports", icon: ClipboardList },
     { name: "Results", path: "/admin/results", icon: BookOpen },
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Grading", path: "/admin/grading", icon: GraduationCap },
