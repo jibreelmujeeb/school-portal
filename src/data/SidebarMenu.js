@@ -132,6 +132,7 @@ export const sidebarMenus = {
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Results", path: "/admin/results", icon: BookOpen },
     { name: "Grading", path: "/admin/grading", icon: GraduationCap },
+    { name: "Learning Materials", path: "/admin/learning-materials", icon: BookOpen },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },
     { name: "Gallery", path: "/admin/gallery", icon: BookOpen },
     { name: "Admission Application", path: "/admin/admission-application", icon: Users },
