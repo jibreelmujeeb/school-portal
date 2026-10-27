@@ -53,6 +53,7 @@ import TeacherLessonNote from "../pages/Teacher/LessonNote";
 import TeacherStudentsList from "../pages/Teacher/StudentsList";
 import TeacherStudentGrading from "../pages/Teacher/StudentGrading";
 import TeacherHolidayManagement from "../pages/Teacher/HolidayManagement";
+import TeacherLearningMaterials from "../pages/Teacher/LearningMaterials";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/AdminDashboard";
@@ -236,6 +237,7 @@ const AppRoutes = () => {
               <Route path="students-list" element={<TeacherStudentsList />} />
               <Route path="student-grading" element={<TeacherStudentGrading />} />
               <Route path="holiday-management" element={<TeacherHolidayManagement />} />
+              <Route path="learning-materials" element={<TeacherLearningMaterials />} />
             </Routes>
           </Layout>
         }
