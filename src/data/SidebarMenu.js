@@ -100,6 +100,7 @@ export const sidebarMenus = {
     { name: "Subjects", path: "/teacher/subjects", icon: FileText },
     { name: "Results", path: "/teacher/results", icon: BookOpen },
     { name: "Assignments", path: "/teacher/assignments", icon: ClipboardList },
+    { name: "Assignments Submission", path: "/teacher/assignments-submission", icon: ClipboardList },
     { name: "Attendance", path: "/teacher/attendance", icon: CalendarDays },
     { name: "Lesson Note", path: "/teacher/lesson-note", icon: BookOpen },
     { name: "Learning Materials", path: "/teacher/learning-materials", icon: BookOpen },
