@@ -55,6 +55,7 @@ import TeacherStudentGrading from "../pages/Teacher/StudentGrading";
 import TeacherHolidayManagement from "../pages/Teacher/HolidayManagement";
 import TeacherLearningMaterials from "../pages/Teacher/LearningMaterials";
 import TeacherAssignmentsSubmission from "../pages/Teacher/AssignmentsSubmission";
+import TeacherReportCard from "../pages/Teacher/ReportCard";
 
 
 // Admin pages
@@ -241,6 +242,7 @@ const AppRoutes = () => {
               <Route path="holiday-management" element={<TeacherHolidayManagement />} />
               <Route path="learning-materials" element={<TeacherLearningMaterials />} />
               <Route path="assignments-submission" element={<TeacherAssignmentsSubmission />} />
+              <Route path="report-card" element={<TeacherReportCard />} />
             </Routes>
           </Layout>
         }

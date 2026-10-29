@@ -99,6 +99,7 @@ export const sidebarMenus = {
     { name: "Students List", path: "/teacher/students-list", icon: Users },
     { name: "Subjects", path: "/teacher/subjects", icon: FileText },
     { name: "Results", path: "/teacher/results", icon: BookOpen },
+    { name: "Report Card", path: "/teacher/report-card", icon: BookOpen },
     { name: "Assignments", path: "/teacher/assignments", icon: ClipboardList },
     { name: "Assignments Submission", path: "/teacher/assignments-submission", icon: ClipboardList },
     { name: "Attendance", path: "/teacher/attendance", icon: CalendarDays },
