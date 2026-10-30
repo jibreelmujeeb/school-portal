@@ -133,6 +133,7 @@ export const sidebarMenus = {
     { name: "Outstanding Fees", path: "/admin/outstanding-fees", icon: CreditCard },
     { name: "Finance", path: "/admin/finance", icon: CreditCard },
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
+    { name: "Report card", path: "/admin/report-card", icon: BookOpen },
     { name: "Results", path: "/admin/results", icon: BookOpen },
     { name: "Grading", path: "/admin/grading", icon: GraduationCap },
     { name: "Learning Materials", path: "/admin/learning-materials", icon: BookOpen },

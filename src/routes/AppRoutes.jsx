@@ -101,6 +101,7 @@ import AdminHolidayManagement from "../pages/Admin/HolidayManagement";
 import AdminInvoice from "../pages/Admin/Invoice";
 import AdminOutstandingFees from "../pages/Admin/OutStandingFees";
 import AdminLearningMaterials from "../pages/Admin/LearningMaterials";
+import AdminReportCard from "../pages/Admin/ReportCard";
 
 
 // Parent pages
@@ -296,6 +297,7 @@ const AppRoutes = () => {
               <Route path="invoice" element={<AdminInvoice />} />
               <Route path="outstanding-fees" element={<AdminOutstandingFees />} />
               <Route path="learning-materials" element={<AdminLearningMaterials />} />
+              <Route path="report-card" element={<AdminReportCard />} />
             </Routes>
           </Layout>
         }
