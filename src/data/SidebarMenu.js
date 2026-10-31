@@ -135,6 +135,7 @@ export const sidebarMenus = {
     { name: "Timetable", path: "/admin/timetable", icon: BookOpen },
     { name: "Report card", path: "/admin/report-card", icon: BookOpen },
     { name: "Results", path: "/admin/results", icon: BookOpen },
+    {name: "certificate", path: "/admin/certificate", icon: BookOpen },
     { name: "Grading", path: "/admin/grading", icon: GraduationCap },
     { name: "Learning Materials", path: "/admin/learning-materials", icon: BookOpen },
     { name: "Attendance", path: "/admin/attendance", icon: CalendarDays },

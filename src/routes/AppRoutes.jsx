@@ -102,6 +102,7 @@ import AdminInvoice from "../pages/Admin/Invoice";
 import AdminOutstandingFees from "../pages/Admin/OutStandingFees";
 import AdminLearningMaterials from "../pages/Admin/LearningMaterials";
 import AdminReportCard from "../pages/Admin/ReportCard";
+import AdminCertificate from "../pages/Admin/Certificate";
 
 
 // Parent pages
@@ -298,6 +299,7 @@ const AppRoutes = () => {
               <Route path="outstanding-fees" element={<AdminOutstandingFees />} />
               <Route path="learning-materials" element={<AdminLearningMaterials />} />
               <Route path="report-card" element={<AdminReportCard />} />
+              <Route path="certificate" element={<AdminCertificate />} />
             </Routes>
           </Layout>
         }
