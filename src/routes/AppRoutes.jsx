@@ -104,6 +104,7 @@ import AdminLearningMaterials from "../pages/Admin/LearningMaterials";
 import AdminReportCard from "../pages/Admin/ReportCard";
 import AdminCertificate from "../pages/Admin/Certificate";
 import AdminTranscript from "../pages/Admin/Transcript";
+import AdminLessonNote from "../pages/Admin/LessonNote";
 
 
 // Parent pages
@@ -302,6 +303,7 @@ const AppRoutes = () => {
               <Route path="report-card" element={<AdminReportCard />} />
               <Route path="certificate" element={<AdminCertificate />} />
               <Route path="transcript" element={<AdminTranscript />} />
+              <Route path="lesson-note" element={<AdminLessonNote />} />
             </Routes>
           </Layout>
         }
