@@ -105,6 +105,7 @@ import AdminReportCard from "../pages/Admin/ReportCard";
 import AdminCertificate from "../pages/Admin/Certificate";
 import AdminTranscript from "../pages/Admin/Transcript";
 import AdminLessonNote from "../pages/Admin/LessonNote";
+import AdminStudentsDebt from "../pages/Admin/StudentsDebt";
 
 
 // Parent pages
@@ -304,6 +305,7 @@ const AppRoutes = () => {
               <Route path="certificate" element={<AdminCertificate />} />
               <Route path="transcript" element={<AdminTranscript />} />
               <Route path="lesson-note" element={<AdminLessonNote />} />
+              <Route path="students-debt" element={<AdminStudentsDebt />} />
             </Routes>
           </Layout>
         }
