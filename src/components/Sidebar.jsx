@@ -3,11 +3,16 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { sidebarMenus } from "../data/SidebarMenu";
 
-const Sidebar = ({ role, color }) => {
+const Sidebar = ({ role, color, isOpen, onNavigate }) => {
   const menus = sidebarMenus[role] || [];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside
+      id="portal-navigation"
+      className={`fixed inset-y-0 left-0 z-50 flex h-screen h-[100dvh] w-64 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:h-screen lg:translate-x-0 ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       <div className={`p-4 border-b border-gray-200 text-${color}-600 font-bold`}>
         {role.charAt(0).toUpperCase() + role.slice(1)} Portal
       </div>
@@ -18,6 +23,7 @@ const Sidebar = ({ role, color }) => {
             <NavLink
               key={idx}
               to={menu.path}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
