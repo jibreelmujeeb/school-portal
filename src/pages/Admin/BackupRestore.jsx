@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import {
   Database,
   Download,
-  Upload,
   RotateCcw,
   Plus,
   CheckCircle2,
@@ -47,6 +47,26 @@ const backups = [
 ];
 
 export default function AdminBackupRestorePage() {
+  const [notice, setNotice] = useState("");
+  const [selected, setSelected] = useState(null);
+
+  const unavailable = (action) => {
+    setNotice(`${action} is unavailable: this page has no backup storage or restore service connected. No portal data was changed.`);
+  };
+
+  const downloadRecord = (backup) => {
+    const url = URL.createObjectURL(new Blob(
+      [JSON.stringify({ type: "backup-record-metadata-only", backup }, null, 2)],
+      { type: "application/json" }
+    ));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${backup.id.toLowerCase()}-metadata.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice(`Downloaded metadata for ${backup.id}; this is not a backup archive.`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,16 +82,17 @@ export default function AdminBackupRestorePage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 rounded-xl border px-5 py-3">
+          <button onClick={() => unavailable("Restore")} className="flex items-center gap-2 rounded-xl border px-5 py-3">
             <RotateCcw size={18} />
             Restore Backup
           </button>
 
-          <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white">
+          <button onClick={() => unavailable("Backup creation")} className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white">
             <Plus size={18} />
             Create Backup
           </button>
         </div>
+        {notice && <p role="status" className="rounded-xl bg-blue-50 p-3 text-sm text-blue-800">{notice}</p>}
       </div>
 
       {/* Statistics */}
@@ -127,11 +148,11 @@ export default function AdminBackupRestorePage() {
           </div>
 
           <div className="flex gap-3">
-            <button className="rounded-xl border px-4 py-2">
+            <button onClick={() => setSelected(backups[0])} className="rounded-xl border px-4 py-2">
               View Details
             </button>
 
-            <button className="flex items-center gap-2 rounded-xl border px-4 py-2">
+            <button onClick={() => downloadRecord(backups[0])} title="Download record metadata only" className="flex items-center gap-2 rounded-xl border px-4 py-2">
               <Download size={16} />
               Download
             </button>
@@ -173,7 +194,7 @@ export default function AdminBackupRestorePage() {
             </p>
           </div>
 
-          <button className="rounded-xl border px-4 py-2">
+          <button onClick={() => setNotice("Showing all backup records available in this local mock.")} className="rounded-xl border px-4 py-2">
             View All
           </button>
         </div>
@@ -225,26 +246,33 @@ export default function AdminBackupRestorePage() {
                   <td className="p-4">
                     <div className="flex gap-2">
                       <button
+                        onClick={() => downloadRecord(backup)}
                         className="rounded-lg border p-2"
-                        title="Download Backup"
+                        title="Download backup record metadata only"
+                        aria-label={`Download metadata for ${backup.id}`}
                       >
                         <Download size={16} />
                       </button>
 
                       <button
+                        onClick={() => unavailable("Restore")}
                         className="rounded-lg border p-2"
                         title="Restore Backup"
+                        aria-label={`Restore ${backup.id} unavailable`}
                       >
                         <RotateCcw size={16} />
                       </button>
 
                       <button
+                        onClick={() => setSelected(backup)}
                         className="rounded-lg border p-2"
                         title="More Actions"
+                        aria-label={`View details for ${backup.id}`}
                       >
                         <MoreVertical size={16} />
                       </button>
                     </div>
+
                   </td>
                 </tr>
               ))}
@@ -252,6 +280,23 @@ export default function AdminBackupRestorePage() {
           </table>
         </div>
       </div>
+
+      {selected && (
+        <div role="dialog" aria-modal="true" aria-labelledby="backup-details-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="backup-details-title" className="text-xl font-bold">Backup record details</h2>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div><dt className="font-semibold">ID</dt><dd>{selected.id}</dd></div>
+              <div><dt className="font-semibold">Name</dt><dd>{selected.name}</dd></div>
+              <div><dt className="font-semibold">Type</dt><dd>{selected.type}</dd></div>
+              <div><dt className="font-semibold">Date</dt><dd>{selected.date}</dd></div>
+              <div><dt className="font-semibold">Status</dt><dd>{selected.status}</dd></div>
+            </dl>
+            <p className="mt-4 text-sm text-gray-500">This is mock history metadata only; no backup archive is available on this page.</p>
+            <button autoFocus onClick={() => setSelected(null)} className="mt-5 rounded-lg border px-4 py-2">Close</button>
+          </div>
+        </div>
+      )}
 
       {/* Storage */}
       <div className="rounded-3xl border p-6">

@@ -1,3 +1,4 @@
+import React, { useMemo, useState } from "react";
 import {
   GraduationCap,
   Clock,
@@ -9,7 +10,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-const applications = [
+const initialApplications = [
   {
     id: "SCH-2026-001",
     student: "Ahmed Musa",
@@ -18,6 +19,7 @@ const applications = [
     amount: "₦250,000",
     status: "Pending",
     date: "Sep 01, 2026",
+    session: "2026/2027",
   },
   {
     id: "SCH-2026-002",
@@ -27,6 +29,7 @@ const applications = [
     amount: "₦180,000",
     status: "Pending",
     date: "Sep 01, 2026",
+    session: "2026/2027",
   },
   {
     id: "SCH-2026-003",
@@ -36,10 +39,55 @@ const applications = [
     amount: "₦150,000",
     status: "Approved",
     date: "Aug 30, 2026",
+    session: "2026/2027",
   },
 ];
 
 export default function AdminScholarshipApprovalPage() {
+  const [applications, setApplications] = useState(initialApplications);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [typeFilter, setTypeFilter] = useState("All Scholarships");
+  const [sessionFilter, setSessionFilter] = useState("2026/2027");
+  const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState("");
+
+  const filteredApplications = useMemo(() => applications.filter((application) => {
+    const query = search.trim().toLowerCase();
+    return (
+      [application.id, application.student, application.className]
+        .some((value) => value.toLowerCase().includes(query)) &&
+      (statusFilter === "All Status" || application.status === statusFilter) &&
+      (typeFilter === "All Scholarships" || application.type === typeFilter) &&
+      application.session === sessionFilter
+    );
+  }), [applications, search, statusFilter, typeFilter, sessionFilter]);
+
+  const updateApplication = (id, status) => {
+    setApplications((current) => current.map((application) =>
+      application.id === id ? { ...application, status } : application
+    ));
+    setSelected(null);
+    setNotice(`Application ${id} marked ${status.toLowerCase()} locally.`);
+  };
+
+  const exportCSV = () => {
+    const rows = [
+      ["Application", "Student", "Class", "Scholarship", "Requested", "Status"],
+      ...filteredApplications.map((application) => [
+        application.id, application.student, application.className,
+        application.type, application.amount, application.status,
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "scholarship-applications.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
 
@@ -58,7 +106,7 @@ export default function AdminScholarshipApprovalPage() {
           </p>
         </div>
 
-        <button className="flex items-center gap-2
+        <button onClick={exportCSV} className="flex items-center gap-2
           rounded-xl border px-5 py-3">
 
           <Download size={18} />
@@ -74,25 +122,25 @@ export default function AdminScholarshipApprovalPage() {
 
         <StatCard
           icon={<GraduationCap />}
-          value="185"
+          value={applications.length}
           label="Total Applications"
         />
 
         <StatCard
           icon={<Clock />}
-          value="32"
+          value={applications.filter((application) => application.status === "Pending" || application.status === "Under Review").length}
           label="Pending"
         />
 
         <StatCard
           icon={<CheckCircle />}
-          value="128"
+          value={applications.filter((application) => application.status === "Approved").length}
           label="Approved"
         />
 
         <StatCard
           icon={<XCircle />}
-          value="25"
+          value={applications.filter((application) => application.status === "Rejected").length}
           label="Rejected"
         />
 
@@ -112,13 +160,15 @@ export default function AdminScholarshipApprovalPage() {
 
             <input
               placeholder="Search student..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               className="w-full rounded-xl border
                 py-3 pl-10 pr-4 outline-none"
             />
 
           </div>
 
-          <select className="rounded-xl border px-4 py-3">
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-xl border px-4 py-3">
             <option>All Status</option>
             <option>Pending</option>
             <option>Under Review</option>
@@ -126,19 +176,21 @@ export default function AdminScholarshipApprovalPage() {
             <option>Rejected</option>
           </select>
 
-          <select className="rounded-xl border px-4 py-3">
+          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="rounded-xl border px-4 py-3">
             <option>All Scholarships</option>
             <option>Merit</option>
             <option>Need-Based</option>
             <option>Sports</option>
           </select>
 
-          <select className="rounded-xl border px-4 py-3">
+          <select value={sessionFilter} onChange={(event) => setSessionFilter(event.target.value)} className="rounded-xl border px-4 py-3">
             <option>2026/2027</option>
             <option>2025/2026</option>
           </select>
 
         </div>
+
+        {notice && <p role="status" className="text-sm text-green-700">{notice}</p>}
 
       </div>
 
@@ -191,7 +243,7 @@ export default function AdminScholarshipApprovalPage() {
 
             <tbody>
 
-              {applications.map((application) => (
+              {filteredApplications.map((application) => (
 
                 <tr
                   key={application.id}
@@ -229,6 +281,7 @@ export default function AdminScholarshipApprovalPage() {
                     <div className="flex gap-2">
 
                       <button
+                        onClick={() => setSelected(application)}
                         className="rounded-lg border p-2"
                         title="Review"
                       >
@@ -236,6 +289,7 @@ export default function AdminScholarshipApprovalPage() {
                       </button>
 
                       <button
+                        onClick={() => setSelected(application)}
                         className="rounded-lg border p-2"
                         title="More"
                       >
@@ -250,11 +304,33 @@ export default function AdminScholarshipApprovalPage() {
 
               ))}
 
+              {filteredApplications.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-gray-500">No applications match your search or filters.</td></tr>}
+
             </tbody>
 
           </table>
 
         </div>
+
+        {selected && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6">
+              <div className="flex items-start justify-between">
+                <div><h2 className="text-xl font-bold">{selected.student}</h2><p className="text-sm text-gray-500">{selected.id} · {selected.className}</p></div>
+                <button onClick={() => setSelected(null)} aria-label="Close review">×</button>
+              </div>
+              <p><strong>Scholarship:</strong> {selected.type}</p>
+              <p><strong>Requested:</strong> {selected.amount}</p>
+              <p><strong>Current status:</strong> {selected.status}</p>
+              <p className="text-xs text-gray-500">Review changes are stored in this page only; no notification is sent.</p>
+              <div className="flex flex-wrap justify-end gap-2">
+                <button onClick={() => updateApplication(selected.id, "Under Review")} className="rounded-lg border px-3 py-2">Under Review</button>
+                <button onClick={() => updateApplication(selected.id, "Rejected")} className="rounded-lg border border-red-200 px-3 py-2 text-red-700">Reject</button>
+                <button onClick={() => updateApplication(selected.id, "Approved")} className="rounded-lg bg-green-600 px-3 py-2 text-white">Approve</button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 

@@ -6,13 +6,12 @@ import {
   Eye,
   Pencil,
   Trash2,
-  Bell,
   Clock,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
 
-const holidays = [
+const initialHolidays = [
   {
     id: "HOL-001",
     name: "Independence Day",
@@ -43,8 +42,51 @@ const holidays = [
 ];
 
 function AdminHolidayManagement() {
+  const [holidays, setHolidays] = useState(initialHolidays);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All Types");
+  const [sessionFilter, setSessionFilter] = useState("2026/2027");
+  const [statusFilter, setStatusFilter] = useState("All Status");
   const [showForm, setShowForm] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
+  const [editingHoliday, setEditingHoliday] = useState(null);
+  const [calendarView, setCalendarView] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  const filteredHolidays = holidays.filter((holiday) =>
+    [holiday.name, holiday.type, holiday.id].some((value) =>
+      value.toLowerCase().includes(search.trim().toLowerCase())
+    ) &&
+    (typeFilter === "All Types" || holiday.type === typeFilter) &&
+    (sessionFilter === "All Sessions" || holiday.session === sessionFilter) &&
+    (statusFilter === "All Status" || holiday.status === statusFilter)
+  );
+
+  const saveHoliday = (details) => {
+    const holiday = {
+      ...details,
+      id: editingHoliday?.id || `HOL-${String(Date.now()).slice(-6)}`,
+      status: details.status || "Draft",
+    };
+    setHolidays((current) => editingHoliday
+      ? current.map((item) => item.id === editingHoliday.id ? holiday : item)
+      : [holiday, ...current]);
+    setShowForm(false);
+    setEditingHoliday(null);
+    setNotice("Holiday details saved in this page only. No notifications were sent.");
+  };
+
+  const deleteHoliday = (holiday) => {
+    if (!window.confirm(`Delete "${holiday.name}"?`)) return;
+    setHolidays((current) => current.filter((item) => item.id !== holiday.id));
+    setSelectedHoliday(null);
+  };
+
+  const openEdit = (holiday) => {
+    setSelectedHoliday(null);
+    setEditingHoliday(holiday);
+    setShowForm(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -81,25 +123,25 @@ function AdminHolidayManagement() {
         <StatCard
           icon={<CalendarDays />}
           title="Total Holidays"
-          value="24"
+          value={holidays.length}
         />
 
         <StatCard
           icon={<Clock />}
           title="Upcoming"
-          value="8"
+          value={holidays.filter((holiday) => holiday.start >= new Date().toISOString().slice(0, 10) && holiday.status !== "Cancelled").length}
         />
 
         <StatCard
           icon={<CheckCircle2 />}
           title="Active"
-          value="1"
+          value={holidays.filter((holiday) => holiday.start <= new Date().toISOString().slice(0, 10) && holiday.end >= new Date().toISOString().slice(0, 10) && holiday.status === "Published").length}
         />
 
         <StatCard
           icon={<CalendarDays />}
           title="This Session"
-          value="18"
+          value={holidays.filter((holiday) => holiday.session === "2026/2027").length}
         />
 
       </div>
@@ -119,25 +161,29 @@ function AdminHolidayManagement() {
             <input
               type="text"
               placeholder="Search holidays..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               className="w-full rounded-xl border border-gray-200 py-2.5 pl-10 pr-4 outline-none focus:border-blue-500"
             />
 
           </div>
 
-          <select className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
+          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
             <option>All Types</option>
             <option>Public Holiday</option>
             <option>School Holiday</option>
             <option>Mid-Term Break</option>
             <option>Term Break</option>
+            <option>Christmas Break</option>
           </select>
 
-          <select className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
+          <select value={sessionFilter} onChange={(event) => setSessionFilter(event.target.value)} className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
+            <option>All Sessions</option>
             <option>2026/2027</option>
             <option>2025/2026</option>
           </select>
 
-          <select className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-xl border border-gray-200 px-4 py-2.5 outline-none">
             <option>All Status</option>
             <option>Published</option>
             <option>Draft</option>
@@ -156,13 +202,24 @@ function AdminHolidayManagement() {
             Holiday Calendar
           </h2>
 
-          <button className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
-            Calendar View
+          <button onClick={() => setCalendarView((current) => !current)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+            {calendarView ? "List View" : "Calendar View"}
           </button>
 
         </div>
 
-        <div className="overflow-x-auto">
+        {calendarView ? (
+          <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredHolidays.slice().sort((a, b) => a.start.localeCompare(b.start)).map((holiday) => (
+              <button key={holiday.id} onClick={() => setSelectedHoliday(holiday)} className="rounded-xl border p-4 text-left hover:bg-gray-50">
+                <p className="font-semibold">{holiday.start} – {holiday.end}</p>
+                <p className="mt-1">{holiday.name}</p>
+                <p className="mt-1 text-sm text-gray-500">{holiday.type} · {holiday.status}</p>
+              </button>
+            ))}
+            {filteredHolidays.length === 0 && <p className="col-span-full py-8 text-center text-sm text-gray-500">No holidays match your filters.</p>}
+          </div>
+        ) : <div className="overflow-x-auto">
 
           <table className="w-full min-w-[900px] text-left">
 
@@ -180,7 +237,7 @@ function AdminHolidayManagement() {
 
             <tbody className="divide-y divide-gray-100">
 
-              {holidays.map((holiday) => (
+              {filteredHolidays.map((holiday) => (
 
                 <tr key={holiday.id} className="hover:bg-gray-50">
 
@@ -239,6 +296,7 @@ function AdminHolidayManagement() {
                       </button>
 
                       <button
+                        onClick={() => openEdit(holiday)}
                         className="rounded-lg p-2 hover:bg-gray-100"
                         title="Edit"
                       >
@@ -246,6 +304,7 @@ function AdminHolidayManagement() {
                       </button>
 
                       <button
+                        onClick={() => deleteHoliday(holiday)}
                         className="rounded-lg p-2 text-red-600 hover:bg-red-50"
                         title="Delete"
                       >
@@ -259,17 +318,22 @@ function AdminHolidayManagement() {
                 </tr>
 
               ))}
+              {filteredHolidays.length === 0 && <tr><td colSpan={7} className="px-5 py-8 text-center text-gray-500">No holidays match your filters.</td></tr>}
 
             </tbody>
 
           </table>
 
-        </div>
+        </div>}
       </div>
 
       {/* Add Holiday Modal */}
       {showForm && (
-        <HolidayForm onClose={() => setShowForm(false)} />
+        <HolidayForm
+          holiday={editingHoliday}
+          onClose={() => { setShowForm(false); setEditingHoliday(null); }}
+          onSave={saveHoliday}
+        />
       )}
 
       {/* Details Modal */}
@@ -277,8 +341,15 @@ function AdminHolidayManagement() {
         <HolidayDetails
           holiday={selectedHoliday}
           onClose={() => setSelectedHoliday(null)}
+          onEdit={() => openEdit(selectedHoliday)}
+          onCancel={() => {
+            setHolidays((current) => current.map((item) => item.id === selectedHoliday.id ? { ...item, status: "Cancelled" } : item));
+            setSelectedHoliday(null);
+            setNotice("Holiday marked cancelled in this page only.");
+          }}
         />
       )}
+      {notice && <p role="status" className="mt-4 text-sm text-blue-700">{notice}</p>}
 
     </div>
   );
@@ -325,7 +396,23 @@ function StatusBadge({ status }) {
   );
 }
 
-function HolidayForm({ onClose }) {
+function HolidayForm({ holiday, onClose, onSave }) {
+  const submitForm = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    onSave({
+      name: data.get("name").trim(),
+      type: data.get("type"),
+      session: data.get("session"),
+      start: data.get("start"),
+      end: data.get("end"),
+      description: data.get("description").trim(),
+      status: holiday?.status || "Draft",
+      notifyStudents: data.has("notifyStudents"),
+      notifyParents: data.has("notifyParents"),
+      notifyTeachers: data.has("notifyTeachers"),
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -334,7 +421,7 @@ function HolidayForm({ onClose }) {
 
         <div className="border-b border-gray-200 p-5">
           <h2 className="text-lg font-bold">
-            Create New Holiday
+            {holiday ? "Edit Holiday" : "Create New Holiday"}
           </h2>
 
           <p className="text-sm text-gray-500">
@@ -342,7 +429,7 @@ function HolidayForm({ onClose }) {
           </p>
         </div>
 
-        <form className="space-y-5 p-5">
+        <form onSubmit={submitForm} className="space-y-5 p-5">
 
           <div>
             <label className="mb-2 block text-sm font-medium">
@@ -350,8 +437,11 @@ function HolidayForm({ onClose }) {
             </label>
 
             <input
+              name="name"
+              required
               type="text"
               placeholder="e.g. Christmas Holiday"
+              defaultValue={holiday?.name || ""}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
@@ -363,8 +453,8 @@ function HolidayForm({ onClose }) {
                 Holiday Type *
               </label>
 
-              <select className="w-full rounded-xl border border-gray-200 px-4 py-3">
-                <option>Select type</option>
+              <select name="type" required defaultValue={holiday?.type || ""} className="w-full rounded-xl border border-gray-200 px-4 py-3">
+                <option value="">Select type</option>
                 <option>Public Holiday</option>
                 <option>School Holiday</option>
                 <option>Mid-Term Break</option>
@@ -379,7 +469,7 @@ function HolidayForm({ onClose }) {
                 Academic Session *
               </label>
 
-              <select className="w-full rounded-xl border border-gray-200 px-4 py-3">
+              <select name="session" defaultValue={holiday?.session || "2026/2027"} className="w-full rounded-xl border border-gray-200 px-4 py-3">
                 <option>2026/2027</option>
                 <option>2025/2026</option>
               </select>
@@ -395,7 +485,10 @@ function HolidayForm({ onClose }) {
               </label>
 
               <input
+                name="start"
+                required
                 type="date"
+                defaultValue={holiday?.start || ""}
                 className="w-full rounded-xl border border-gray-200 px-4 py-3"
               />
             </div>
@@ -406,7 +499,10 @@ function HolidayForm({ onClose }) {
               </label>
 
               <input
+                name="end"
+                required
                 type="date"
+                defaultValue={holiday?.end || ""}
                 className="w-full rounded-xl border border-gray-200 px-4 py-3"
               />
             </div>
@@ -419,8 +515,10 @@ function HolidayForm({ onClose }) {
             </label>
 
             <textarea
+              name="description"
               rows="4"
               placeholder="Describe this holiday..."
+              defaultValue={holiday?.description || ""}
               className="w-full resize-none rounded-xl border border-gray-200 p-4 outline-none focus:border-blue-500"
             />
           </div>
@@ -432,17 +530,17 @@ function HolidayForm({ onClose }) {
             </p>
 
             <label className="mb-3 flex gap-3 text-sm">
-              <input type="checkbox" defaultChecked />
+              <input name="notifyStudents" type="checkbox" defaultChecked={holiday?.notifyStudents ?? true} />
               Notify students
             </label>
 
             <label className="mb-3 flex gap-3 text-sm">
-              <input type="checkbox" defaultChecked />
+              <input name="notifyParents" type="checkbox" defaultChecked={holiday?.notifyParents ?? true} />
               Notify parents
             </label>
 
             <label className="flex gap-3 text-sm">
-              <input type="checkbox" defaultChecked />
+              <input name="notifyTeachers" type="checkbox" defaultChecked={holiday?.notifyTeachers ?? true} />
               Notify teachers
             </label>
 
@@ -473,7 +571,7 @@ function HolidayForm({ onClose }) {
   );
 }
 
-function HolidayDetails({ holiday, onClose }) {
+function HolidayDetails({ holiday, onClose, onEdit, onCancel }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -509,12 +607,12 @@ function HolidayDetails({ holiday, onClose }) {
 
           <div className="flex gap-2 border-t border-gray-200 pt-4">
 
-            <button className="flex-1 rounded-xl border border-gray-200 py-2.5">
+            <button onClick={onEdit} className="flex-1 rounded-xl border border-gray-200 py-2.5">
               Edit
             </button>
 
-            <button className="flex-1 rounded-xl bg-red-600 py-2.5 text-white">
-              Cancel Holiday
+            <button onClick={onCancel} disabled={holiday.status === "Cancelled"} className="flex-1 rounded-xl bg-red-600 py-2.5 text-white disabled:opacity-50">
+              {holiday.status === "Cancelled" ? "Cancelled" : "Cancel Holiday"}
             </button>
 
           </div>

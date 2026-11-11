@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   School,
   CalendarDays,
@@ -46,6 +47,25 @@ const settings = [
 ];
 
 export default function AdminSchoolSettingsPage() {
+  const [activeSection, setActiveSection] = useState("School Profile");
+  const [notice, setNotice] = useState("");
+
+  const selectSection = (name) => {
+    setActiveSection(name);
+    const section = document.getElementById(`school-settings-${name}`);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      setNotice("");
+    } else {
+      setNotice(`${name} has no editable settings in this page yet.`);
+    }
+  };
+
+  const saveSettings = (event) => {
+    event.preventDefault();
+    setNotice("Settings saved in this page session only; no school settings service is connected.");
+  };
+
   return (
     <div className="space-y-6">
 
@@ -71,9 +91,12 @@ export default function AdminSchoolSettingsPage() {
             return (
               <button
                 key={item.name}
+                type="button"
+                aria-current={activeSection === item.name ? "page" : undefined}
+                onClick={() => selectSection(item.name)}
                 className="w-full flex items-center
                   gap-3 px-4 py-3 rounded-xl
-                  text-left hover:bg-gray-100"
+                  text-left hover:bg-gray-100 aria-[current=page]:bg-blue-50 aria-[current=page]:text-blue-700"
               >
                 <Icon size={18} />
 
@@ -87,10 +110,11 @@ export default function AdminSchoolSettingsPage() {
         </aside>
 
         {/* Content */}
-        <main className="space-y-6">
+        <form onSubmit={saveSettings} className="space-y-6">
+          {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
           {/* School Profile */}
-          <section className="border rounded-3xl p-6">
+          <section id="school-settings-School Profile" className="border rounded-3xl p-6">
 
             <div className="mb-6">
               <h2 className="text-xl font-bold">
@@ -141,7 +165,7 @@ export default function AdminSchoolSettingsPage() {
 
             </div>
 
-            <button className="mt-6 bg-blue-600 text-white
+            <button type="submit" className="mt-6 bg-blue-600 text-white
               px-5 py-3 rounded-xl flex items-center gap-2">
 
               <Save size={18} />
@@ -153,7 +177,7 @@ export default function AdminSchoolSettingsPage() {
           </section>
 
           {/* Academic */}
-          <section className="border rounded-3xl p-6">
+          <section id="school-settings-Academic" className="border rounded-3xl p-6">
 
             <h2 className="text-xl font-bold">
               Academic Settings
@@ -173,7 +197,7 @@ export default function AdminSchoolSettingsPage() {
 
             </div>
 
-            <button className="mt-6 bg-blue-600 text-white
+            <button type="submit" className="mt-6 bg-blue-600 text-white
               px-5 py-3 rounded-xl flex items-center gap-2">
 
               <Save size={18} />
@@ -185,7 +209,7 @@ export default function AdminSchoolSettingsPage() {
           </section>
 
           {/* Security */}
-          <section className="border rounded-3xl p-6">
+          <section id="school-settings-Security" className="border rounded-3xl p-6">
 
             <h2 className="text-xl font-bold">
               Security Settings
@@ -217,7 +241,7 @@ export default function AdminSchoolSettingsPage() {
 
           </section>
 
-        </main>
+        </form>
 
       </div>
 
@@ -259,7 +283,8 @@ function Select({ label, value }) {
   );
 }
 
-function Toggle({ label, enabled }) {
+function Toggle({ label, enabled: initialEnabled }) {
+  const [enabled, setEnabled] = useState(initialEnabled);
   return (
     <div className="flex items-center
       justify-between border-b pb-4">
@@ -267,11 +292,15 @@ function Toggle({ label, enabled }) {
       <span>{label}</span>
 
       <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label={label}
+        onClick={() => setEnabled((current) => !current)}
         className={`w-12 h-6 rounded-full
           ${enabled ? "bg-blue-600" : "bg-gray-300"}`}
       >
-        <span className="block w-5 h-5 bg-white
-          rounded-full ml-1" />
+        <span className={`block w-5 h-5 bg-white rounded-full transition-transform ${enabled ? "translate-x-6" : "translate-x-1"}`} />
       </button>
 
     </div>

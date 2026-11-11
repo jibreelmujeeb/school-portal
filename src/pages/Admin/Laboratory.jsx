@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FlaskConical,
   Package,
@@ -13,7 +13,7 @@ import {
   Calendar,
 } from "lucide-react";
 
-const equipment = [
+const initialEquipment = [
   {
     id: 1,
     name: "Microscope",
@@ -38,6 +38,27 @@ const equipment = [
 ];
 
 const AdminLaboratoryPage = () => {
+  const [equipment, setEquipment] = useState(initialEquipment);
+  const [search, setSearch] = useState("");
+  const filteredEquipment = equipment.filter((item) =>
+    [item.name, item.laboratory, item.status]
+      .some((value) => value.toLowerCase().includes(search.trim().toLowerCase()))
+  );
+
+  const editEquipment = (item = null) => {
+    const name = window.prompt("Equipment name:", item?.name || "");
+    if (name === null || !name.trim()) return;
+    const laboratory = window.prompt("Laboratory:", item?.laboratory || "");
+    if (laboratory === null || !laboratory.trim()) return;
+    const quantityInput = window.prompt("Quantity:", item?.quantity || "1");
+    if (quantityInput === null || !Number.isInteger(Number(quantityInput)) || Number(quantityInput) < 0) return;
+    const status = window.prompt("Status (Available or Maintenance):", item?.status || "Available");
+    if (status === null || !["Available", "Maintenance"].includes(status)) return;
+    const nextItem = { id: item?.id || Date.now(), name: name.trim(), laboratory: laboratory.trim(), quantity: Number(quantityInput), status };
+    setEquipment((current) => item
+      ? current.map((equipmentItem) => equipmentItem.id === item.id ? nextItem : equipmentItem)
+      : [nextItem, ...current]);
+  };
   return (
     <div className="space-y-8">
 
@@ -51,11 +72,11 @@ const AdminLaboratoryPage = () => {
 
           <p className="text-gray-500 mt-2">
             Manage laboratory equipment, inventory,
-            practical sessions, and maintenance activities.
+            practical sessions, and maintenance activities. Equipment edits are local to this page.
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-5 py-3 border border-blue-600 rounded-2xl text-blue-600 hover:bg-blue-50">
+        <button onClick={() => editEquipment()} className="flex items-center justify-center gap-2 px-5 py-3 border border-blue-600 rounded-2xl text-blue-600 hover:bg-blue-50">
           <Plus className="w-4 h-4" />
           Add Equipment
         </button>
@@ -75,7 +96,7 @@ const AdminLaboratoryPage = () => {
 
         <div className="border border-gray-200 rounded-3xl p-5">
           <Package className="w-6 h-6 text-green-600 mb-3" />
-          <h2 className="text-3xl font-bold">1,240</h2>
+          <h2 className="text-3xl font-bold">{equipment.reduce((total, item) => total + item.quantity, 0).toLocaleString()}</h2>
           <p className="text-sm text-gray-500">
             Equipment Items
           </p>
@@ -107,6 +128,8 @@ const AdminLaboratoryPage = () => {
         <input
           type="text"
           placeholder="Search equipment..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           className="w-full outline-none"
         />
 
@@ -135,7 +158,7 @@ const AdminLaboratoryPage = () => {
 
             <tbody>
 
-              {equipment.map((item) => (
+              {filteredEquipment.map((item) => (
                 <tr
                   key={item.id}
                   className="border-b border-gray-100"
@@ -162,15 +185,19 @@ const AdminLaboratoryPage = () => {
 
                     <div className="flex gap-2">
 
-                      <button className="p-2 border border-blue-200 rounded-xl text-blue-600">
+                      <button onClick={() => window.alert(`${item.name}\n${item.laboratory}\nQuantity: ${item.quantity}\nStatus: ${item.status}`)} aria-label={`View ${item.name}`} className="p-2 border border-blue-200 rounded-xl text-blue-600">
                         <Eye className="w-4 h-4" />
                       </button>
 
-                      <button className="p-2 border border-green-200 rounded-xl text-green-600">
+                      <button onClick={() => editEquipment(item)} aria-label={`Edit ${item.name}`} className="p-2 border border-green-200 rounded-xl text-green-600">
                         <Edit className="w-4 h-4" />
                       </button>
 
-                      <button className="p-2 border border-red-200 rounded-xl text-red-600">
+                      <button onClick={() => {
+                        if (window.confirm(`Delete "${item.name}"?`)) {
+                          setEquipment((current) => current.filter((equipmentItem) => equipmentItem.id !== item.id));
+                        }
+                      }} aria-label={`Delete ${item.name}`} className="p-2 border border-red-200 rounded-xl text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
 
@@ -179,6 +206,7 @@ const AdminLaboratoryPage = () => {
                   </td>
                 </tr>
               ))}
+              {filteredEquipment.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-gray-500">No equipment matches your search.</td></tr>}
 
             </tbody>
 

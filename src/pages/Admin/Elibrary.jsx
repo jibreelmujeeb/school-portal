@@ -12,7 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 
-const resources = [
+const initialResources = [
   {
     id: 1,
     title: "Advanced Mathematics",
@@ -38,6 +38,39 @@ const resources = [
 
 const AdminELibraryPage = () => {
   const [search, setSearch] = useState("");
+  const [resources, setResources] = useState(initialResources);
+  const filteredResources = resources.filter((resource) =>
+    [resource.title, resource.subject, resource.type]
+      .some((value) => value.toLowerCase().includes(search.trim().toLowerCase()))
+  );
+  const addResource = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const title = data.get("title").trim();
+    const subject = data.get("subject");
+    const type = data.get("type");
+    const file = data.get("file");
+    if (!title || !subject || !type) return;
+    setResources((current) => [{
+      id: Date.now(),
+      title,
+      subject,
+      type,
+      fileName: file?.name || "",
+      uploads: 0,
+    }, ...current]);
+    event.currentTarget.reset();
+  };
+
+  const editResource = (resource) => {
+    const title = window.prompt("Resource title:", resource.title);
+    if (title === null || !title.trim()) return;
+    const subject = window.prompt("Subject:", resource.subject);
+    if (subject === null || !subject.trim()) return;
+    setResources((current) => current.map((item) =>
+      item.id === resource.id ? { ...item, title: title.trim(), subject: subject.trim() } : item
+    ));
+  };
 
   const getIcon = (type) => {
     switch (type) {
@@ -74,7 +107,7 @@ const AdminELibraryPage = () => {
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
+        <button onClick={() => document.getElementById("resource-title")?.focus()} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
           <Plus className="w-4 h-4" />
           Add Resource
         </button>
@@ -88,7 +121,7 @@ const AdminELibraryPage = () => {
           <BookOpen className="w-6 h-6 text-blue-600 mb-3" />
 
           <h2 className="text-3xl font-bold">
-            1,250
+            {resources.length}
           </h2>
 
           <p className="text-sm text-gray-500">
@@ -100,7 +133,7 @@ const AdminELibraryPage = () => {
           <FileText className="w-6 h-6 text-green-600 mb-3" />
 
           <h2 className="text-3xl font-bold">
-            820
+            {resources.filter((resource) => resource.type === "PDF").length}
           </h2>
 
           <p className="text-sm text-gray-500">
@@ -112,7 +145,7 @@ const AdminELibraryPage = () => {
           <Video className="w-6 h-6 text-red-600 mb-3" />
 
           <h2 className="text-3xl font-bold">
-            290
+            {resources.filter((resource) => resource.type === "Video").length}
           </h2>
 
           <p className="text-sm text-gray-500">
@@ -124,7 +157,7 @@ const AdminELibraryPage = () => {
           <Download className="w-6 h-6 text-purple-600 mb-3" />
 
           <h2 className="text-3xl font-bold">
-            15,430
+            {resources.reduce((total, resource) => total + resource.uploads, 0).toLocaleString()}
           </h2>
 
           <p className="text-sm text-gray-500">
@@ -180,13 +213,14 @@ const AdminELibraryPage = () => {
 
             <tbody>
 
-              {resources.map((resource) => (
+              {filteredResources.map((resource) => (
                 <tr
                   key={resource.id}
                   className="border-b border-gray-100"
                 >
                   <td className="py-4">
                     {resource.title}
+                    {resource.fileName && <span className="block text-xs text-gray-500">{resource.fileName}</span>}
                   </td>
 
                   <td>{resource.subject}</td>
@@ -203,11 +237,15 @@ const AdminELibraryPage = () => {
                   <td>
                     <div className="flex gap-2">
 
-                      <button className="p-2 border border-blue-200 rounded-xl text-blue-600">
+                      <button onClick={() => editResource(resource)} aria-label={`Edit ${resource.title}`} className="p-2 border border-blue-200 rounded-xl text-blue-600">
                         <Edit className="w-4 h-4" />
                       </button>
 
-                      <button className="p-2 border border-red-200 rounded-xl text-red-600">
+                      <button onClick={() => {
+                        if (window.confirm(`Delete "${resource.title}"?`)) {
+                          setResources((current) => current.filter((item) => item.id !== resource.id));
+                        }
+                      }} aria-label={`Delete ${resource.title}`} className="p-2 border border-red-200 rounded-xl text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
 
@@ -215,6 +253,13 @@ const AdminELibraryPage = () => {
                   </td>
                 </tr>
               ))}
+              {filteredResources.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-sm text-gray-500">
+                    No resources match your search.
+                  </td>
+                </tr>
+              )}
 
             </tbody>
 
@@ -231,29 +276,33 @@ const AdminELibraryPage = () => {
           Upload Resource
         </h2>
 
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={addResource} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <input
+            id="resource-title"
+            name="title"
+            required
             type="text"
             placeholder="Resource Title"
             className="border border-gray-200 rounded-2xl px-4 py-3 outline-none"
           />
 
-          <select className="border border-gray-200 rounded-2xl px-4 py-3 outline-none">
-            <option>Select Subject</option>
+          <select name="subject" required className="border border-gray-200 rounded-2xl px-4 py-3 outline-none">
+            <option value="">Select Subject</option>
             <option>Mathematics</option>
             <option>English</option>
             <option>Physics</option>
           </select>
 
-          <select className="border border-gray-200 rounded-2xl px-4 py-3 outline-none">
-            <option>Select Resource Type</option>
+          <select name="type" required className="border border-gray-200 rounded-2xl px-4 py-3 outline-none">
+            <option value="">Select Resource Type</option>
             <option>PDF</option>
             <option>Video</option>
             <option>Audio</option>
           </select>
 
           <input
+            name="file"
             type="file"
             className="border border-gray-200 rounded-2xl px-4 py-3"
           />
@@ -267,6 +316,7 @@ const AdminELibraryPage = () => {
           </button>
 
         </form>
+        <p className="mt-3 text-xs text-gray-500">Resources are added to this page's in-memory sample list only; no file is uploaded or saved.</p>
 
       </div>
 

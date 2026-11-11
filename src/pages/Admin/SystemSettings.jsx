@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Settings,
   School,
@@ -56,6 +57,23 @@ const settingSections = [
 ];
 
 export default function AdminSystemSettingsPage() {
+  const [search, setSearch] = useState("");
+  const [activeSection, setActiveSection] = useState("General");
+  const [notice, setNotice] = useState("");
+  const visibleSections = settingSections.filter((section) =>
+    section.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selectSection = (name) => {
+    setActiveSection(name);
+    setNotice("");
+  };
+
+  const saveSettings = (event) => {
+    event.preventDefault();
+    setNotice("Settings saved in this page session only; no system settings service is connected.");
+  };
+
   return (
     <div className="space-y-6">
 
@@ -75,6 +93,9 @@ export default function AdminSystemSettingsPage() {
         <input
           type="text"
           placeholder="Search settings..."
+          aria-label="Search settings"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           className="w-full outline-none"
         />
       </div>
@@ -87,15 +108,18 @@ export default function AdminSystemSettingsPage() {
 
           <div className="space-y-1">
 
-            {settingSections.map((section) => {
+            {visibleSections.map((section) => {
               const Icon = section.icon;
 
               return (
                 <button
                   key={section.name}
+                  type="button"
+                  aria-current={activeSection === section.name ? "page" : undefined}
+                  onClick={() => selectSection(section.name)}
                   className="w-full flex items-center
                     gap-3 rounded-xl px-4 py-3
-                    text-left hover:bg-gray-100"
+                    text-left hover:bg-gray-100 aria-[current=page]:bg-blue-50 aria-[current=page]:text-blue-700"
                 >
                   <Icon size={18} />
 
@@ -105,15 +129,17 @@ export default function AdminSystemSettingsPage() {
                 </button>
               );
             })}
+            {visibleSections.length === 0 && <p className="px-4 py-3 text-sm text-gray-500">No settings sections match.</p>}
 
           </div>
 
         </aside>
 
         {/* Content */}
-        <main className="space-y-6">
+        <form onSubmit={saveSettings} className="space-y-6">
+          {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
-          <section className="border rounded-3xl p-6">
+          {activeSection === "General" && <section className="border rounded-3xl p-6">
 
             <div className="mb-6">
               <h2 className="text-xl font-bold">
@@ -149,7 +175,7 @@ export default function AdminSystemSettingsPage() {
 
             </div>
 
-            <button
+            <button type="submit"
               className="mt-6 flex items-center gap-2
                 rounded-xl bg-blue-600
                 px-5 py-3 text-white"
@@ -158,9 +184,9 @@ export default function AdminSystemSettingsPage() {
               Save Changes
             </button>
 
-          </section>
+          </section>}
 
-          <section className="border rounded-3xl p-6">
+          {activeSection === "Users & Access" && <section className="border rounded-3xl p-6">
 
             <h2 className="text-xl font-bold">
               Portal Access
@@ -195,9 +221,15 @@ export default function AdminSystemSettingsPage() {
 
             </div>
 
-          </section>
+          </section>}
 
-        </main>
+          {!["General", "Users & Access"].includes(activeSection) && (
+            <section className="border rounded-3xl p-6" aria-live="polite">
+              <h2 className="text-xl font-bold">{activeSection}</h2>
+              <p className="mt-2 text-sm text-gray-500">This section has no configurable fields in the current local page.</p>
+            </section>
+          )}
+        </form>
 
       </div>
 
@@ -222,7 +254,8 @@ function SettingInput({ label, value }) {
   );
 }
 
-function Toggle({ label, enabled }) {
+function Toggle({ label, enabled: initialEnabled }) {
+  const [enabled, setEnabled] = useState(initialEnabled);
   return (
     <div className="flex items-center justify-between
       border-b pb-4">
@@ -230,11 +263,15 @@ function Toggle({ label, enabled }) {
       <span>{label}</span>
 
       <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label={label}
+        onClick={() => setEnabled((current) => !current)}
         className={`h-6 w-11 rounded-full
           ${enabled ? "bg-blue-600" : "bg-gray-300"}`}
       >
-        <span className="block h-5 w-5 rounded-full
-          bg-white translate-x-5" />
+        <span className={`block h-5 w-5 rounded-full bg-white transition-transform ${enabled ? "translate-x-5" : "translate-x-0"}`} />
       </button>
 
     </div>

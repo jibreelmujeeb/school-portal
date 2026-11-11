@@ -9,7 +9,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const rejectedApplications = [
+const initialRejectedApplications = [
   {
     id: 1,
     applicationNo: "ADM2026005",
@@ -34,12 +34,30 @@ const rejectedApplications = [
 
 export default function AdminAdmissionRejectionPage() {
   const [search, setSearch] = useState("");
+  const [classFilter, setClassFilter] = useState("All");
+  const [applications, setApplications] = useState(initialRejectedApplications);
+  const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState("");
 
-  const filtered = rejectedApplications.filter(
+  const filtered = applications.filter(
     (app) =>
-      app.applicant.toLowerCase().includes(search.toLowerCase()) ||
-      app.applicationNo.toLowerCase().includes(search.toLowerCase())
+      (app.applicant.toLowerCase().includes(search.toLowerCase()) ||
+        app.applicationNo.toLowerCase().includes(search.toLowerCase())) &&
+      (classFilter === "All" || app.classApplied === classFilter)
   );
+
+  const exportApplications = () => {
+    const header = ["Application No.", "Applicant", "Class", "Reason", "Date", "Status"];
+    const csv = [header, ...filtered.map((app) => [
+      app.applicationNo, app.applicant, app.classApplied, app.reason, app.date, app.status,
+    ])].map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "admission-rejections.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-8">
@@ -55,7 +73,7 @@ export default function AdminAdmissionRejectionPage() {
           </p>
         </div>
 
-        <button className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
+        <button onClick={exportApplications} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
           <Download size={18} />
           Export
         </button>
@@ -105,12 +123,16 @@ export default function AdminAdmissionRejectionPage() {
           />
         </div>
 
-        <button className="border rounded-xl px-5 flex items-center gap-2">
+        <label className="border rounded-xl px-4 flex items-center gap-2">
           <Filter size={18} />
-          Filter
-        </button>
+          <span className="sr-only">Filter applications by class</span>
+          <select aria-label="Filter applications by class" className="bg-transparent outline-none py-3" value={classFilter} onChange={(e) => setClassFilter(e.target.value)}>
+            <option>All</option><option>JSS 1</option><option>SS 1</option>
+          </select>
+        </label>
 
       </div>
+      {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
       {/* Table */}
 
@@ -140,21 +162,31 @@ export default function AdminAdmissionRejectionPage() {
                 <td>{app.reason}</td>
                 <td>{app.date}</td>
                 <td>
-                  <span className="px-3 py-1 rounded-full bg-red-100 text-red-700">
+                  <span className={`px-3 py-1 rounded-full ${app.status === "Reviewed" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"}`}>
                     {app.status}
                   </span>
                 </td>
                 <td>
                   <div className="flex gap-2">
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`View ${app.applicant}'s rejection`} title="View rejection" onClick={() => setSelected(app)} className="border rounded-lg p-2">
                       <Eye size={16} />
                     </button>
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`Review ${app.applicant}'s appeal`} title="Mark appeal reviewed" onClick={() => {
+                      setApplications((current) => current.map((item) =>
+                        item.id === app.id ? { ...item, status: item.status === "Reviewed" ? "Rejected" : "Reviewed" } : item
+                      ));
+                      setNotice(`${app.applicant}'s appeal marked ${app.status === "Reviewed" ? "not reviewed" : "reviewed"} locally.`);
+                    }} className="border rounded-lg p-2">
                       <FileText size={16} />
                     </button>
 
-                    <button className="border rounded-lg p-2 text-red-600">
+                    <button aria-label={`Remove ${app.applicant} from this local list`} title="Remove from local list" onClick={() => {
+                      if (window.confirm(`Remove ${app.applicant}'s rejection from this local list?`)) {
+                        setApplications((current) => current.filter((item) => item.id !== app.id));
+                        setNotice("Application removed from this local mock list.");
+                      }
+                    }} className="border rounded-lg p-2 text-red-600">
                       <XCircle size={16} />
                     </button>
                   </div>
@@ -167,6 +199,24 @@ export default function AdminAdmissionRejectionPage() {
         </table>
 
       </div>
+
+      {filtered.length === 0 && <p className="p-5 text-center text-gray-500">No applications match your search and filter.</p>}
+
+      {selected && (
+        <div role="dialog" aria-modal="true" aria-labelledby="rejection-details-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="rejection-details-title" className="text-xl font-bold">Rejection details</h2>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div><dt className="font-semibold">Applicant</dt><dd>{selected.applicant}</dd></div>
+              <div><dt className="font-semibold">Application</dt><dd>{selected.applicationNo}</dd></div>
+              <div><dt className="font-semibold">Class</dt><dd>{selected.classApplied}</dd></div>
+              <div><dt className="font-semibold">Reason</dt><dd>{selected.reason}</dd></div>
+              <div><dt className="font-semibold">Date</dt><dd>{selected.date}</dd></div>
+            </dl>
+            <button autoFocus onClick={() => setSelected(null)} className="mt-5 rounded-lg border px-4 py-2">Close</button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -48,6 +48,12 @@ const notificationsData = [
 const AdminNotificationPage = () => {
   const [notifications, setNotifications] =
     useState(notificationsData);
+  const [filter, setFilter] = useState("All");
+
+  const filteredNotifications = notifications.filter((notification) =>
+    filter === "All" ||
+    (filter === "Unread" ? !notification.read : notification.read)
+  );
 
   const markAsRead = (id) => {
     setNotifications((prev) =>
@@ -100,14 +106,19 @@ const AdminNotificationPage = () => {
           </h1>
 
           <p className="text-gray-500 mt-2">
-            Monitor activities and updates across the school
+            Monitor activities and updates across the school. Read status changes are local to this page.
           </p>
         </div>
 
-        <button className="flex items-center gap-2 px-5 py-3 border border-gray-200 rounded-2xl">
+        <label className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-2xl">
           <Filter className="w-4 h-4" />
-          Filter Notifications
-        </button>
+          <span className="sr-only">Filter notifications</span>
+          <select value={filter} onChange={(event) => setFilter(event.target.value)} className="bg-transparent outline-none">
+            <option>All</option>
+            <option>Unread</option>
+            <option>Read</option>
+          </select>
+        </label>
 
       </section>
 
@@ -121,7 +132,7 @@ const AdminNotificationPage = () => {
           </div>
 
           <h2 className="text-3xl font-bold mt-3">
-            124
+            {notifications.length}
           </h2>
         </div>
 
@@ -132,7 +143,7 @@ const AdminNotificationPage = () => {
           </div>
 
           <h2 className="text-3xl font-bold mt-3">
-            18
+            {notifications.filter((item) => !item.read).length}
           </h2>
         </div>
 
@@ -143,7 +154,7 @@ const AdminNotificationPage = () => {
           </div>
 
           <h2 className="text-3xl font-bold mt-3">
-            36
+            {notifications.filter((item) => item.type === "finance").length}
           </h2>
         </div>
 
@@ -154,7 +165,7 @@ const AdminNotificationPage = () => {
           </div>
 
           <h2 className="text-3xl font-bold mt-3">
-            24
+            {notifications.filter((item) => item.type === "announcement").length}
           </h2>
         </div>
 
@@ -163,7 +174,7 @@ const AdminNotificationPage = () => {
       {/* NOTIFICATION LIST */}
       <section className="space-y-4">
 
-        {notifications.map((notification) => (
+        {filteredNotifications.map((notification) => (
           <div
             key={notification.id}
             className={`border rounded-3xl p-5 transition ${
@@ -215,6 +226,10 @@ const AdminNotificationPage = () => {
 
           </div>
         ))}
+
+        {filteredNotifications.length === 0 && (
+          <p className="py-8 text-center text-sm text-gray-500">No {filter.toLowerCase()} notifications.</p>
+        )}
 
       </section>
 

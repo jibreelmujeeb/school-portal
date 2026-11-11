@@ -107,6 +107,8 @@ const formatCurrency = (amount) =>
 
 function StatusBadge({ status }) {
   const styles = {
+    Paid:
+      "bg-emerald-50 text-emerald-700 border-emerald-200",
     "Partially Paid":
       "bg-amber-50 text-amber-700 border-amber-200",
     Unpaid:
@@ -153,7 +155,7 @@ function StatCard({ icon: Icon, title, value, description }) {
 }
 
 export default function AdminOutstanding() {
-  const [records] = useState(initialRecords);
+  const [records, setRecords] = useState(initialRecords);
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -161,6 +163,18 @@ export default function AdminOutstanding() {
     useState("All");
   const [selected, setSelected] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [paymentRecord, setPaymentRecord] = useState(null);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentForm, setPaymentForm] = useState({
+    amount: "",
+    method: "Bank Transfer",
+    reference: "",
+    date: new Date().toISOString().slice(0, 10),
+  });
+  const [reminderRecords, setReminderRecords] = useState([]);
+  const [reminderMessage, setReminderMessage] = useState("");
+  const [showFinancialReport, setShowFinancialReport] = useState(false);
+  const [notice, setNotice] = useState("");
 
   const totalInvoiced = records.reduce(
     (sum, item) => sum + item.total,
@@ -250,16 +264,117 @@ export default function AdminOutstanding() {
     }
   };
 
+  const exportRecords = (items, filename) => {
+    const headers = [
+      "Student ID", "Student", "Class", "Department", "Invoice", "Fee",
+      "Session", "Term", "Total", "Paid", "Outstanding", "Due Date", "Status",
+    ];
+    const rows = items.map((item) => [
+      item.studentId,
+      item.student,
+      item.className,
+      item.department,
+      item.invoice,
+      item.fee,
+      item.session,
+      item.term,
+      item.total,
+      item.paid,
+      item.total - item.paid,
+      item.dueDate,
+      item.status,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const recordPayment = (record) => {
-    alert(
-      `Opening payment recording for ${record.student}`
+    setPaymentRecord(record);
+    setPaymentError("");
+    setPaymentForm({
+      amount: "",
+      method: "Bank Transfer",
+      reference: "",
+      date: new Date().toISOString().slice(0, 10),
+    });
+  };
+
+  const submitPayment = (event) => {
+    event.preventDefault();
+    const amount = Number(paymentForm.amount);
+    if (!paymentRecord || !Number.isFinite(amount) || amount <= 0) {
+      setPaymentError("Enter a valid payment amount.");
+      return;
+    }
+
+    const balance = paymentRecord.total - paymentRecord.paid;
+    if (amount > balance) {
+      setPaymentError(`Payment cannot exceed the outstanding balance of ${formatCurrency(balance)}.`);
+      return;
+    }
+
+    const payment = {
+      amount,
+      method: paymentForm.method,
+      date: paymentForm.date,
+      reference: paymentForm.reference.trim() || `PAY-${Date.now()}`,
+    };
+    const updatedRecord = {
+      ...paymentRecord,
+      paid: paymentRecord.paid + amount,
+      payments: [...(paymentRecord.payments || []), payment],
+      status:
+        paymentRecord.paid + amount >= paymentRecord.total
+          ? "Paid"
+          : paymentRecord.status,
+    };
+    setRecords((current) =>
+      current.map((record) =>
+        record.id === paymentRecord.id ? updatedRecord : record
+      )
+    );
+    setSelected((current) =>
+      current?.id === paymentRecord.id ? updatedRecord : current
+    );
+    setPaymentRecord(null);
+    setNotice(`Payment of ${formatCurrency(amount)} recorded locally for ${paymentRecord.student}.`);
+  };
+
+  const prepareReminder = (items) => {
+    const recipients = items.filter((item) => item.total > item.paid);
+    if (recipients.length === 0) {
+      setNotice("There are no outstanding accounts to remind.");
+      return;
+    }
+    setReminderRecords(recipients);
+    setReminderMessage(
+      `Dear Parent/Guardian, this is a reminder that ${recipients.length === 1 ? `${recipients[0].student}'s` : "your student's"} account has an outstanding balance. Please contact the school to arrange payment.`
     );
   };
 
   const sendReminder = (record) => {
-    alert(
-      `Payment reminder sent for ${record.invoice}`
-    );
+    prepareReminder([record]);
+  };
+
+  const copyReminderDraft = async () => {
+    try {
+      await navigator.clipboard.writeText(reminderMessage);
+      setNotice("Reminder draft copied. No messages have been sent.");
+      setReminderRecords([]);
+    } catch {
+      setNotice("Clipboard access is unavailable; select and copy the reminder text. No messages have been sent.");
+    }
   };
 
   return (
@@ -288,9 +403,7 @@ export default function AdminOutstanding() {
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() =>
-                alert("Outstanding report exported.")
-              }
+              onClick={() => exportRecords(filteredRecords, "outstanding-fees-report.csv")}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               <Download size={16} />
@@ -298,9 +411,7 @@ export default function AdminOutstanding() {
             </button>
 
             <button
-              onClick={() =>
-                alert("Opening financial reports")
-              }
+              onClick={() => setShowFinancialReport(true)}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
             >
               <Receipt size={16} />
@@ -308,6 +419,15 @@ export default function AdminOutstanding() {
             </button>
           </div>
         </div>
+
+        {notice && (
+          <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <span>{notice}</span>
+            <button type="button" onClick={() => setNotice("")} aria-label="Dismiss notice">
+              <X size={17} />
+            </button>
+          </div>
+        )}
 
         {/* Statistics */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -328,7 +448,7 @@ export default function AdminOutstanding() {
           <StatCard
             icon={Users}
             title="Outstanding Students"
-            value={records.length}
+            value={records.filter((record) => record.total > record.paid).length}
             description="Students with balances"
           />
 
@@ -510,6 +630,7 @@ export default function AdminOutstanding() {
               <option value="Partially Paid">
                 Partially Paid
               </option>
+              <option value="Paid">Paid</option>
             </select>
           </div>
         </div>
@@ -523,9 +644,9 @@ export default function AdminOutstanding() {
 
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() =>
-                  alert("Bulk reminders sent.")
-                }
+                onClick={() => prepareReminder(
+                  records.filter((record) => selectedRows.includes(record.id))
+                )}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
               >
                 <Mail size={16} />
@@ -533,15 +654,157 @@ export default function AdminOutstanding() {
               </button>
 
               <button
-                onClick={() =>
-                  alert("Selected records exported.")
-                }
+                onClick={() => exportRecords(
+                  records.filter((record) => selectedRows.includes(record.id)),
+                  "selected-outstanding-fees.csv"
+                )}
                 className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
               >
                 <Download size={16} />
                 Export Selected
               </button>
             </div>
+          </div>
+        )}
+
+        {paymentRecord && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+            <form
+              onSubmit={submitPayment}
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+            >
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Record payment</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {paymentRecord.student} · Balance {formatCurrency(paymentRecord.total - paymentRecord.paid)}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setPaymentRecord(null)} aria-label="Close payment form">
+                  <X size={19} />
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Amount
+                  <input
+                    type="number"
+                    min="1"
+                    max={paymentRecord.total - paymentRecord.paid}
+                    step="1"
+                    required
+                    value={paymentForm.amount}
+                    onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5"
+                  />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Payment method
+                  <select
+                    value={paymentForm.method}
+                    onChange={(event) => setPaymentForm({ ...paymentForm, method: event.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5"
+                  >
+                    <option>Bank Transfer</option>
+                    <option>Cash</option>
+                    <option>POS</option>
+                    <option>Paystack</option>
+                  </select>
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Payment date
+                  <input
+                    type="date"
+                    required
+                    value={paymentForm.date}
+                    onChange={(event) => setPaymentForm({ ...paymentForm, date: event.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5"
+                  />
+                </label>
+                <label className="text-sm font-medium text-slate-700">
+                  Reference (optional)
+                  <input
+                    value={paymentForm.reference}
+                    onChange={(event) => setPaymentForm({ ...paymentForm, reference: event.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5"
+                  />
+                </label>
+              </div>
+              {paymentError && (
+                <p role="alert" className="mt-4 text-sm text-red-600">{paymentError}</p>
+              )}
+              <div className="mt-6 flex justify-end gap-2">
+                <button type="button" onClick={() => setPaymentRecord(null)} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold">
+                  Cancel
+                </button>
+                <button type="submit" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">
+                  Record payment
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {reminderRecords.length > 0 && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+                <section role="dialog" aria-modal="true" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Reminder draft</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Prepared for {reminderRecords.length} account(s). Messaging is not connected; nothing has been sent.
+                  </p>
+                </div>
+                <button type="button" onClick={() => setReminderRecords([])} aria-label="Close reminder draft">
+                  <X size={19} />
+                </button>
+              </div>
+              <div className="mb-3 max-h-32 overflow-y-auto rounded-lg bg-slate-50 p-3 text-sm">
+                {reminderRecords.map((record) => (
+                  <p key={record.id} className="py-1">{record.student} · {record.invoice} · {formatCurrency(record.total - record.paid)}</p>
+                ))}
+              </div>
+              <textarea
+                rows={4}
+                value={reminderMessage}
+                onChange={(event) => setReminderMessage(event.target.value)}
+                className="w-full rounded-lg border border-slate-200 p-3 text-sm"
+                aria-label="Reminder message draft"
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button type="button" onClick={() => setReminderRecords([])} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold">
+                  Close
+                </button>
+                <button type="button" onClick={copyReminderDraft} className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">
+                  Copy draft
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {showFinancialReport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowFinancialReport(false)}>
+            <section role="dialog" aria-modal="true" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
+              <div className="mb-5 flex items-start justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Outstanding fee summary</h2>
+                  <p className="mt-1 text-sm text-slate-500">Calculated from the local outstanding-fee records.</p>
+                </div>
+                <button type="button" onClick={() => setShowFinancialReport(false)} aria-label="Close financial report"><X size={19} /></button>
+              </div>
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between"><dt>Total invoiced</dt><dd className="font-semibold">{formatCurrency(totalInvoiced)}</dd></div>
+                <div className="flex justify-between"><dt>Collected</dt><dd className="font-semibold text-emerald-700">{formatCurrency(totalCollected)}</dd></div>
+                <div className="flex justify-between"><dt>Outstanding</dt><dd className="font-semibold text-red-700">{formatCurrency(totalOutstanding)}</dd></div>
+                <div className="flex justify-between"><dt>Overdue amount</dt><dd className="font-semibold">{formatCurrency(overdueAmount)}</dd></div>
+                <div className="flex justify-between"><dt>Collection rate</dt><dd className="font-semibold">{collectionRate}%</dd></div>
+              </dl>
+              <div className="mt-6 flex justify-end gap-2">
+                <button type="button" onClick={() => setShowFinancialReport(false)} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold">Close</button>
+                <button type="button" onClick={() => exportRecords(filteredRecords, "outstanding-fees-report.csv")} className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">Export CSV</button>
+              </div>
+            </section>
           </div>
         )}
 
@@ -734,9 +997,7 @@ export default function AdminOutstanding() {
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() =>
-                alert("Bulk payment reminders sent.")
-              }
+              onClick={() => prepareReminder(filteredRecords)}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               <Bell size={16} />
@@ -744,9 +1005,7 @@ export default function AdminOutstanding() {
             </button>
 
             <button
-              onClick={() =>
-                alert("Report exported.")
-              }
+              onClick={() => exportRecords(filteredRecords, "outstanding-fees-report.csv")}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
             >
               <Download size={16} />
@@ -847,6 +1106,34 @@ export default function AdminOutstanding() {
                 </div>
               </div>
 
+              {selected.payments?.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-slate-800">Payments recorded in this view</h3>
+                  <div className="overflow-x-auto rounded-lg border border-slate-200">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500">
+                        <tr>
+                          <th className="px-3 py-2">Date</th>
+                          <th className="px-3 py-2">Method</th>
+                          <th className="px-3 py-2">Reference</th>
+                          <th className="px-3 py-2 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selected.payments.map((payment, index) => (
+                          <tr key={`${payment.reference}-${index}`} className="border-t border-slate-100">
+                            <td className="px-3 py-2">{payment.date}</td>
+                            <td className="px-3 py-2">{payment.method}</td>
+                            <td className="px-3 py-2">{payment.reference}</td>
+                            <td className="px-3 py-2 text-right font-medium">{formatCurrency(payment.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-5">
                 <button
                   onClick={() => sendReminder(selected)}
@@ -857,9 +1144,10 @@ export default function AdminOutstanding() {
                 </button>
 
                 <button
-                  onClick={() =>
-                    alert(`Downloading ${selected.invoice}`)
-                  }
+                  onClick={() => exportRecords(
+                    [selected],
+                    `${selected.invoice.toLowerCase()}.csv`
+                  )}
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50"
                 >
                   <Download size={16} />

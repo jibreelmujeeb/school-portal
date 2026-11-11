@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
   Library,
@@ -11,7 +11,7 @@ import {
   Eye,
 } from "lucide-react";
 
-const books = [
+const initialBooks = [
   {
     id: 1,
     title: "Things Fall Apart",
@@ -39,6 +39,38 @@ const books = [
 ];
 
 const AdminLibraryPage = () => {
+  const [books, setBooks] = useState(initialBooks);
+  const [search, setSearch] = useState("");
+  const filteredBooks = books.filter((book) =>
+    [book.title, book.author, book.category]
+      .some((value) => value.toLowerCase().includes(search.trim().toLowerCase()))
+  );
+
+  const editBook = (book = null) => {
+    const title = window.prompt("Book title:", book?.title || "");
+    if (title === null || !title.trim()) return;
+    const author = window.prompt("Author:", book?.author || "");
+    if (author === null || !author.trim()) return;
+    const category = window.prompt("Category:", book?.category || "");
+    if (category === null || !category.trim()) return;
+    const quantityInput = window.prompt("Quantity:", book?.quantity || "1");
+    if (quantityInput === null || !Number.isInteger(Number(quantityInput)) || Number(quantityInput) < 0) return;
+    const quantity = Number(quantityInput);
+    setBooks((current) => book
+      ? current.map((item) => item.id === book.id
+        ? {
+            ...item,
+            title: title.trim(),
+            author: author.trim(),
+            category: category.trim(),
+            quantity,
+            available: Math.max(0, quantity - Math.min(quantity, item.quantity - item.available)),
+          }
+        : item)
+      : [{ id: Date.now(), title: title.trim(), author: author.trim(), category: category.trim(), quantity, available: quantity }, ...current]);
+  };
+
+  const borrowed = books.reduce((total, book) => total + book.quantity - book.available, 0);
   return (
     <div className="space-y-8">
 
@@ -52,11 +84,11 @@ const AdminLibraryPage = () => {
 
           <p className="text-gray-500 mt-2">
             Manage books, borrowing records, returns,
-            and library operations.
+            and library operations. Book edits in this demo stay in this page only.
           </p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
+        <button onClick={() => editBook()} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
           <Plus className="w-4 h-4" />
           Add New Book
         </button>
@@ -68,7 +100,7 @@ const AdminLibraryPage = () => {
 
         <div className="border border-gray-200 rounded-3xl p-5">
           <BookOpen className="w-6 h-6 text-blue-600 mb-3" />
-          <h2 className="text-3xl font-bold">5,420</h2>
+          <h2 className="text-3xl font-bold">{books.reduce((total, book) => total + book.quantity, 0).toLocaleString()}</h2>
           <p className="text-sm text-gray-500">
             Total Books
           </p>
@@ -76,7 +108,7 @@ const AdminLibraryPage = () => {
 
         <div className="border border-gray-200 rounded-3xl p-5">
           <Library className="w-6 h-6 text-green-600 mb-3" />
-          <h2 className="text-3xl font-bold">4,180</h2>
+          <h2 className="text-3xl font-bold">{books.reduce((total, book) => total + book.available, 0).toLocaleString()}</h2>
           <p className="text-sm text-gray-500">
             Available Books
           </p>
@@ -84,7 +116,7 @@ const AdminLibraryPage = () => {
 
         <div className="border border-gray-200 rounded-3xl p-5">
           <Users className="w-6 h-6 text-orange-600 mb-3" />
-          <h2 className="text-3xl font-bold">1,145</h2>
+          <h2 className="text-3xl font-bold">{borrowed.toLocaleString()}</h2>
           <p className="text-sm text-gray-500">
             Borrowed Books
           </p>
@@ -108,6 +140,8 @@ const AdminLibraryPage = () => {
         <input
           type="text"
           placeholder="Search books..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           className="w-full outline-none"
         />
 
@@ -141,7 +175,7 @@ const AdminLibraryPage = () => {
 
             <tbody>
 
-              {books.map((book) => (
+              {filteredBooks.map((book) => (
                 <tr
                   key={book.id}
                   className="border-b border-gray-100"
@@ -162,15 +196,19 @@ const AdminLibraryPage = () => {
 
                     <div className="flex gap-2">
 
-                      <button className="p-2 border border-blue-200 rounded-xl text-blue-600">
+                      <button onClick={() => window.alert(`${book.title}\n${book.author} · ${book.category}\n${book.available} of ${book.quantity} available`)} aria-label={`View ${book.title}`} className="p-2 border border-blue-200 rounded-xl text-blue-600">
                         <Eye className="w-4 h-4" />
                       </button>
 
-                      <button className="p-2 border border-green-200 rounded-xl text-green-600">
+                      <button onClick={() => editBook(book)} aria-label={`Edit ${book.title}`} className="p-2 border border-green-200 rounded-xl text-green-600">
                         <Edit className="w-4 h-4" />
                       </button>
 
-                      <button className="p-2 border border-red-200 rounded-xl text-red-600">
+                      <button onClick={() => {
+                        if (window.confirm(`Delete "${book.title}"?`)) {
+                          setBooks((current) => current.filter((item) => item.id !== book.id));
+                        }
+                      }} aria-label={`Delete ${book.title}`} className="p-2 border border-red-200 rounded-xl text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
 
@@ -179,6 +217,7 @@ const AdminLibraryPage = () => {
                   </td>
                 </tr>
               ))}
+              {filteredBooks.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-gray-500">No books match your search.</td></tr>}
 
             </tbody>
 

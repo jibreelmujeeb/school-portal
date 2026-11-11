@@ -53,7 +53,7 @@ const AdminFinancePage = () => {
   const handleExportReport = () => {
     const headers = ["ID", "Transaction", "Student", "Amount", "Type", "Date"];
 
-    const rows = transactions.map((item) => [
+    const rows = filteredTransactions.map((item) => [
       item.id,
       item.title,
       item.student,

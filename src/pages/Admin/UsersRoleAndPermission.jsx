@@ -12,7 +12,7 @@ import {
   Download,
 } from "lucide-react";
 
-const roles = [
+const initialRoles = [
   {
     id: 1,
     name: "Super Admin",
@@ -39,10 +39,58 @@ const roles = [
 export default function UserRolesPermissionPage() {
 
   const [search, setSearch] = useState("");
-
+  const [roles, setRoles] = useState(initialRoles);
+  const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState("");
   const filteredRoles = roles.filter(role =>
     role.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const createRole = () => {
+    const name = window.prompt("Enter a role name:");
+    if (!name?.trim()) return;
+    if (roles.some((role) => role.name.toLowerCase() === name.trim().toLowerCase())) {
+      setNotice("A role with that name already exists.");
+      return;
+    }
+    setRoles((current) => [...current, {
+      id: Date.now(), name: name.trim(), users: 0, permissions: 0, status: "Active",
+    }]);
+    setNotice(`${name.trim()} added to the local role list with no permissions.`);
+  };
+
+  const editRole = (role) => {
+    if (role.status === "System") {
+      setNotice("System roles cannot be renamed.");
+      return;
+    }
+    const name = window.prompt("Role name:", role.name);
+    if (!name?.trim()) return;
+    setRoles((current) => current.map((item) => item.id === role.id ? { ...item, name: name.trim() } : item));
+    setNotice(`${role.name} renamed in the local role list.`);
+  };
+
+  const duplicateRole = (role) => {
+    const name = window.prompt("Name for the copied role:", `${role.name} Copy`);
+    if (!name?.trim()) return;
+    if (roles.some((item) => item.name.toLowerCase() === name.trim().toLowerCase())) {
+      setNotice("A role with that name already exists.");
+      return;
+    }
+    setRoles((current) => [...current, { ...role, id: Date.now(), name: name.trim(), users: 0, status: "Active" }]);
+    setNotice(`${name.trim()} added as a local copy.`);
+  };
+
+  const exportRole = (role) => {
+    const csv = ["Role,Users,Permissions,Status", [role.name, role.users, role.permissions, role.status]
+      .map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${role.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-role.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
 
@@ -64,7 +112,7 @@ export default function UserRolesPermissionPage() {
 
         </div>
 
-        <button className="bg-blue-600 text-white rounded-xl px-5 py-3 flex items-center gap-2">
+        <button onClick={createRole} className="bg-blue-600 text-white rounded-xl px-5 py-3 flex items-center gap-2">
 
           <UserPlus size={18} />
 
@@ -73,6 +121,7 @@ export default function UserRolesPermissionPage() {
         </button>
 
       </div>
+      {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
       {/* Statistics */}
 
@@ -179,23 +228,28 @@ export default function UserRolesPermissionPage() {
 
                   <div className="flex gap-2">
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`View ${role.name}`} title="View role" onClick={() => setSelected(role)} className="border rounded-lg p-2">
                       <Eye size={16}/>
                     </button>
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`Edit ${role.name}`} title="Edit role" onClick={() => editRole(role)} className="border rounded-lg p-2">
                       <Edit size={16}/>
                     </button>
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`Copy ${role.name}`} title="Copy role" onClick={() => duplicateRole(role)} className="border rounded-lg p-2">
                       <Copy size={16}/>
                     </button>
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`Export ${role.name}`} title="Export role" onClick={() => exportRole(role)} className="border rounded-lg p-2">
                       <Download size={16}/>
                     </button>
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`Delete ${role.name}`} title="Delete role" disabled={role.status === "System"} onClick={() => {
+                      if (window.confirm(`Delete the local "${role.name}" role?`)) {
+                        setRoles((current) => current.filter((item) => item.id !== role.id));
+                        setNotice(`${role.name} removed from the local role list.`);
+                      }
+                    }} className="border rounded-lg p-2 disabled:opacity-40">
                       <Trash2 size={16}/>
                     </button>
 
@@ -212,6 +266,21 @@ export default function UserRolesPermissionPage() {
         </table>
 
       </div>
+
+      {filteredRoles.length === 0 && <p className="p-5 text-center text-gray-500">No roles match your search.</p>}
+
+      {selected && (
+        <div role="dialog" aria-modal="true" aria-labelledby="role-details-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="role-details-title" className="text-xl font-bold">{selected.name}</h2>
+            <p className="mt-4">{selected.users} assigned users</p>
+            <p>{selected.permissions} permissions</p>
+            <p>Status: {selected.status}</p>
+            <p className="mt-3 text-sm text-gray-500">Permission-level configuration is not available in this local mock.</p>
+            <button autoFocus onClick={() => setSelected(null)} className="mt-5 rounded-lg border px-4 py-2">Close</button>
+          </div>
+        </div>
+      )}
 
     </div>
 

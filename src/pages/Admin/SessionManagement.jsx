@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   CalendarDays,
   GraduationCap,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react";
 
 export default function AdminSessionManagementPage() {
-  const sessions = [
+  const [sessions, setSessions] = useState([
     {
       name: "2026/2027",
       start: "07 Sep 2026",
@@ -32,7 +33,87 @@ export default function AdminSessionManagementPage() {
       terms: 3,
       status: "Archived",
     },
-  ];
+  ]);
+  const [terms, setTerms] = useState([
+    { name: "First Term", start: "07 Sep 2026", end: "18 Dec 2026", status: "Active" },
+    { name: "Second Term", start: "11 Jan 2027", end: "26 Mar 2027", status: "Upcoming" },
+    { name: "Third Term", start: "12 Apr 2027", end: "30 Jul 2027", status: "Upcoming" },
+  ]);
+  const [notice, setNotice] = useState("");
+  const activeSession = sessions.find((session) => session.status === "Active") || sessions[0];
+  const activeTerm = terms.find((term) => term.status === "Active") || terms[0];
+
+  const createSession = () => {
+    const name = window.prompt("Enter the academic session (for example, 2027/2028):");
+    if (!name?.trim()) return;
+    if (sessions.some((session) => session.name.toLowerCase() === name.trim().toLowerCase())) {
+      setNotice("That session already exists.");
+      return;
+    }
+    const start = window.prompt("Enter the start date:");
+    if (!start?.trim()) return;
+    const end = window.prompt("Enter the end date:");
+    if (!end?.trim()) return;
+    setSessions((current) => [...current, { name: name.trim(), start, end, terms: 0, status: "Upcoming" }]);
+    setNotice(`${name.trim()} added to the local session list.`);
+  };
+
+  const createTerm = () => {
+    const name = window.prompt("Enter a term name:");
+    if (!name?.trim()) return;
+    if (terms.some((term) => term.name.toLowerCase() === name.trim().toLowerCase())) {
+      setNotice("A term with that name already exists.");
+      return;
+    }
+    const start = window.prompt("Enter the term start date:");
+    if (!start?.trim()) return;
+    const end = window.prompt("Enter the term end date:");
+    if (!end?.trim()) return;
+    setTerms((current) => [...current, { name: name.trim(), start, end, status: "Upcoming" }]);
+    setNotice(`${name.trim()} added to the local term list.`);
+  };
+
+  const updateSession = (name, action) => {
+    const updatedName = action === "edit" ? window.prompt("Edit session name:", name) : null;
+    if (action === "edit" && !updatedName?.trim()) return;
+    setSessions((current) => current.map((session) => {
+      if (session.name !== name) return session;
+      if (action === "edit") return { ...session, name: updatedName.trim() };
+      if (action === "lock") {
+        return session.status === "Locked"
+          ? { ...session, status: session.statusBeforeLock || "Upcoming", statusBeforeLock: undefined }
+          : { ...session, statusBeforeLock: session.status, status: "Locked" };
+      }
+      return session.status === "Archived"
+        ? { ...session, status: session.statusBeforeArchive || "Completed", statusBeforeArchive: undefined }
+        : { ...session, statusBeforeArchive: session.status, status: "Archived" };
+    }));
+    setNotice(`${name} updated in the local session list.`);
+  };
+
+  const updateTerm = (name, action) => {
+    const updatedName = action === "edit" ? window.prompt("Edit term name:", name) : null;
+    if (action === "edit" && !updatedName?.trim()) return;
+    setTerms((current) => current.map((term) => {
+      if (term.name !== name) return term;
+      if (action === "edit") return { ...term, name: updatedName.trim() };
+      return term.status === "Locked"
+        ? { ...term, status: term.statusBeforeLock || "Upcoming", statusBeforeLock: undefined }
+        : { ...term, statusBeforeLock: term.status, status: "Locked" };
+    }));
+    setNotice(`${name} updated in the local term list.`);
+  };
+
+  const manageCurrentSession = () => {
+    const start = window.prompt("Edit session start date:", activeSession?.start || "");
+    if (!start?.trim()) return;
+    const end = window.prompt("Edit session end date:", activeSession?.end || "");
+    if (!end?.trim()) return;
+    setSessions((current) => current.map((session) => session.name === activeSession?.name
+      ? { ...session, start: start.trim(), end: end.trim() }
+      : session));
+    setNotice(`${activeSession?.name || "Session"} dates updated in the local list.`);
+  };
 
   return (
     <div className="space-y-6">
@@ -52,6 +133,7 @@ export default function AdminSessionManagementPage() {
         </div>
 
         <button
+          onClick={createSession}
           className="bg-blue-600 text-white rounded-xl
             px-5 py-3 flex items-center gap-2"
         >
@@ -60,19 +142,20 @@ export default function AdminSessionManagementPage() {
         </button>
 
       </div>
+      {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
       {/* Statistics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
         <StatCard
           icon={<CalendarDays />}
-          value="2026/2027"
+          value={activeSession?.name || "None"}
           label="Current Session"
         />
 
         <StatCard
           icon={<BookOpen />}
-          value="First Term"
+          value={activeTerm?.name || "None"}
           label="Current Term"
         />
 
@@ -101,24 +184,24 @@ export default function AdminSessionManagementPage() {
             <div className="flex items-center gap-3">
 
               <h2 className="text-2xl font-bold">
-                2026/2027
+                {activeSession?.name || "No session"}
               </h2>
 
               <span className="px-3 py-1
                 rounded-full text-sm
                 bg-green-100 text-green-700">
-                Active
+                {activeSession?.status || "Inactive"}
               </span>
 
             </div>
 
             <p className="text-gray-500 mt-2">
-              07 September 2026 → 30 July 2027
+              {activeSession ? `${activeSession.start} → ${activeSession.end}` : "No active session"}
             </p>
 
           </div>
 
-          <button className="border rounded-xl px-5 py-3">
+          <button onClick={manageCurrentSession} disabled={!activeSession} className="border rounded-xl px-5 py-3 disabled:opacity-40">
             Manage Session
           </button>
 
@@ -141,7 +224,7 @@ export default function AdminSessionManagementPage() {
             </p>
           </div>
 
-          <button className="border rounded-xl p-3">
+          <button aria-label="Create term" onClick={createTerm} className="border rounded-xl p-3">
             <Plus size={18} />
           </button>
 
@@ -149,26 +232,7 @@ export default function AdminSessionManagementPage() {
 
         <div className="grid md:grid-cols-3 gap-4 mt-6">
 
-          <TermCard
-            name="First Term"
-            start="07 Sep 2026"
-            end="18 Dec 2026"
-            status="Active"
-          />
-
-          <TermCard
-            name="Second Term"
-            start="11 Jan 2027"
-            end="26 Mar 2027"
-            status="Upcoming"
-          />
-
-          <TermCard
-            name="Third Term"
-            start="12 Apr 2027"
-            end="30 Jul 2027"
-            status="Upcoming"
-          />
+          {terms.map((term) => <TermCard key={term.name} {...term} onEdit={() => updateTerm(term.name, "edit")} onToggleLock={() => updateTerm(term.name, "lock")} />)}
 
         </div>
 
@@ -239,15 +303,15 @@ export default function AdminSessionManagementPage() {
 
                     <div className="flex gap-2">
 
-                      <button className="border rounded-lg p-2">
+                      <button aria-label={`Edit ${session.name}`} title="Edit session" onClick={() => updateSession(session.name, "edit")} className="border rounded-lg p-2">
                         <Edit size={16} />
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button aria-label={`${session.status === "Locked" ? "Unlock" : "Lock"} ${session.name}`} title="Toggle session lock" onClick={() => updateSession(session.name, "lock")} className="border rounded-lg p-2">
                         <Lock size={16} />
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button aria-label={`${session.status === "Archived" ? "Unarchive" : "Archive"} ${session.name}`} title="Toggle archive" onClick={() => updateSession(session.name, "archive")} className="border rounded-lg p-2">
                         <Archive size={16} />
                       </button>
 
@@ -289,12 +353,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function TermCard({
-  name,
-  start,
-  end,
-  status,
-}) {
+function TermCard({ name, start, end, status, onEdit, onToggleLock }) {
   return (
     <div className="border rounded-2xl p-5">
 
@@ -316,7 +375,7 @@ function TermCard({
 
       <div className="flex gap-2 mt-5">
 
-        <button className="border rounded-lg px-3 py-2
+        <button onClick={onEdit} className="border rounded-lg px-3 py-2
           flex items-center gap-2">
 
           <Edit size={15} />
@@ -324,7 +383,7 @@ function TermCard({
 
         </button>
 
-        <button className="border rounded-lg px-3 py-2
+        <button aria-label={`${status === "Locked" ? "Unlock" : "Lock"} ${name}`} onClick={onToggleLock} className="border rounded-lg px-3 py-2
           flex items-center gap-2">
 
           <Lock size={15} />

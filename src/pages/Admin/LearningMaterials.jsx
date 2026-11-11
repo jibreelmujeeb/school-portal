@@ -1,12 +1,10 @@
 
 import { useMemo, useRef, useState } from "react";
-import axios from "axios";
 import {
   Search, Plus, UploadCloud, FileText, FileImage,
   FileVideo, Presentation, Download, Eye, Pencil,
   Trash2, X, Check, BookOpen, Files, CheckCircle,
   FilePenLine, FolderOpen, Filter, MoreVertical,
-  CalendarDays, Users, GraduationCap, BookMarked,
 } from "lucide-react";
 
 const initialMaterials = [
@@ -309,7 +307,9 @@ export default function AdminLearningMaterials() {
       );
 
       setModalOpen(false);
-      setNotice(editing ? "Material updated." : "Material added.");
+      setNotice(editing
+        ? "Material changes saved in this page only; the file was not uploaded."
+        : "Material added to the page's sample data only; the file was not uploaded.");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -339,7 +339,7 @@ export default function AdminLearningMaterials() {
         )
       );
 
-      setNotice(`Material marked ${nextStatus.toLowerCase()}.`);
+      setNotice(`Material marked ${nextStatus.toLowerCase()} locally.`);
     } catch {
       setNotice("Could not update the publication status.");
     }
@@ -360,7 +360,7 @@ export default function AdminLearningMaterials() {
       setMaterials((current) =>
         current.filter((m) => m._id !== material._id)
       );
-      setNotice("Material deleted.");
+      setNotice("Material removed from this page's sample data.");
     } catch {
       setNotice("Unable to delete this material.");
     }

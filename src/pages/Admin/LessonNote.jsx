@@ -3,8 +3,7 @@ import React, { useMemo, useState } from "react";
 import {
   BookOpen, Search, Plus, Download, Printer, Eye, CheckCircle2,
   Clock, XCircle, X, FileText, Users, CalendarDays, Filter,
-  MoreVertical, GraduationCap, ClipboardList, Send, Pencil,
-  MessageSquare, BookMarked, AlertCircle
+  MoreVertical, ClipboardList, BookMarked
 } from "lucide-react";
 
 const initialNotes = [
@@ -175,6 +174,7 @@ export default function AdminLessonNotes() {
   const [showCreate, setShowCreate] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
   const [showReview, setShowReview] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const [form, setForm] = useState({
     teacher: "",
@@ -429,7 +429,7 @@ export default function AdminLessonNotes() {
               Lesson Notes Management
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Review teacher submissions and manage lesson note approvals.
+              Review teacher submissions and manage lesson note approvals. Changes apply to the sample data on this page only.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -557,10 +557,15 @@ export default function AdminLessonNotes() {
                           <Printer size={17} />
                         </button>
                         <div className="relative group">
-                          <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+                          <button
+                            onClick={() => setOpenMenuId((current) => current === note.id ? null : note.id)}
+                            aria-label={`More actions for ${note.noteNo}`}
+                            aria-expanded={openMenuId === note.id}
+                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                          >
                             <MoreVertical size={17} />
                           </button>
-                          <div className="invisible absolute right-0 top-9 z-20 w-44 rounded-lg border border-slate-200 bg-white p-1 opacity-0 group-hover:visible group-hover:opacity-100">
+                          <div className={`${openMenuId === note.id ? "visible opacity-100" : "invisible opacity-0 group-hover:visible group-hover:opacity-100"} absolute right-0 top-9 z-20 w-44 rounded-lg border border-slate-200 bg-white p-1`}>
                             <button onClick={() => openReview(note)} className="w-full rounded-md px-3 py-2 text-left text-xs text-indigo-700 hover:bg-indigo-50">
                               Review submission
                             </button>

@@ -11,7 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 
-const applications = [
+const initialApplications = [
   {
     id: 1,
     applicationNo: "ADM2026001",
@@ -36,12 +36,38 @@ const applications = [
 
 export default function AdmissionApprovalPage() {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [rows, setRows] = useState(initialApplications);
+  const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState("");
 
-  const filtered = applications.filter(
+  const filtered = rows.filter(
     (app) =>
-      app.applicant.toLowerCase().includes(search.toLowerCase()) ||
-      app.applicationNo.toLowerCase().includes(search.toLowerCase())
+      (app.applicant.toLowerCase().includes(search.toLowerCase()) ||
+        app.applicationNo.toLowerCase().includes(search.toLowerCase())) &&
+      (statusFilter === "All" || app.status === statusFilter)
   );
+
+  const updateStatus = (app, status) => {
+    setRows((current) =>
+      current.map((item) => item.id === app.id ? { ...item, status } : item)
+    );
+    setNotice(`${app.applicant}'s application marked ${status.toLowerCase()}.`);
+  };
+
+  const exportApplications = () => {
+    const header = ["Application No.", "Applicant", "Class", "Exam", "Interview", "Total", "Status"];
+    const csv = [header, ...filtered.map((app) => [
+      app.applicationNo, app.applicant, app.classApplied, app.examScore,
+      app.interviewScore, app.overallScore, app.status,
+    ])].map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "admission-approvals.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-8">
@@ -62,7 +88,7 @@ export default function AdmissionApprovalPage() {
 
         </div>
 
-        <button className="bg-blue-600 text-white px-5 py-3 rounded-xl flex gap-2 items-center">
+        <button onClick={exportApplications} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex gap-2 items-center">
 
           <Download size={18}/>
 
@@ -135,15 +161,17 @@ export default function AdmissionApprovalPage() {
 
         </div>
 
-        <button className="border rounded-xl px-5 flex items-center gap-2">
+        <label className="border rounded-xl px-4 flex items-center gap-2">
 
           <Filter size={18}/>
-
-          Filter
-
-        </button>
+          <span className="sr-only">Filter applications by status</span>
+          <select aria-label="Filter applications by status" className="bg-transparent outline-none py-3" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option>All</option><option>Pending</option><option>Approved</option><option>Waitlisted</option><option>Rejected</option>
+          </select>
+        </label>
 
       </div>
+      {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
       {/* Table */}
 
@@ -188,7 +216,7 @@ export default function AdmissionApprovalPage() {
 
                 <td>
 
-                  <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                  <span className={`px-3 py-1 rounded-full ${app.status === "Pending" ? "bg-yellow-100 text-yellow-700" : app.status === "Approved" ? "bg-green-100 text-green-700" : app.status === "Rejected" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>
                     {app.status}
                   </span>
 
@@ -198,25 +226,25 @@ export default function AdmissionApprovalPage() {
 
                   <div className="flex gap-2">
 
-                    <button className="border rounded-lg p-2">
+                    <button aria-label={`View ${app.applicant}'s application`} title="View application" onClick={() => setSelected(app)} className="border rounded-lg p-2">
 
                       <Eye size={16}/>
 
                     </button>
 
-                    <button className="border rounded-lg p-2 text-green-600">
+                    <button aria-label={`Approve ${app.applicant}`} title="Approve" disabled={app.status !== "Pending"} onClick={() => updateStatus(app, "Approved")} className="border rounded-lg p-2 text-green-600 disabled:opacity-40">
 
                       <CheckCircle size={16}/>
 
                     </button>
 
-                    <button className="border rounded-lg p-2 text-blue-600">
+                    <button aria-label={`Waitlist ${app.applicant}`} title="Waitlist" disabled={app.status !== "Pending"} onClick={() => updateStatus(app, "Waitlisted")} className="border rounded-lg p-2 text-blue-600 disabled:opacity-40">
 
                       <FileText size={16}/>
 
                     </button>
 
-                    <button className="border rounded-lg p-2 text-red-600">
+                    <button aria-label={`Reject ${app.applicant}`} title="Reject" disabled={app.status !== "Pending"} onClick={() => updateStatus(app, "Rejected")} className="border rounded-lg p-2 text-red-600 disabled:opacity-40">
 
                       <XCircle size={16}/>
 
@@ -235,6 +263,24 @@ export default function AdmissionApprovalPage() {
         </table>
 
       </div>
+
+      {filtered.length === 0 && <p className="p-5 text-center text-gray-500">No applications match your search and filter.</p>}
+
+      {selected && (
+        <div role="dialog" aria-modal="true" aria-labelledby="application-details-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="application-details-title" className="text-xl font-bold">Application details</h2>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div><dt className="font-semibold">Applicant</dt><dd>{selected.applicant}</dd></div>
+              <div><dt className="font-semibold">Application</dt><dd>{selected.applicationNo}</dd></div>
+              <div><dt className="font-semibold">Class</dt><dd>{selected.classApplied}</dd></div>
+              <div><dt className="font-semibold">Scores</dt><dd>Exam {selected.examScore}% · Interview {selected.interviewScore}% · Overall {selected.overallScore}%</dd></div>
+              <div><dt className="font-semibold">Status</dt><dd>{selected.status}</dd></div>
+            </dl>
+            <button autoFocus onClick={() => setSelected(null)} className="mt-5 rounded-lg border px-4 py-2">Close</button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

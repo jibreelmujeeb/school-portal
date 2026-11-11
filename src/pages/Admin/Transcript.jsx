@@ -146,6 +146,7 @@ export default function AdminTranscript() {
   const [selected, setSelected] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [newTranscript, setNewTranscript] = useState({
     student: "",
     admissionNo: "",
@@ -207,6 +208,7 @@ export default function AdminTranscript() {
       prev.map((item) => item.id === id ? { ...item, status } : item)
     );
     setSelected((prev) => prev?.id === id ? { ...prev, status } : prev);
+    setOpenMenuId(null);
   };
 
   const handleCreate = (e) => {
@@ -454,10 +456,21 @@ export default function AdminTranscript() {
                           <Printer size={17} />
                         </button>
                         <div className="relative group">
-                          <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+                          <button
+                            type="button"
+                            title="Transcript actions"
+                            aria-label={`Actions for ${item.student}'s transcript`}
+                            aria-expanded={openMenuId === item.id}
+                            onClick={() => setOpenMenuId((current) => current === item.id ? null : item.id)}
+                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                          >
                             <MoreVertical size={17} />
                           </button>
-                          <div className="invisible absolute right-0 top-9 z-20 w-40 rounded-lg border border-slate-200 bg-white p-1 opacity-0 group-hover:visible group-hover:opacity-100">
+                          <div className={`absolute right-0 top-9 z-20 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-lg ${
+                            openMenuId === item.id
+                              ? "visible opacity-100"
+                              : "invisible opacity-0 group-hover:visible group-hover:opacity-100"
+                          }`}>
                             {item.status !== "Issued" && (
                               <button onClick={() => updateStatus(item.id, "Issued")} className="w-full rounded-md px-3 py-2 text-left text-xs text-emerald-700 hover:bg-emerald-50">
                                 Approve & Issue

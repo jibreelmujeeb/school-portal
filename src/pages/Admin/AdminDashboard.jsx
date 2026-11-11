@@ -9,8 +9,11 @@ import {
   Megaphone,
   ArrowRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const stats = [
     {
       title: "Students",
@@ -37,18 +40,22 @@ const AdminDashboard = () => {
   const actions = [
     {
       title: "Add Student",
+      path: "/admin/students",
       icon: <UserPlus className="w-5 h-5 text-blue-600" />,
     },
     {
       title: "Add Teacher",
+      path: "/admin/teachers",
       icon: <UserPlus className="w-5 h-5 text-green-600" />,
     },
     {
       title: "Create Course",
+      path: "/admin/courses",
       icon: <PlusCircle className="w-5 h-5 text-purple-600" />,
     },
     {
       title: "Post Announcement",
+      path: "/admin/announcements",
       icon: <Megaphone className="w-5 h-5 text-orange-600" />,
     },
   ];
@@ -99,6 +106,9 @@ const AdminDashboard = () => {
           {actions.map((action, idx) => (
             <button
               key={idx}
+              type="button"
+              onClick={() => navigate(action.path)}
+              aria-label={action.title}
               className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center justify-between hover:bg-gray-50 transition"
             >
               <div className="flex items-center gap-3">

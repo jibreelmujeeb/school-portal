@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   CalendarDays,
   CheckCircle,
@@ -8,7 +9,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-const terms = [
+const initialTerms = [
   {
     id: 1,
     name: "First Term",
@@ -16,6 +17,7 @@ const terms = [
     end: "18 Dec 2026",
     status: "Active",
     locked: false,
+    session: "2026/2027",
   },
   {
     id: 2,
@@ -24,6 +26,7 @@ const terms = [
     end: "26 Mar 2027",
     status: "Upcoming",
     locked: false,
+    session: "2026/2027",
   },
   {
     id: 3,
@@ -32,10 +35,61 @@ const terms = [
     end: "30 Jul 2027",
     status: "Upcoming",
     locked: false,
+    session: "2026/2027",
   },
 ];
 
 export default function AdminTermManagementPage() {
+  const [terms, setTerms] = useState(initialTerms);
+  const [session, setSession] = useState("2026/2027");
+  const [currentTerm, setCurrentTerm] = useState("First Term");
+  const [notice, setNotice] = useState("");
+  const visibleTerms = terms.filter((term) => term.session === session);
+
+  const createTerm = () => {
+    const name = window.prompt("Enter a term name:");
+    if (!name?.trim()) return;
+    if (visibleTerms.some((term) => term.name.toLowerCase() === name.trim().toLowerCase())) {
+      setNotice("A term with that name already exists.");
+      return;
+    }
+    const start = window.prompt("Enter the term start date:");
+    if (!start?.trim()) return;
+    const end = window.prompt("Enter the term end date:");
+    if (!end?.trim()) return;
+    setTerms((items) => [...items, { id: Date.now(), name: name.trim(), start, end, status: "Upcoming", locked: false, session }]);
+    setNotice(`${name.trim()} added to the local term list.`);
+  };
+
+  const editTerm = (term) => {
+    const name = window.prompt("Term name:", term.name);
+    if (!name?.trim()) return;
+    setTerms((items) => items.map((item) => item.id === term.id ? { ...item, name: name.trim() } : item));
+    setNotice(`${term.name} updated in the local term list.`);
+  };
+
+  const toggleLock = (term) => {
+    setTerms((items) => items.map((item) => item.id === term.id
+      ? item.locked
+        ? { ...item, locked: false, status: item.statusBeforeLock || "Upcoming", statusBeforeLock: undefined }
+        : { ...item, locked: true, statusBeforeLock: item.status, status: "Locked" }
+      : item));
+    setNotice(`${term.name} ${term.locked ? "unlocked" : "locked"} in the local term list.`);
+  };
+
+  const changeCurrentTerm = (name) => {
+    setCurrentTerm(name);
+    setTerms((items) => {
+      const sessionTerms = items.filter((term) => term.session === session && !term.locked);
+      const selectedIndex = sessionTerms.findIndex((term) => term.name === name);
+      return items.map((term) => {
+        if (term.session !== session || term.locked) return term;
+        const index = sessionTerms.findIndex((item) => item.id === term.id);
+        return { ...term, status: index < selectedIndex ? "Completed" : index === selectedIndex ? "Active" : "Upcoming" };
+      });
+    });
+  };
+
   return (
     <div className="space-y-6">
 
@@ -53,7 +107,7 @@ export default function AdminTermManagementPage() {
           </p>
         </div>
 
-        <button className="bg-blue-600 text-white
+        <button onClick={createTerm} className="bg-blue-600 text-white
           px-5 py-3 rounded-xl flex items-center gap-2">
 
           <Plus size={18} />
@@ -62,6 +116,7 @@ export default function AdminTermManagementPage() {
         </button>
 
       </div>
+      {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
 
       {/* Session Filter */}
       <div className="border rounded-2xl p-5">
@@ -73,7 +128,7 @@ export default function AdminTermManagementPage() {
               Academic Session
             </label>
 
-            <select className="w-full border rounded-xl
+            <select aria-label="Academic Session" value={session} onChange={(event) => setSession(event.target.value)} className="w-full border rounded-xl
               px-4 py-3 mt-2">
 
               <option>2026/2027</option>
@@ -87,7 +142,7 @@ export default function AdminTermManagementPage() {
               Current Term
             </label>
 
-            <select className="w-full border rounded-xl
+            <select aria-label="Current Term" value={currentTerm} onChange={(event) => changeCurrentTerm(event.target.value)} className="w-full border rounded-xl
               px-4 py-3 mt-2">
 
               <option>First Term</option>
@@ -106,25 +161,25 @@ export default function AdminTermManagementPage() {
 
         <StatCard
           icon={<CalendarDays />}
-          value="First Term"
+          value={currentTerm}
           label="Current Term"
         />
 
         <StatCard
           icon={<CalendarDays />}
-          value="3"
+        value={visibleTerms.length}
           label="Total Terms"
         />
 
         <StatCard
           icon={<CheckCircle />}
-          value="1"
+        value={visibleTerms.filter((term) => term.status === "Active").length}
           label="Active Term"
         />
 
         <StatCard
           icon={<Lock />}
-          value="2"
+          value={visibleTerms.filter((term) => term.locked).length}
           label="Locked Terms"
         />
 
@@ -133,12 +188,15 @@ export default function AdminTermManagementPage() {
       {/* Term Cards */}
       <div className="grid md:grid-cols-3 gap-5">
 
-        {terms.map((term) => (
+        {visibleTerms.map((term) => (
           <TermCard
             key={term.id}
             term={term}
+          onEdit={() => editTerm(term)}
+          onToggleLock={() => toggleLock(term)}
           />
         ))}
+        {visibleTerms.length === 0 && <p className="text-sm text-gray-500">No terms are recorded for {session} in this local list.</p>}
 
       </div>
 
@@ -187,7 +245,7 @@ export default function AdminTermManagementPage() {
 
             <tbody>
 
-              {terms.map((term) => (
+              {visibleTerms.map((term) => (
 
                 <tr
                   key={term.id}
@@ -222,11 +280,11 @@ export default function AdminTermManagementPage() {
 
                     <div className="flex gap-2">
 
-                      <button className="border rounded-lg p-2">
+                      <button aria-label={`Edit ${term.name}`} title="Edit term" onClick={() => editTerm(term)} className="border rounded-lg p-2">
                         <Edit size={16} />
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button aria-label={`${term.locked ? "Unlock" : "Lock"} ${term.name}`} title="Toggle term lock" onClick={() => toggleLock(term)} className="border rounded-lg p-2">
                         <MoreVertical size={16} />
                       </button>
 
@@ -250,7 +308,7 @@ export default function AdminTermManagementPage() {
   );
 }
 
-function TermCard({ term }) {
+function TermCard({ term, onEdit, onToggleLock }) {
   return (
     <div className="border rounded-3xl p-5">
 
@@ -274,7 +332,7 @@ function TermCard({ term }) {
 
       <div className="flex gap-2 mt-5">
 
-        <button className="flex-1 border rounded-xl
+        <button onClick={onEdit} className="flex-1 border rounded-xl
           px-4 py-2 flex justify-center items-center gap-2">
 
           <Edit size={16} />
@@ -282,11 +340,11 @@ function TermCard({ term }) {
 
         </button>
 
-        {term.status === "Active" && (
-          <button className="border rounded-xl px-3 py-2">
+        {term.status === "Active" || term.locked ? (
+          <button aria-label={`${term.locked ? "Unlock" : "Lock"} ${term.name}`} onClick={onToggleLock} className="border rounded-xl px-3 py-2">
             <Lock size={16} />
           </button>
-        )}
+        ) : null}
 
       </div>
 

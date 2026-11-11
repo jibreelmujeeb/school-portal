@@ -6,7 +6,6 @@ import {
   XCircle,
   Clock3,
   MessageSquare,
-  Send,
   Filter,
   Lightbulb,
 } from "lucide-react";
@@ -47,15 +46,25 @@ const initialSuggestions = [
 const AdminSuggestionPage = () => {
   const [suggestions, setSuggestions] =
     useState(initialSuggestions);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const filteredSuggestions = suggestions.filter((item) => {
+    const query = search.trim().toLowerCase();
+    const matchesSearch = [item.user, item.role, item.title, item.message]
+      .some((value) => value.toLowerCase().includes(query));
+    return matchesSearch && (statusFilter === "All" || item.status === statusFilter);
+  });
 
   const updateStatus = (id, status) => {
-    const updatedSuggestions = suggestions.map((item) =>
+    setSuggestions((current) => current.map((item) =>
       item.id === id
         ? { ...item, status }
         : item
-    );
-
-    setSuggestions(updatedSuggestions);
+    ));
   };
 
   const getStatusStyle = (status) => {
@@ -101,7 +110,7 @@ const AdminSuggestionPage = () => {
           </h1>
 
           <p className="text-sm text-gray-600 mt-2">
-            Review and manage suggestions from students, teachers, and parents
+            Review and manage suggestions from students, teachers, and parents. Status updates are local to this page.
           </p>
         </div>
 
@@ -119,7 +128,7 @@ const AdminSuggestionPage = () => {
           </div>
 
           <h2 className="text-2xl font-semibold mt-3">
-            120
+            {suggestions.length}
           </h2>
 
         </div>
@@ -133,7 +142,7 @@ const AdminSuggestionPage = () => {
           </div>
 
           <h2 className="text-2xl font-semibold mt-3">
-            70
+            {suggestions.filter((item) => item.status === "Approved").length}
           </h2>
 
         </div>
@@ -147,7 +156,7 @@ const AdminSuggestionPage = () => {
           </div>
 
           <h2 className="text-2xl font-semibold mt-3">
-            35
+            {suggestions.filter((item) => item.status === "Pending").length}
           </h2>
 
         </div>
@@ -161,7 +170,7 @@ const AdminSuggestionPage = () => {
           </div>
 
           <h2 className="text-2xl font-semibold mt-3">
-            15
+            {suggestions.filter((item) => item.status === "Rejected").length}
           </h2>
 
         </div>
@@ -179,23 +188,31 @@ const AdminSuggestionPage = () => {
           <input
             type="text"
             placeholder="Search suggestions..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full outline-none text-sm bg-transparent"
           />
 
         </div>
 
         {/* FILTER */}
-        <button className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">
+        <label className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">
           <Filter className="w-4 h-4" />
-          Filter
-        </button>
+          <span className="sr-only">Filter suggestions</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="bg-transparent outline-none">
+            <option>All</option>
+            <option>Pending</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+          </select>
+        </label>
 
       </section>
 
       {/* SUGGESTIONS */}
       <section className="space-y-5">
 
-        {suggestions.map((item) => {
+        {filteredSuggestions.map((item) => {
           const statusData = getStatusStyle(item.status);
 
           return (
@@ -226,6 +243,12 @@ const AdminSuggestionPage = () => {
                     <p className="text-sm text-gray-600 mt-4 leading-relaxed">
                       {item.message}
                     </p>
+
+                    {item.reply && (
+                      <p className="mt-3 rounded-xl bg-blue-50 p-3 text-sm text-blue-800">
+                        Local reply draft: {item.reply}
+                      </p>
+                    )}
 
                   </div>
 
@@ -278,6 +301,10 @@ const AdminSuggestionPage = () => {
 
                     {/* REPLY */}
                     <button
+                      onClick={() => {
+                        setReplyingTo(item);
+                        setReplyText(item.reply || "");
+                      }}
                       className="flex items-center gap-2 px-4 py-2 border border-blue-200 rounded-full text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 transition"
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -296,9 +323,37 @@ const AdminSuggestionPage = () => {
       </section>
 
       {/* EMPTY STATE */}
-      {suggestions.length === 0 && (
+      {filteredSuggestions.length === 0 && (
         <div className="text-center text-sm text-gray-500">
-          No suggestions available.
+          No suggestions match your search or filter.
+        </div>
+      )}
+
+      {notice && <p role="status" className="text-sm text-green-700">{notice}</p>}
+
+      {replyingTo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!replyText.trim()) return;
+              setSuggestions((current) => current.map((item) =>
+                item.id === replyingTo.id ? { ...item, reply: replyText.trim() } : item
+              ));
+              setReplyingTo(null);
+              setNotice("Reply saved locally. It has not been sent to the suggestion author.");
+            }}
+            className="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6"
+          >
+            <h2 className="font-semibold">Reply to {replyingTo.user}</h2>
+            <p className="text-sm text-gray-500">{replyingTo.title}</p>
+            <textarea required value={replyText} onChange={(event) => setReplyText(event.target.value)} rows={4} className="w-full rounded-xl border border-gray-200 p-3" placeholder="Write a reply..." />
+            <p className="text-xs text-gray-500">This draft is stored only in this page; no message will be sent.</p>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setReplyingTo(null)} className="rounded-xl border px-4 py-2">Cancel</button>
+              <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2 text-white">Save Reply</button>
+            </div>
+          </form>
         </div>
       )}
 

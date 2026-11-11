@@ -104,6 +104,8 @@ const formatMoney = (amount) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
+const csvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+
 const statusStyles = {
   Paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
   "Partially Paid": "bg-blue-50 text-blue-700 border-blue-200",
@@ -134,6 +136,7 @@ export default function AdminInvoice() {
   const [classFilter, setClassFilter] = useState("All");
   const [termFilter, setTermFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceToEdit, setInvoiceToEdit] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
 
@@ -190,6 +193,52 @@ export default function AdminInvoice() {
     );
   });
 
+  const exportInvoices = () => {
+    const headers = [
+      "Invoice",
+      "Student",
+      "Admission Number",
+      "Parent",
+      "Class",
+      "Session",
+      "Term",
+      "Issued Date",
+      "Due Date",
+      "Total",
+      "Paid",
+      "Balance",
+      "Status",
+    ];
+    const rows = filteredInvoices.map((invoice) => [
+      invoice.id,
+      invoice.student,
+      invoice.admissionNo,
+      invoice.parent,
+      invoice.className,
+      invoice.session,
+      invoice.term,
+      invoice.issuedDate,
+      invoice.dueDate,
+      invoice.total,
+      invoice.paid,
+      invoice.total - invoice.paid,
+      invoice.status,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map(csvValue).join(","))
+      .join("\r\n");
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `invoices-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
   const cancelInvoice = (id) => {
     setInvoices((current) =>
       current.map((invoice) =>
@@ -200,6 +249,17 @@ export default function AdminInvoice() {
     );
 
     setOpenMenu(null);
+  };
+
+  const saveInvoiceEdits = (updatedInvoice) => {
+    setInvoices((current) =>
+      current.map((invoice) =>
+        invoice.id === updatedInvoice.id
+          ? { ...invoice, ...updatedInvoice }
+          : invoice
+      )
+    );
+    setInvoiceToEdit(null);
   };
 
   return (
@@ -224,7 +284,11 @@ export default function AdminInvoice() {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={exportInvoices}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
               <Download size={17} />
               Export
             </button>
@@ -516,8 +580,13 @@ export default function AdminInvoice() {
                           </button>
 
                           <button
+                            onClick={() => {
+                              setOpenMenu(null);
+                              setInvoiceToEdit(invoice);
+                            }}
                             className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-50 hover:text-blue-600"
                             title="Edit"
+                            aria-label={`Edit invoice ${invoice.id}`}
                           >
                             <Edit3 size={17} />
                           </button>
@@ -614,6 +683,14 @@ export default function AdminInvoice() {
         <InvoiceDetails
           invoice={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
+        />
+      )}
+
+      {invoiceToEdit && (
+        <EditInvoiceModal
+          invoice={invoiceToEdit}
+          onClose={() => setInvoiceToEdit(null)}
+          onSave={saveInvoiceEdits}
         />
       )}
 
@@ -880,6 +957,189 @@ function AmountCard({
       <p className={`mt-2 text-lg font-bold ${className}`}>
         {formatMoney(value)}
       </p>
+    </div>
+  );
+}
+
+function inputDateValue(value) {
+  const [day, month, year] = value.split(" ");
+  const monthNumber = new Date(`${month} 1, ${year}`).getMonth() + 1;
+  return `${year}-${String(monthNumber).padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function displayInvoiceDate(value) {
+  const [year, month, day] = value.split("-");
+  const monthName = new Date(Number(year), Number(month) - 1, 1)
+    .toLocaleString("en", { month: "short" });
+  return `${day} ${monthName} ${year}`;
+}
+
+function getUpdatedInvoiceStatus(invoice) {
+  if (invoice.status === "Cancelled") return "Cancelled";
+  if (invoice.paid >= invoice.total) return "Paid";
+  if (invoice.paid > 0) return "Partially Paid";
+
+  const dueDate = new Date(`${invoice.dueDate}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today ? "Overdue" : "Unpaid";
+}
+
+function EditInvoiceModal({ invoice, onClose, onSave }) {
+  const [form, setForm] = useState({
+    student: invoice.student,
+    admissionNo: invoice.admissionNo,
+    parent: invoice.parent,
+    className: invoice.className,
+    session: invoice.session,
+    term: invoice.term,
+    dueDate: inputDateValue(invoice.dueDate),
+    total: String(invoice.total),
+  });
+  const [error, setError] = useState("");
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const total = Number(form.total);
+
+    if (!Number.isFinite(total) || total < invoice.paid) {
+      setError(
+        `Invoice total must be at least the amount already paid (${formatMoney(invoice.paid)}).`
+      );
+      return;
+    }
+
+    const updatedInvoice = {
+      ...invoice,
+      student: form.student.trim(),
+      admissionNo: form.admissionNo.trim(),
+      parent: form.parent.trim(),
+      className: form.className.trim(),
+      session: form.session.trim(),
+      term: form.term,
+      dueDate: displayInvoiceDate(form.dueDate),
+      total,
+    };
+    updatedInvoice.status = getUpdatedInvoiceStatus(updatedInvoice);
+    onSave(updatedInvoice);
+  };
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+    setError("");
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-invoice-title"
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-gray-200 p-5">
+          <div>
+            <h2 id="edit-invoice-title" className="text-xl font-bold text-gray-900">
+              Edit Invoice
+            </h2>
+            <p className="text-sm text-gray-500">{invoice.id}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+            aria-label="Close edit invoice dialog"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <InvoiceFormField label="Student" name="student" value={form.student} onChange={updateField} required />
+            <InvoiceFormField label="Admission number" name="admissionNo" value={form.admissionNo} onChange={updateField} required />
+            <InvoiceFormField label="Parent / guardian" name="parent" value={form.parent} onChange={updateField} required />
+            <InvoiceFormField label="Class" name="className" value={form.className} onChange={updateField} required />
+            <InvoiceFormField label="Session" name="session" value={form.session} onChange={updateField} required />
+
+            <div>
+              <label htmlFor="edit-invoice-term" className="mb-2 block text-sm font-medium text-gray-700">
+                Term
+              </label>
+              <select
+                id="edit-invoice-term"
+                name="term"
+                value={form.term}
+                onChange={updateField}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500"
+              >
+                <option>First Term</option>
+                <option>Second Term</option>
+                <option>Third Term</option>
+              </select>
+            </div>
+
+            <InvoiceFormField label="Due date" name="dueDate" type="date" value={form.dueDate} onChange={updateField} required />
+            <InvoiceFormField label="Invoice total (NGN)" name="total" type="number" min={invoice.paid} value={form.total} onChange={updateField} required />
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Amount paid remains {formatMoney(invoice.paid)}. The invoice status
+            will update based on the payment and due date.
+          </p>
+
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function InvoiceFormField({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  min,
+  required = false,
+}) {
+  return (
+    <div>
+      <label htmlFor={`edit-invoice-${name}`} className="mb-2 block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <input
+        id={`edit-invoice-${name}`}
+        name={name}
+        type={type}
+        min={min}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500"
+      />
     </div>
   );
 }
