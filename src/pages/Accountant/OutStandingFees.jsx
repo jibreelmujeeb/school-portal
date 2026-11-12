@@ -886,6 +886,7 @@ export default function AccountantOutstanding() {
                   primary
                   onClick={() =>
                     handlePayment(selected)
+                    
                   }
                 >
                   Record Payment
