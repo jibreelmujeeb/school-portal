@@ -9,21 +9,25 @@ import {
   Database,
   Save,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 export default function AccountantSettingsPage() {
-  const [settings, setSettings] = useState({
+  const [settings, setSettings, settingsError] = usePersistentState("accountant-settings", {
     emailNotifications: true,
     smsNotifications: false,
     autoReceipt: true,
     darkMode: false,
     twoFactor: true,
   });
+  const [language, setLanguage, languageError] = usePersistentState("accountant-language", "English");
+  const [message, setMessage] = useState("");
 
   const handleToggle = (key) => {
     setSettings((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
+    setMessage("Preference updated and saved in this browser.");
   };
 
   return (
@@ -39,18 +43,25 @@ export default function AccountantSettingsPage() {
         </p>
       </div>
 
+      {(settingsError || languageError) && (
+        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          {settingsError || languageError}
+        </p>
+      )}
+      {message && <p role="status" className="text-sm text-blue-700">{message}</p>}
+
       {/* Statistics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
 
         <div className="border rounded-3xl p-5">
           <Lock className="text-green-600 mb-3" />
-          <h2 className="text-2xl font-bold">98%</h2>
+          <h2 className="text-2xl font-bold">{settings.twoFactor ? "98%" : "75%"}</h2>
           <p>Security Score</p>
         </div>
 
         <div className="border rounded-3xl p-5">
           <Bell className="text-blue-600 mb-3" />
-          <h2 className="text-2xl font-bold">4</h2>
+          <h2 className="text-2xl font-bold">{Number(settings.emailNotifications) + Number(settings.smsNotifications)}</h2>
           <p>Notifications Enabled</p>
         </div>
 
@@ -90,8 +101,8 @@ export default function AccountantSettingsPage() {
             />
           </label>
 
-          <button className="border rounded-xl px-4 py-2">
-            Change Password
+          <button type="button" disabled title="Password changes require a connected authentication service." className="border rounded-xl px-4 py-2 opacity-50 cursor-not-allowed">
+            Change Password (unavailable)
           </button>
 
         </div>
@@ -166,7 +177,10 @@ export default function AccountantSettingsPage() {
             />
           </label>
 
-          <select className="w-full border rounded-xl p-3">
+          <select value={language} onChange={(event) => {
+            setLanguage(event.target.value);
+            setMessage("Language preference saved in this browser.");
+          }} className="w-full border rounded-xl p-3">
             <option>English</option>
             <option>French</option>
             <option>Arabic</option>
@@ -178,7 +192,7 @@ export default function AccountantSettingsPage() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <button className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center gap-2">
+        <button onClick={() => setMessage("Settings saved in this browser.")} className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center gap-2">
           <Save size={18} />
           Save Changes
         </button>

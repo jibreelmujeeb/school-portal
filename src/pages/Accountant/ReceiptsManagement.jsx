@@ -1,186 +1,156 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Search,
-  Filter,
   Eye,
   Printer,
   Download,
-  Mail,
-  RotateCcw,
-  Ban,
   FileText,
+  Ban,
 } from "lucide-react";
-
-const receipts = [
-  {
-    id: "REC2026001",
-    student: "John David",
-    feeType: "Tuition",
-    amount: "₦150,000",
-    method: "Bank Transfer",
-    date: "2026-07-21",
-    status: "Issued",
-  },
-  {
-    id: "REC2026002",
-    student: "Mary Johnson",
-    feeType: "Hostel Fee",
-    amount: "₦80,000",
-    method: "POS",
-    date: "2026-07-22",
-    status: "Reissued",
-  },
-];
+import usePersistentState from "../../hooks/usePersistentState";
+import { formatNaira, initialPayments } from "../../data/accountantData";
+import downloadCsv from "../../utils/downloadCsv";
 
 export default function ReceiptManagementPage() {
-  const [search, setSearch] = useState("");
-
-  const filtered = receipts.filter(
-    (receipt) =>
-      receipt.id.toLowerCase().includes(search.toLowerCase()) ||
-      receipt.student.toLowerCase().includes(search.toLowerCase())
+  const [payments, , storageError] = usePersistentState(
+    "accountant-payments",
+    initialPayments
   );
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  const receipts = payments.map((payment) => ({
+    ...payment,
+    status: payment.status === "Verified"
+      ? "Issued"
+      : payment.status === "Rejected"
+      ? "Voided"
+      : "Pending verification",
+  }));
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return receipts.filter((receipt) => {
+      const matchesSearch = [
+        receipt.reference,
+        receipt.student,
+        receipt.admissionNo,
+      ].some((value) => value.toLowerCase().includes(query));
+      return matchesSearch &&
+        (statusFilter === "All" || receipt.status === statusFilter);
+    });
+  }, [receipts, search, statusFilter]);
+  const collected = receipts
+    .filter((receipt) => receipt.status === "Issued")
+    .reduce((sum, receipt) => sum + receipt.amount, 0);
+
+  const exportReceipts = () => {
+    downloadCsv("receipts.csv", [
+      ["Receipt No.", "Student", "Admission No.", "Fee Type", "Amount", "Method", "Date", "Status"],
+      ...filtered.map((receipt) => [
+        receipt.reference,
+        receipt.student,
+        receipt.admissionNo,
+        receipt.feeType,
+        receipt.amount,
+        receipt.method,
+        receipt.date,
+        receipt.status,
+      ]),
+    ]);
+  };
 
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 lg:flex-row">
         <div>
           <h1 className="text-3xl font-bold">Receipts Management</h1>
-          <p className="text-gray-500 mt-2">
-            View, print, download, and manage all payment receipts.
-          </p>
+          <p className="mt-2 text-gray-500">View, print, and download receipts for recorded payments.</p>
         </div>
-
-        <button className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
+        <button onClick={exportReceipts} className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white">
           <Download size={18} />
-          Export
+          Export filtered
         </button>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      {storageError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{storageError}</p>}
 
-        <div className="border rounded-3xl p-5">
-          <FileText className="text-blue-600 mb-3" />
-          <h2 className="text-2xl font-bold">5,247</h2>
-          <p>Total Receipts</p>
-        </div>
-
-        <div className="border rounded-3xl p-5">
-          <FileText className="text-green-600 mb-3" />
-          <h2 className="text-2xl font-bold">₦48.6M</h2>
-          <p>Total Collections</p>
-        </div>
-
-        <div className="border rounded-3xl p-5">
-          <RotateCcw className="text-yellow-600 mb-3" />
-          <h2 className="text-2xl font-bold">32</h2>
-          <p>Reissued</p>
-        </div>
-
-        <div className="border rounded-3xl p-5">
-          <Ban className="text-red-600 mb-3" />
-          <h2 className="text-2xl font-bold">5</h2>
-          <p>Voided</p>
-        </div>
-
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+        <Stat icon={<FileText />} value={receipts.length} label="Total Receipts" />
+        <Stat icon={<FileText />} value={formatNaira(collected)} label="Verified Collections" />
+        <Stat icon={<FileText />} value={receipts.filter((item) => item.status === "Pending verification").length} label="Pending Verification" />
+        <Stat icon={<Ban />} value={receipts.filter((item) => item.status === "Voided").length} label="Rejected Payments" />
       </div>
 
-      {/* Search */}
-      <div className="flex flex-col md:flex-row gap-4">
-
-        <div className="flex-1 flex items-center border rounded-xl px-4 py-3">
+      <div className="flex flex-col gap-4 md:flex-row">
+        <label className="flex flex-1 items-center rounded-xl border px-4 py-3">
           <Search className="mr-3" />
-          <input
-            className="outline-none w-full"
-            placeholder="Search receipt number or student..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <button className="border rounded-xl px-5 flex items-center gap-2">
-          <Filter size={18} />
-          Filter
-        </button>
-
+          <span className="sr-only">Search receipts</span>
+          <input className="w-full outline-none" placeholder="Search receipt number or student..." value={search} onChange={(event) => setSearch(event.target.value)} />
+        </label>
+        <label className="sr-only" htmlFor="receipt-status">Filter receipts by status</label>
+        <select id="receipt-status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-xl border px-5">
+          <option value="All">All statuses</option>
+          <option>Issued</option>
+          <option>Pending verification</option>
+          <option>Voided</option>
+        </select>
       </div>
 
-      {/* Table */}
-      <div className="border rounded-3xl overflow-hidden overflow-x-auto">
-
-        <table className="w-full min-w-[1200px]">
-
+      <div className="overflow-x-auto rounded-3xl border">
+        <table className="w-full min-w-[1100px]">
           <thead className="bg-gray-50">
-            <tr>
-              <th>Receipt No.</th>
-              <th>Student</th>
-              <th>Fee Type</th>
-              <th>Amount</th>
-              <th>Method</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
+            <tr>{["Receipt No.", "Student", "Fee Type", "Amount", "Method", "Date", "Status", "Actions"].map((item) => <th key={item} className="p-3 text-left">{item}</th>)}</tr>
           </thead>
-
           <tbody>
-
             {filtered.map((receipt) => (
               <tr key={receipt.id} className="border-t">
-
-                <td>{receipt.id}</td>
-                <td>{receipt.student}</td>
-                <td>{receipt.feeType}</td>
-                <td>{receipt.amount}</td>
-                <td>{receipt.method}</td>
-                <td>{receipt.date}</td>
-
-                <td>
-                  <span className={`px-3 py-1 rounded-full ${
-                    receipt.status === "Issued"
-                      ? "bg-green-100 text-green-700"
-                      : receipt.status === "Reissued"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                  }`}>
-                    {receipt.status}
-                  </span>
+                <td className="p-3">{receipt.reference}</td>
+                <td className="p-3">{receipt.student}<p className="text-xs text-gray-500">{receipt.admissionNo}</p></td>
+                <td className="p-3">{receipt.feeType}</td>
+                <td className="p-3">{formatNaira(receipt.amount)}</td>
+                <td className="p-3">{receipt.method}</td>
+                <td className="p-3">{receipt.date}</td>
+                <td className="p-3">
+                  <span className={`rounded-full px-3 py-1 text-sm ${
+                    receipt.status === "Issued" ? "bg-green-100 text-green-700"
+                      : receipt.status === "Voided" ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}>{receipt.status}</span>
                 </td>
-
-                <td>
+                <td className="p-3">
                   <div className="flex gap-2">
-
-                    <button className="border rounded-lg p-2">
-                      <Eye size={16}/>
-                    </button>
-
-                    <button className="border rounded-lg p-2">
-                      <Printer size={16}/>
-                    </button>
-
-                    <button className="border rounded-lg p-2">
-                      <Download size={16}/>
-                    </button>
-
-                    <button className="border rounded-lg p-2">
-                      <Mail size={16}/>
-                    </button>
-
+                    <button title="View receipt" onClick={() => setSelectedReceipt(receipt)} className="rounded-lg border p-2"><Eye size={16} /></button>
+                    <button title="Print receipt" disabled={receipt.status !== "Issued"} onClick={() => window.print()} className="rounded-lg border p-2 disabled:cursor-not-allowed disabled:opacity-40"><Printer size={16} /></button>
+                    <button title="Download receipt" disabled={receipt.status !== "Issued"} onClick={() => downloadCsv(`${receipt.reference}.csv`, [["Receipt No.", "Student", "Admission No.", "Fee Type", "Amount", "Method", "Date"], [receipt.reference, receipt.student, receipt.admissionNo, receipt.feeType, receipt.amount, receipt.method, receipt.date]])} className="rounded-lg border p-2 disabled:cursor-not-allowed disabled:opacity-40"><Download size={16} /></button>
                   </div>
                 </td>
-
               </tr>
             ))}
-
+            {filtered.length === 0 && <tr><td colSpan="8" className="p-8 text-center text-gray-500">No receipts match these filters.</td></tr>}
           </tbody>
-
         </table>
-
       </div>
 
+      {selectedReceipt && (
+        <div role="dialog" aria-modal="true" aria-labelledby="receipt-detail-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md space-y-3 rounded-2xl bg-white p-6">
+            <div className="flex items-center justify-between">
+              <h2 id="receipt-detail-title" className="text-xl font-bold">Receipt details</h2>
+              <button onClick={() => setSelectedReceipt(null)} className="rounded-lg border px-3 py-1">Close</button>
+            </div>
+            <p><strong>{selectedReceipt.reference}</strong> · {selectedReceipt.status}</p>
+            <p>{selectedReceipt.student} · {selectedReceipt.admissionNo}</p>
+            <p>{selectedReceipt.feeType} · {formatNaira(selectedReceipt.amount)}</p>
+            <p>{selectedReceipt.method} · {selectedReceipt.date}</p>
+            {selectedReceipt.status !== "Issued" && <p className="text-sm text-yellow-700">A receipt is available after this payment is verified.</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function Stat({ icon, value, label }) {
+  return <div className="rounded-3xl border p-5"><span className="mb-3 inline-block text-blue-600">{icon}</span><h2 className="text-2xl font-bold">{value}</h2><p>{label}</p></div>;
 }

@@ -64,7 +64,61 @@ const formatDate = (date) =>
     year: "numeric",
   });
 
-function StatCard({ icon: Icon, label, value }) {
+const escapeIcalText = (value) =>
+  String(value ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll(";", "\\;")
+    .replaceAll(",", "\\,")
+    .replaceAll(/\r?\n/g, "\\n");
+
+const formatIcalDate = (date) => date.replaceAll("-", "");
+
+const createCalendarFile = (events) => {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//School Portal//Accountant Holiday Calendar//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+  ];
+
+  events.forEach((holiday) => {
+    const endDate = new Date(`${holiday.endDate}T00:00:00`);
+    endDate.setDate(endDate.getDate() + 1);
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${holiday.id}@school-portal`,
+      `DTSTAMP:${new Date().toISOString().replaceAll(/[-:]/g, "").replace(/\.\d{3}/, "")}`,
+      `DTSTART;VALUE=DATE:${formatIcalDate(holiday.startDate)}`,
+      `DTEND;VALUE=DATE:${formatIcalDate(endDate.toISOString().slice(0, 10))}`,
+      `SUMMARY:${escapeIcalText(holiday.name)}`,
+      `DESCRIPTION:${escapeIcalText(`${holiday.description} Finance office: ${holiday.financeStatus}. Online payments: ${holiday.onlinePayment}.`)}`,
+      `CATEGORIES:${escapeIcalText(holiday.type)}`,
+      `LOCATION:${escapeIcalText(`School session ${holiday.session}`)}`,
+      "END:VEVENT"
+    );
+  });
+
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+};
+
+const downloadCalendar = (events) => {
+  const file = new Blob([createCalendarFile(events)], {
+    type: "text/calendar;charset=utf-8",
+  });
+  const url = URL.createObjectURL(file);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "school-holidays.ics";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+function StatCard({ icon, label, value }) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5">
       <div className="flex items-center justify-between">
@@ -77,7 +131,7 @@ function StatCard({ icon: Icon, label, value }) {
         </div>
 
         <div className="rounded-xl bg-gray-100 p-3">
-          <Icon size={21} />
+          {icon}
         </div>
       </div>
     </div>
@@ -147,34 +201,39 @@ export default function AccountantHolidayManagement() {
             </p>
           </div>
 
-          <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={() => downloadCalendar(filteredHolidays)}
+            disabled={filteredHolidays.length === 0}
+            className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Download size={17} />
-            Download Calendar
+            Download Calendar ({filteredHolidays.length})
           </button>
         </div>
 
         {/* Stats */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            icon={CalendarDays}
+            icon={<CalendarDays size={21} />}
             label="Next Closure"
             value="15 Sept"
           />
 
           <StatCard
-            icon={Clock3}
+            icon={<Clock3 size={21} />}
             label="Days Remaining"
             value="6 Days"
           />
 
           <StatCard
-            icon={WalletCards}
+            icon={<WalletCards size={21} />}
             label="Finance Status"
             value="Operating"
           />
 
           <StatCard
-            icon={CalendarDays}
+            icon={<CalendarDays size={21} />}
             label="Total Holidays"
             value="8"
           />

@@ -20,6 +20,8 @@ import {
   Users,
   ChevronDown,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import downloadCsv from "../../utils/downloadCsv";
 
 const invoicesData = [
   {
@@ -107,7 +109,10 @@ function StatusBadge({ status }) {
 }
 
 export default function AccountantInvoice() {
-  const [invoices, setInvoices] = useState(invoicesData);
+  const [invoices, setInvoices, storageError] = usePersistentState(
+    "accountant-invoices",
+    invoicesData
+  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -153,6 +158,39 @@ export default function AccountantInvoice() {
     setOpenMenu(null);
   };
 
+  const exportInvoices = () => {
+    downloadCsv("accountant-invoices.csv", [
+      [
+        "Invoice",
+        "Student",
+        "Admission No.",
+        "Class",
+        "Session",
+        "Term",
+        "Issued Date",
+        "Due Date",
+        "Total",
+        "Paid",
+        "Balance",
+        "Status",
+      ],
+      ...filteredInvoices.map((invoice) => [
+        invoice.id,
+        invoice.student,
+        invoice.admissionNo,
+        invoice.className,
+        invoice.session,
+        invoice.term,
+        invoice.issuedDate,
+        invoice.dueDate,
+        invoice.total,
+        invoice.paid,
+        invoice.total - invoice.paid,
+        invoice.status,
+      ]),
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -182,6 +220,12 @@ export default function AccountantInvoice() {
             Create Invoice
           </button>
         </div>
+
+        {storageError && (
+          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+            {storageError}
+          </p>
+        )}
 
         {/* Statistics */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -369,9 +413,15 @@ export default function AccountantInvoice() {
               </p>
             </div>
 
-            <button className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={exportInvoices}
+              disabled={filteredInvoices.length === 0}
+              title={`Export ${filteredInvoices.length} filtered invoice(s) as CSV`}
+              className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
               <Download size={16} />
-              Export
+              Export CSV ({filteredInvoices.length})
             </button>
           </div>
 

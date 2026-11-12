@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   DollarSign,
   Wallet,
@@ -11,8 +12,22 @@ import {
   Plus,
   ArrowUpRight,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import { formatNaira, initialExpenses, initialPayments } from "../../data/accountantData";
 
 export default function AccountantDashboard() {
+  const [payments, , paymentError] = usePersistentState(
+    "accountant-payments",
+    initialPayments
+  );
+  const [expenses, , expenseError] = usePersistentState(
+    "accountant-expenses",
+    initialExpenses
+  );
+  const totalRevenue = payments
+    .filter((payment) => payment.status === "Verified")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   return (
 
@@ -34,13 +49,13 @@ export default function AccountantDashboard() {
 
         </div>
 
-        <button className="bg-blue-600 text-white rounded-xl px-5 py-3 flex gap-2">
+        <Link to="/accountant/fees-collection" className="bg-blue-600 text-white rounded-xl px-5 py-3 flex gap-2">
 
           <Plus size={18}/>
 
           Record Payment
 
-        </button>
+        </Link>
 
       </div>
 
@@ -52,7 +67,7 @@ export default function AccountantDashboard() {
 
           <DollarSign className="text-green-600 mb-3"/>
 
-          <h2 className="text-2xl font-bold">₦52,400,000</h2>
+          <h2 className="text-2xl font-bold">{formatNaira(totalRevenue)}</h2>
 
           <p>Total Revenue</p>
 
@@ -62,7 +77,7 @@ export default function AccountantDashboard() {
 
           <Wallet className="text-red-600 mb-3"/>
 
-          <h2 className="text-2xl font-bold">₦18,500,000</h2>
+          <h2 className="text-2xl font-bold">{formatNaira(totalExpenses)}</h2>
 
           <p>Total Expenses</p>
 
@@ -72,7 +87,7 @@ export default function AccountantDashboard() {
 
           <TrendingUp className="text-blue-600 mb-3"/>
 
-          <h2 className="text-2xl font-bold">₦33,900,000</h2>
+          <h2 className="text-2xl font-bold">{formatNaira(totalRevenue - totalExpenses)}</h2>
 
           <p>Net Income</p>
 
@@ -90,6 +105,12 @@ export default function AccountantDashboard() {
 
       </div>
 
+      {(paymentError || expenseError) && (
+        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          {paymentError || expenseError}
+        </p>
+      )}
+
       {/* Tables */}
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -102,41 +123,16 @@ export default function AccountantDashboard() {
 
           <div className="space-y-4">
 
-            <div className="flex justify-between">
-
-              <div>
-
-                <h3>John David</h3>
-
-                <p className="text-gray-500">
-                  Tuition Fee
-                </p>
-
+            {payments.slice(0, 3).map((payment) => (
+              <div key={payment.id} className="flex justify-between gap-4">
+                <div>
+                  <h3>{payment.student}</h3>
+                  <p className="text-gray-500">{payment.feeType} · {payment.status}</p>
+                </div>
+                <div className="font-semibold">{formatNaira(payment.amount)}</div>
               </div>
-
-              <div className="font-semibold">
-                ₦120,000
-              </div>
-
-            </div>
-
-            <div className="flex justify-between">
-
-              <div>
-
-                <h3>Mary Peter</h3>
-
-                <p className="text-gray-500">
-                  Hostel Fee
-                </p>
-
-              </div>
-
-              <div className="font-semibold">
-                ₦80,000
-              </div>
-
-            </div>
+            ))}
+            {payments.length === 0 && <p className="text-sm text-gray-500">No payments recorded.</p>}
 
           </div>
 
@@ -150,41 +146,16 @@ export default function AccountantDashboard() {
 
           <div className="space-y-4">
 
-            <div className="flex justify-between">
-
-              <div>
-
-                <h3>Office Supplies</h3>
-
-                <p className="text-gray-500">
-                  Administration
-                </p>
-
+            {expenses.slice(0, 3).map((expense) => (
+              <div key={expense.id} className="flex justify-between gap-4">
+                <div>
+                  <h3>{expense.title}</h3>
+                  <p className="text-gray-500">{expense.department}</p>
+                </div>
+                <div className="font-semibold">{formatNaira(expense.amount)}</div>
               </div>
-
-              <div className="font-semibold">
-                ₦35,000
-              </div>
-
-            </div>
-
-            <div className="flex justify-between">
-
-              <div>
-
-                <h3>Laboratory Equipment</h3>
-
-                <p className="text-gray-500">
-                  Science Department
-                </p>
-
-              </div>
-
-              <div className="font-semibold">
-                ₦220,000
-              </div>
-
-            </div>
+            ))}
+            {expenses.length === 0 && <p className="text-sm text-gray-500">No expenses recorded.</p>}
 
           </div>
 
@@ -196,37 +167,37 @@ export default function AccountantDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
 
-        <button className="border rounded-2xl p-6">
+        <Link to="/accountant/receipts-management" className="border rounded-2xl p-6">
 
           <Receipt className="mx-auto mb-3"/>
 
           Generate Receipt
 
-        </button>
+        </Link>
 
-        <button className="border rounded-2xl p-6">
+        <Link to="/accountant/financial-report" className="border rounded-2xl p-6">
 
           <FileText className="mx-auto mb-3"/>
 
           Financial Reports
 
-        </button>
+        </Link>
 
-        <button className="border rounded-2xl p-6">
+        <Link to="/accountant/payroll" className="border rounded-2xl p-6">
 
           <ArrowUpRight className="mx-auto mb-3"/>
 
           Payroll
 
-        </button>
+        </Link>
 
-        <button className="border rounded-2xl p-6">
+        <Link to="/accountant/notifications" className="border rounded-2xl p-6">
 
           <Bell className="mx-auto mb-3"/>
 
           Notifications
 
-        </button>
+        </Link>
 
       </div>
 
