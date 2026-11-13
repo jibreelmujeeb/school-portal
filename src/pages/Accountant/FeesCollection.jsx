@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
   CreditCard,
@@ -27,6 +27,15 @@ export default function FeesCollectionPage() {
   const [method, setMethod] = useState("Cash");
   const [remarks, setRemarks] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const requestedName = new URLSearchParams(window.location.search).get("student");
+    const student = students.find((item) => item.name === requestedName);
+    if (student) {
+      setSearch(student.name);
+      setSelectedStudent(student);
+    }
+  }, []);
 
   const matchingStudents = useMemo(() => {
     const query = search.trim().toLowerCase();

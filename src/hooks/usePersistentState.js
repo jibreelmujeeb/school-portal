@@ -22,7 +22,11 @@ export default function usePersistentState(key, initialValue) {
     if (!state.shouldPersist) return;
 
     try {
-      window.localStorage.setItem(key, JSON.stringify(state.value));
+      const serializedValue = JSON.stringify(state.value);
+      window.localStorage.setItem(key, serializedValue);
+      window.dispatchEvent(new CustomEvent("persistent-state-updated", {
+        detail: { key, value: serializedValue },
+      }));
       setState((current) => ({ ...current, error: "", shouldPersist: false }));
     } catch {
       setState((current) => ({
@@ -34,12 +38,10 @@ export default function usePersistentState(key, initialValue) {
   }, [key, state.shouldPersist, state.value]);
 
   useEffect(() => {
-    const handleStorage = (event) => {
-      if (event.key !== key || event.newValue === null) return;
-
+    const applyValue = (serializedValue) => {
       try {
         setState({
-          value: JSON.parse(event.newValue),
+          value: JSON.parse(serializedValue),
           error: "",
           shouldPersist: false,
         });
@@ -51,8 +53,21 @@ export default function usePersistentState(key, initialValue) {
       }
     };
 
+    const handleStorage = (event) => {
+      if (event.key !== key || event.newValue === null) return;
+      applyValue(event.newValue);
+    };
+    const handleLocalUpdate = (event) => {
+      if (event.detail?.key !== key) return;
+      applyValue(event.detail.value);
+    };
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("persistent-state-updated", handleLocalUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("persistent-state-updated", handleLocalUpdate);
+    };
   }, [key]);
 
   const setValue = (nextValue) => {

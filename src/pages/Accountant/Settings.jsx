@@ -8,17 +8,22 @@ import {
   Globe,
   Database,
   Save,
+  Download,
+  RotateCcw,
 } from "lucide-react";
 import usePersistentState from "../../hooks/usePersistentState";
+import { recordAccountantAuditEvent } from "../../data/accountantAuditData";
+
+const defaultSettings = {
+  emailNotifications: true,
+  smsNotifications: false,
+  autoReceipt: true,
+  darkMode: false,
+  twoFactor: true,
+};
 
 export default function AccountantSettingsPage() {
-  const [settings, setSettings, settingsError] = usePersistentState("accountant-settings", {
-    emailNotifications: true,
-    smsNotifications: false,
-    autoReceipt: true,
-    darkMode: false,
-    twoFactor: true,
-  });
+  const [settings, setSettings, settingsError] = usePersistentState("accountant-settings", defaultSettings);
   const [language, setLanguage, languageError] = usePersistentState("accountant-language", "English");
   const [message, setMessage] = useState("");
 
@@ -28,6 +33,48 @@ export default function AccountantSettingsPage() {
       [key]: !prev[key],
     }));
     setMessage("Preference updated and saved in this browser.");
+  };
+
+  const saveSettings = () => {
+    try {
+      recordAccountantAuditEvent({
+        action: "Settings Saved",
+        module: "Settings",
+        record: "Accountant Preferences",
+      });
+      setMessage("Settings saved in this browser.");
+    } catch {
+      setMessage("Settings are saved locally, but the audit event could not be recorded.");
+    }
+  };
+
+  const resetSettings = () => {
+    if (!window.confirm("Restore the default accountant preferences?")) return;
+    setSettings(defaultSettings);
+    setLanguage("English");
+    setMessage("Default preferences restored.");
+    try {
+      recordAccountantAuditEvent({
+        action: "Settings Reset",
+        module: "Settings",
+        record: "Default Preferences",
+      });
+    } catch {
+      setMessage("Default preferences restored, but the audit event could not be recorded.");
+    }
+  };
+
+  const downloadSettings = () => {
+    const file = new Blob(
+      [JSON.stringify({ ...settings, language }, null, 2)],
+      { type: "application/json" }
+    );
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "accountant-settings.json";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
   return (
@@ -73,7 +120,7 @@ export default function AccountantSettingsPage() {
 
         <div className="border rounded-3xl p-5">
           <Database className="text-orange-600 mb-3" />
-          <h2 className="text-2xl font-bold">Today</h2>
+          <h2 className="text-2xl font-bold">Browser</h2>
           <p>Last Backup</p>
         </div>
 
@@ -191,8 +238,16 @@ export default function AccountantSettingsPage() {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <button onClick={() => setMessage("Settings saved in this browser.")} className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center gap-2">
+      <div className="flex flex-col justify-end gap-3 sm:flex-row">
+        <button onClick={downloadSettings} className="border px-6 py-3 rounded-xl flex items-center justify-center gap-2">
+          <Download size={18} />
+          Export Preferences
+        </button>
+        <button onClick={resetSettings} className="border px-6 py-3 rounded-xl flex items-center justify-center gap-2">
+          <RotateCcw size={18} />
+          Restore Defaults
+        </button>
+        <button onClick={saveSettings} className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2">
           <Save size={18} />
           Save Changes
         </button>
