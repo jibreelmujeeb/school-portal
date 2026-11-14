@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   CalendarDays,
   Plus,
@@ -10,110 +11,147 @@ import {
   Trash2,
 } from "lucide-react";
 
+const initialEvents = [
+  {
+    title: "National Reading Week",
+    type: "Reading Week",
+    date: "18 Aug 2026",
+    time: "10:00 AM - 2:00 PM",
+    venue: "School Library",
+    participants: 250,
+    status: "Upcoming",
+  },
+  {
+    title: "Reading Competition",
+    type: "Competition",
+    date: "25 Aug 2026",
+    time: "11:00 AM - 1:00 PM",
+    venue: "School Library",
+    participants: 85,
+    status: "Upcoming",
+  },
+  {
+    title: "E-Library Orientation",
+    type: "Workshop",
+    date: "05 Aug 2026",
+    time: "9:00 AM - 11:00 AM",
+    venue: "ICT Laboratory",
+    participants: 120,
+    status: "Completed",
+  },
+];
+
 export default function LibrarianLibraryEventsPage() {
-  const events = [
-    {
-      title: "National Reading Week",
-      type: "Reading Week",
-      date: "18 Aug 2026",
-      time: "10:00 AM - 2:00 PM",
-      venue: "School Library",
-      participants: 250,
+  const [events, setEvents] = useState(initialEvents);
+  const [search, setSearch] = useState("");
+  const [eventType, setEventType] = useState("All Event Types");
+  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [activeTab, setActiveTab] = useState("All");
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      const matchesSearch = [event.title, event.type, event.venue].join(" ").toLowerCase().includes(search.trim().toLowerCase());
+      const matchesType = eventType === "All Event Types" || event.type === eventType;
+      const matchesStatus = statusFilter === "All Status" || event.status === statusFilter;
+      const matchesTab = activeTab === "All" || event.status === activeTab;
+      return matchesSearch && matchesType && matchesStatus && matchesTab;
+    });
+  }, [events, search, eventType, statusFilter, activeTab]);
+
+  const handleAddEvent = () => {
+    const title = window.prompt("Event title:", "");
+    if (!title || !title.trim()) return;
+    const typeValue = window.prompt("Event type:", "Workshop");
+    if (!typeValue || !typeValue.trim()) return;
+    const dateValue = window.prompt("Date:", "15 Sep 2026");
+    if (!dateValue || !dateValue.trim()) return;
+    const timeValue = window.prompt("Time:", "9:00 AM - 11:00 AM");
+    if (!timeValue || !timeValue.trim()) return;
+    const venueValue = window.prompt("Venue:", "School Library");
+    if (!venueValue || !venueValue.trim()) return;
+    const participantsValue = window.prompt("Participants:", "50");
+    if (participantsValue === null || !Number.isInteger(Number(participantsValue)) || Number(participantsValue) < 0) return;
+
+    setEvents((current) => [{
+      title: title.trim(),
+      type: typeValue.trim(),
+      date: dateValue.trim(),
+      time: timeValue.trim(),
+      venue: venueValue.trim(),
+      participants: Number(participantsValue),
       status: "Upcoming",
-    },
-    {
-      title: "Reading Competition",
-      type: "Competition",
-      date: "25 Aug 2026",
-      time: "11:00 AM - 1:00 PM",
-      venue: "School Library",
-      participants: 85,
-      status: "Upcoming",
-    },
-    {
-      title: "E-Library Orientation",
-      type: "Workshop",
-      date: "05 Aug 2026",
-      time: "9:00 AM - 11:00 AM",
-      venue: "ICT Laboratory",
-      participants: 120,
-      status: "Completed",
-    },
-  ];
+    }, ...current]);
+  };
+
+  const handleEditEvent = (event) => {
+    const title = window.prompt("Event title:", event.title);
+    if (!title || !title.trim()) return;
+    const typeValue = window.prompt("Event type:", event.type);
+    if (!typeValue || !typeValue.trim()) return;
+    const dateValue = window.prompt("Date:", event.date);
+    if (!dateValue || !dateValue.trim()) return;
+    const timeValue = window.prompt("Time:", event.time);
+    if (!timeValue || !timeValue.trim()) return;
+    const venueValue = window.prompt("Venue:", event.venue);
+    if (!venueValue || !venueValue.trim()) return;
+    const participantsValue = window.prompt("Participants:", String(event.participants));
+    if (participantsValue === null || !Number.isInteger(Number(participantsValue)) || Number(participantsValue) < 0) return;
+
+    setEvents((current) => current.map((item) => item.title === event.title ? {
+      ...item,
+      title: title.trim(),
+      type: typeValue.trim(),
+      date: dateValue.trim(),
+      time: timeValue.trim(),
+      venue: venueValue.trim(),
+      participants: Number(participantsValue),
+    } : item));
+  };
+
+  const handleDeleteEvent = (event) => {
+    if (window.confirm(`Delete "${event.title}"?`)) {
+      setEvents((current) => current.filter((item) => item.title !== event.title));
+    }
+  };
+
+  const viewEvent = (event) => {
+    window.alert(`${event.title}\nType: ${event.type}\nDate: ${event.date}\nTime: ${event.time}\nVenue: ${event.venue}\nParticipants: ${event.participants}\nStatus: ${event.status}`);
+  };
 
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row
-        lg:items-center justify-between gap-4">
-
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">
-            Library Events
-          </h1>
-
-          <p className="text-gray-500 mt-1">
-            Manage library programs, activities and events.
-          </p>
+          <h1 className="text-3xl font-bold">Library Events</h1>
+          <p className="text-gray-500 mt-1">Manage library programs, activities and events.</p>
         </div>
 
-        <button
-          className="bg-blue-600 text-white px-5 py-3
-          rounded-xl flex items-center justify-center gap-2"
-        >
+        <button onClick={handleAddEvent} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center justify-center gap-2">
           <Plus size={18} />
           Create Event
         </button>
-
       </div>
 
-      {/* Statistics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <StatCard
-          icon={<CalendarDays />}
-          value="48"
-          label="Total Events"
-        />
-
-        <StatCard
-          icon={<CalendarDays />}
-          value="12"
-          label="Upcoming"
-        />
-
-        <StatCard
-          icon={<Users />}
-          value="1,280"
-          label="Participants"
-        />
-
-        <StatCard
-          icon={<CalendarDays />}
-          value="34"
-          label="Completed"
-        />
-
+        <StatCard icon={<CalendarDays />} value={events.length.toLocaleString()} label="Total Events" />
+        <StatCard icon={<CalendarDays />} value={events.filter((event) => event.status === "Upcoming").length.toLocaleString()} label="Upcoming" />
+        <StatCard icon={<Users />} value={events.reduce((sum, event) => sum + event.participants, 0).toLocaleString()} label="Participants" />
+        <StatCard icon={<CalendarDays />} value={events.filter((event) => event.status === "Completed").length.toLocaleString()} label="Completed" />
       </div>
 
-      {/* Search and Filters */}
       <div className="flex flex-col lg:flex-row gap-3">
-
-        <div className="border rounded-xl px-4 py-3
-          flex items-center flex-1">
-
+        <div className="border rounded-xl px-4 py-3 flex items-center flex-1">
           <Search size={18} />
-
           <input
             type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search events..."
             className="w-full ml-3 outline-none"
           />
-
         </div>
 
-        <select className="border rounded-xl px-4 py-3">
+        <select value={eventType} onChange={(event) => setEventType(event.target.value)} className="border rounded-xl px-4 py-3">
           <option>All Event Types</option>
           <option>Reading Week</option>
           <option>Book Fair</option>
@@ -122,53 +160,46 @@ export default function LibrarianLibraryEventsPage() {
           <option>Book Club</option>
         </select>
 
-        <select className="border rounded-xl px-4 py-3">
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="border rounded-xl px-4 py-3">
           <option>All Status</option>
           <option>Upcoming</option>
           <option>Ongoing</option>
           <option>Completed</option>
           <option>Cancelled</option>
         </select>
-
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto">
-
         {[
           "All",
           "Upcoming",
           "Ongoing",
           "Completed",
           "Cancelled",
-        ].map((tab, index) => (
+        ].map((tabItem) => (
           <button
-            key={tab}
-            className={`px-5 py-2 rounded-xl
-              whitespace-nowrap ${
-                index === 0
-                  ? "bg-blue-600 text-white"
-                  : "border"
-              }`}
+            key={tabItem}
+            onClick={() => setActiveTab(tabItem)}
+            className={`px-5 py-2 rounded-xl whitespace-nowrap ${
+              activeTab === tabItem ? "bg-blue-600 text-white" : "border"
+            }`}
           >
-            {tab}
+            {tabItem}
           </button>
         ))}
-
       </div>
 
-      {/* Events */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-        {events.map((event) => (
-          <EventCard
-            key={event.title}
-            event={event}
-          />
-        ))}
-
+        {filteredEvents.length === 0 ? (
+          <div className="col-span-full border rounded-2xl p-8 text-center text-gray-500">
+            No events match your filters.
+          </div>
+        ) : (
+          filteredEvents.map((event) => (
+            <EventCard key={event.title} event={event} onView={viewEvent} onEdit={handleEditEvent} onDelete={handleDeleteEvent} />
+          ))
+        )}
       </div>
-
     </div>
   );
 }
@@ -176,98 +207,49 @@ export default function LibrarianLibraryEventsPage() {
 function StatCard({ icon, value, label }) {
   return (
     <div className="border rounded-2xl p-5">
-
-      <div className="mb-3">
-        {icon}
-      </div>
-
-      <h2 className="text-2xl font-bold">
-        {value}
-      </h2>
-
-      <p className="text-sm text-gray-500">
-        {label}
-      </p>
-
+      <div className="mb-3">{icon}</div>
+      <h2 className="text-2xl font-bold">{value}</h2>
+      <p className="text-sm text-gray-500">{label}</p>
     </div>
   );
 }
 
-function EventCard({ event }) {
+function EventCard({ event, onView, onEdit, onDelete }) {
   return (
     <div className="border rounded-3xl overflow-hidden">
-
-      {/* Image */}
-      <div className="h-40 bg-gray-100
-        flex items-center justify-center">
-
+      <div className="h-40 bg-gray-100 flex items-center justify-center">
         <CalendarDays size={40} />
-
       </div>
 
       <div className="p-5">
-
         <div className="flex justify-between gap-3">
-
-          <span className="text-sm">
-            {event.type}
-          </span>
-
-          <span className="text-sm px-3 py-1
-            rounded-full bg-green-100
-            text-green-700">
-            {event.status}
-          </span>
-
+          <span className="text-sm">{event.type}</span>
+          <span className="text-sm px-3 py-1 rounded-full bg-green-100 text-green-700">{event.status}</span>
         </div>
 
-        <h3 className="text-xl font-semibold mt-3">
-          {event.title}
-        </h3>
+        <h3 className="text-xl font-semibold mt-3">{event.title}</h3>
 
-        <div className="space-y-2 mt-4 text-sm
-          text-gray-500">
-
-          <p className="flex items-center gap-2">
-            <CalendarDays size={16} />
-            {event.date}
-          </p>
-
-          <p className="flex items-center gap-2">
-            <Clock size={16} />
-            {event.time}
-          </p>
-
-          <p className="flex items-center gap-2">
-            <MapPin size={16} />
-            {event.venue}
-          </p>
-
-          <p className="flex items-center gap-2">
-            <Users size={16} />
-            {event.participants} participants
-          </p>
-
+        <div className="space-y-2 mt-4 text-sm text-gray-500">
+          <p className="flex items-center gap-2"><CalendarDays size={16} />{event.date}</p>
+          <p className="flex items-center gap-2"><Clock size={16} />{event.time}</p>
+          <p className="flex items-center gap-2"><MapPin size={16} />{event.venue}</p>
+          <p className="flex items-center gap-2"><Users size={16} />{event.participants} participants</p>
         </div>
 
         <div className="flex gap-2 mt-5">
-
-          <button className="border rounded-lg p-2">
+          <button onClick={() => onView(event)} className="border rounded-lg p-2" aria-label={`View ${event.title}`}>
             <Eye size={17} />
           </button>
 
-          <button className="border rounded-lg p-2">
+          <button onClick={() => onEdit(event)} className="border rounded-lg p-2" aria-label={`Edit ${event.title}`}>
             <Edit size={17} />
           </button>
 
-          <button className="border rounded-lg p-2">
+          <button onClick={() => onDelete(event)} className="border rounded-lg p-2 text-red-600" aria-label={`Delete ${event.title}`}>
             <Trash2 size={17} />
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }
