@@ -22,6 +22,7 @@ export default function BookRequestsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Request Types");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((item) => {
@@ -55,6 +56,23 @@ export default function BookRequestsPage() {
 
   const updateStatus = (id, status) => {
     setRequests((current) => current.map((entry) => entry.id === id ? { ...entry, status } : entry));
+  };
+
+  const exportRequests = () => {
+    const csv = [
+      ["ID", "Requester", "Book", "Type", "Date", "Priority", "Status"],
+      ...filteredRequests.map((request) => [request.id, request.requester, request.book, request.type, request.date, request.priority, request.status]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "book-requests.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -107,7 +125,7 @@ export default function BookRequestsPage() {
           <option>Rejected</option>
         </select>
 
-        <button className="border rounded-xl px-4 py-3 flex items-center justify-center gap-2">
+        <button onClick={exportRequests} className="border rounded-xl px-4 py-3 flex items-center justify-center gap-2">
           <Download size={18} />
           Export
         </button>
@@ -133,12 +151,31 @@ export default function BookRequestsPage() {
               </tr>
             ) : (
               filteredRequests.map((item) => (
-                <RequestRow key={item.id} item={item} onUpdate={updateStatus} />
+                <RequestRow key={item.id} item={item} onUpdate={updateStatus} onView={setSelectedRequest} />
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Request Details</h3>
+              <button onClick={() => setSelectedRequest(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Requester:</span> {selectedRequest.requester}</p>
+              <p><span className="font-medium text-gray-900">Book:</span> {selectedRequest.book}</p>
+              <p><span className="font-medium text-gray-900">Type:</span> {selectedRequest.type}</p>
+              <p><span className="font-medium text-gray-900">Priority:</span> {selectedRequest.priority}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedRequest.status}</p>
+              <p><span className="font-medium text-gray-900">Date:</span> {selectedRequest.date}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -153,7 +190,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function RequestRow({ item, onUpdate }) {
+function RequestRow({ item, onUpdate, onView }) {
   return (
     <tr className="border-b">
       <td className="p-4 font-medium">{item.requester}</td>
@@ -164,7 +201,7 @@ function RequestRow({ item, onUpdate }) {
       <td className="p-4"><span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === "Pending" ? "bg-yellow-100 text-yellow-700" : item.status === "Approved" ? "bg-green-100 text-green-700" : item.status === "Fulfilled" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"}`}>{item.status}</span></td>
       <td className="p-4">
         <div className="flex gap-2">
-          <button className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
+          <button onClick={() => onView(item)} className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
           <button onClick={() => onUpdate(item.id, "Approved")} className="border rounded-lg p-2" title="Approve"><Check size={16} /></button>
           <button onClick={() => onUpdate(item.id, "Rejected")} className="border rounded-lg p-2" title="Reject"><X size={16} /></button>
         </div>

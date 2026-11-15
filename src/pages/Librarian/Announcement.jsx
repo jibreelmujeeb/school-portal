@@ -23,6 +23,7 @@ export default function LibrarianAnnouncementPage() {
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [audienceFilter, setAudienceFilter] = useState("All Audiences");
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
   const filteredAnnouncements = useMemo(() => {
     return announcements.filter((item) => {
@@ -142,6 +143,7 @@ export default function LibrarianAnnouncementPage() {
               status={item.status}
               views={item.views}
               pinned={item.pinned}
+              onView={() => setSelectedAnnouncement(item)}
               onDelete={() => handleDelete(item.id)}
               onPinToggle={() => handleTogglePin(item.id)}
               onPublish={() => handleStatusChange(item.id, "Published")}
@@ -149,6 +151,34 @@ export default function LibrarianAnnouncementPage() {
           ))
         )}
       </div>
+
+      {selectedAnnouncement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="announcement-details-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <h2 id="announcement-details-title" className="text-xl font-semibold">Announcement Details</h2>
+              <button onClick={() => setSelectedAnnouncement(null)} className="rounded-lg border px-3 py-1 text-sm">
+                Close
+              </button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Announcement ID:</span> {selectedAnnouncement.id}</p>
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedAnnouncement.title}</p>
+              <p><span className="font-medium text-gray-900">Type:</span> {selectedAnnouncement.type}</p>
+              <p><span className="font-medium text-gray-900">Audience:</span> {selectedAnnouncement.audience}</p>
+              <p><span className="font-medium text-gray-900">Date:</span> {selectedAnnouncement.date}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedAnnouncement.status}</p>
+              <p><span className="font-medium text-gray-900">Views:</span> {selectedAnnouncement.views}</p>
+              <p><span className="font-medium text-gray-900">Pinned:</span> {selectedAnnouncement.pinned ? "Yes" : "No"}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -163,7 +193,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function AnnouncementCard({ title, type, audience, date, status, views, pinned = false, onDelete, onPinToggle, onPublish }) {
+function AnnouncementCard({ title, type, audience, date, status, views, pinned = false, onView, onDelete, onPinToggle, onPublish }) {
   return (
     <div className="border rounded-3xl p-5">
       <div className="flex justify-between items-start">
@@ -194,7 +224,9 @@ function AnnouncementCard({ title, type, audience, date, status, views, pinned =
         </span>
 
         <div className="flex gap-2">
-          <button className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
+          <button onClick={onView} className="border rounded-lg p-2" title={`View ${title}`} aria-label={`View ${title}`}>
+            <Eye size={16} />
+          </button>
           <button onClick={onPublish} className="border rounded-lg p-2" title="Publish"><Send size={16} /></button>
           <button onClick={onPinToggle} className="border rounded-lg p-2" title="Pin"><Pin size={16} /></button>
           <button onClick={onDelete} className="border rounded-lg p-2" title="Delete"><Trash2 size={16} /></button>

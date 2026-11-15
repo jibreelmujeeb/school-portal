@@ -21,6 +21,7 @@ export default function DamagedBooksPage() {
   const [search, setSearch] = useState("");
   const [damageType, setDamageType] = useState("All Damage Types");
   const [severity, setSeverity] = useState("All Severity");
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const filteredBooks = useMemo(() => {
     return books.filter((item) => {
@@ -62,6 +63,23 @@ export default function DamagedBooksPage() {
     setBooks((current) => current.map((entry) => (entry.id === id ? { ...entry, status } : entry)));
   };
 
+  const exportDamagedBooks = () => {
+    const csv = [
+      ["ID", "Book", "Borrower", "Damage", "Severity", "Charge", "Status"],
+      ...filteredBooks.map((item) => [item.id, item.book, item.borrower, item.damage, item.severity, item.charge, item.status]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "damaged-books.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row justify-between gap-4">
@@ -70,10 +88,15 @@ export default function DamagedBooksPage() {
           <p className="text-gray-500 mt-2">Manage damaged books, repairs, charges, and replacement records.</p>
         </div>
 
-        <button onClick={handleReportDamage} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center justify-center gap-2">
-          <Plus size={18} />
-          Report Damaged Book
-        </button>
+        <div className="flex gap-3">
+          <button onClick={exportDamagedBooks} className="border rounded-xl px-4 py-3">
+            Export Report
+          </button>
+          <button onClick={handleReportDamage} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center justify-center gap-2">
+            <Plus size={18} />
+            Report Damaged Book
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
@@ -140,7 +163,7 @@ export default function DamagedBooksPage() {
                   <td className="p-4"><span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === "Repair" ? "bg-yellow-100 text-yellow-700" : item.status === "Replacement" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}>{item.status}</span></td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                      <button className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
+                      <button onClick={() => setSelectedBook(item)} className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
                       <button onClick={() => handleStatusUpdate(item.id, "Repair")} className="border rounded-lg p-2" title="Edit"><Pencil size={16} /></button>
                       <button onClick={() => handleStatusUpdate(item.id, "Replacement")} className="border rounded-lg p-2" title="Repair"><Wrench size={16} /></button>
                     </div>
@@ -151,6 +174,25 @@ export default function DamagedBooksPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Damage Report</h3>
+              <button onClick={() => setSelectedBook(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Book:</span> {selectedBook.book}</p>
+              <p><span className="font-medium text-gray-900">Borrower:</span> {selectedBook.borrower}</p>
+              <p><span className="font-medium text-gray-900">Damage:</span> {selectedBook.damage}</p>
+              <p><span className="font-medium text-gray-900">Severity:</span> {selectedBook.severity}</p>
+              <p><span className="font-medium text-gray-900">Charge:</span> {selectedBook.charge}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedBook.status}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

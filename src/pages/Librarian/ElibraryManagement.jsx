@@ -23,6 +23,7 @@ export default function ELibraryManagementPage() {
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [subjectFilter, setSubjectFilter] = useState("All Subjects");
   const [classFilter, setClassFilter] = useState("All Classes");
+  const [selectedResource, setSelectedResource] = useState(null);
 
   const filteredResources = useMemo(() => {
     return resources.filter((item) => {
@@ -162,6 +163,7 @@ export default function ELibraryManagementPage() {
                   views={item.views}
                   downloads={item.downloads}
                   status={item.status}
+                  onView={() => setSelectedResource(item)}
                   onDelete={() => handleDelete(item.id)}
                   onPublish={() => handleStatusChange(item.id, "Published")}
                 />
@@ -170,6 +172,34 @@ export default function ELibraryManagementPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedResource && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resource-details-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <h2 id="resource-details-title" className="text-xl font-semibold">Resource Details</h2>
+              <button onClick={() => setSelectedResource(null)} className="rounded-lg border px-3 py-1 text-sm">
+                Close
+              </button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Resource ID:</span> {selectedResource.id}</p>
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedResource.title}</p>
+              <p><span className="font-medium text-gray-900">Type:</span> {selectedResource.type}</p>
+              <p><span className="font-medium text-gray-900">Subject:</span> {selectedResource.subject}</p>
+              <p><span className="font-medium text-gray-900">Class:</span> {selectedResource.className}</p>
+              <p><span className="font-medium text-gray-900">Views:</span> {selectedResource.views}</p>
+              <p><span className="font-medium text-gray-900">Downloads:</span> {selectedResource.downloads}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedResource.status}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -184,7 +214,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function ResourceRow({ title, type, subject, className, views, downloads, status, onDelete, onPublish }) {
+function ResourceRow({ title, type, subject, className, views, downloads, status, onView, onDelete, onPublish }) {
   return (
     <tr className="border-b">
       <td className="p-4 font-medium">{title}</td>
@@ -200,7 +230,9 @@ function ResourceRow({ title, type, subject, className, views, downloads, status
       </td>
       <td className="p-4">
         <div className="flex gap-2">
-          <button className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
+          <button onClick={onView} className="border rounded-lg p-2" title={`View ${title}`} aria-label={`View ${title}`}>
+            <Eye size={16} />
+          </button>
           <button onClick={onPublish} className="border rounded-lg p-2" title="Publish"><Edit size={16} /></button>
           <button onClick={onDelete} className="border rounded-lg p-2" title="Delete"><Trash2 size={16} /></button>
         </div>

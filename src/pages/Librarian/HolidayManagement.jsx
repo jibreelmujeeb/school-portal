@@ -85,6 +85,23 @@ export default function LibrarianHolidayManagement() {
   const [libraryStatus, setLibraryStatus] = useState("All");
   const [selectedHoliday, setSelectedHoliday] = useState(null);
 
+  const downloadCalendar = () => {
+    const csv = [
+      ["Name", "Type", "Start Date", "End Date", "Resumption Date", "Library Status"],
+      ...holidays.map((holiday) => [holiday.name, holiday.type, holiday.startDate, holiday.endDate, holiday.resumptionDate, holiday.libraryStatus]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "library-holiday-calendar.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const filteredHolidays = useMemo(() => {
     return holidays.filter((holiday) => {
       const matchesSearch = holiday.name.toLowerCase().includes(search.toLowerCase());
@@ -144,7 +161,7 @@ export default function LibrarianHolidayManagement() {
               <Plus size={17} />
               Add Holiday
             </button>
-            <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50">
+            <button onClick={downloadCalendar} className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50">
               <Download size={17} />
               Download Calendar
             </button>

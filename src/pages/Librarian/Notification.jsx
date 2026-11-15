@@ -27,6 +27,7 @@ export default function LibrarianNotificationsPage() {
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [tab, setTab] = useState("All");
+  const [selectedNotification, setSelectedNotification] = useState(null);
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter((item) => {
@@ -42,6 +43,8 @@ export default function LibrarianNotificationsPage() {
   const handleRead = (id) => setNotifications((current) => current.map((item) => item.id === id ? { ...item, status: "Read" } : item));
   const handleArchive = (id) => setNotifications((current) => current.map((item) => item.id === id ? { ...item, status: "Archived" } : item));
   const handleDelete = (id) => setNotifications((current) => current.filter((item) => item.id !== id));
+
+  const selectedItem = notifications.find((item) => item.id === selectedNotification) || null;
 
   return (
     <div className="space-y-6">
@@ -116,13 +119,36 @@ export default function LibrarianNotificationsPage() {
               time={item.time}
               priority={item.priority}
               unread={item.status === "Unread"}
-              onRead={() => handleRead(item.id)}
+              onRead={() => {
+                handleRead(item.id);
+                setSelectedNotification(item.id);
+              }}
               onArchive={() => handleArchive(item.id)}
               onDelete={() => handleDelete(item.id)}
+              onView={() => setSelectedNotification(item.id)}
             />
           ))
         )}
       </div>
+
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Notification Details</h3>
+              <button onClick={() => setSelectedNotification(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedItem.title}</p>
+              <p><span className="font-medium text-gray-900">Type:</span> {selectedItem.type}</p>
+              <p><span className="font-medium text-gray-900">Priority:</span> {selectedItem.priority}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedItem.status}</p>
+              <p><span className="font-medium text-gray-900">Message:</span> {selectedItem.message}</p>
+              <p><span className="font-medium text-gray-900">Time:</span> {selectedItem.time}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -137,7 +163,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function NotificationItem({ icon, title, message, time, priority, unread = false, onRead, onArchive, onDelete }) {
+function NotificationItem({ icon, title, message, time, priority, unread = false, onRead, onArchive, onDelete, onView }) {
   return (
     <div className={`flex flex-col md:flex-row md:items-center gap-4 p-5 border-b ${unread ? "bg-blue-50" : ""}`}>
       <div className="w-11 h-11 rounded-xl border flex items-center justify-center shrink-0">{icon}</div>
@@ -154,7 +180,8 @@ function NotificationItem({ icon, title, message, time, priority, unread = false
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={onRead} title="View" className="border rounded-lg p-2"><Eye size={16} /></button>
+        <button onClick={onView} title="View" className="border rounded-lg p-2"><Eye size={16} /></button>
+        <button onClick={onRead} title="Mark as read" className="border rounded-lg p-2"><CheckCheck size={16} /></button>
         <button onClick={onArchive} title="Archive" className="border rounded-lg p-2"><Archive size={16} /></button>
         <button onClick={onDelete} title="Delete" className="border rounded-lg p-2"><Trash2 size={16} /></button>
       </div>

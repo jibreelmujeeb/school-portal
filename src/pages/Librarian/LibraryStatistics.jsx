@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BookOpen,
   BookMarked,
@@ -13,6 +14,34 @@ import {
 const circulationData = [40, 52, 48, 62, 75, 80, 70, 92, 88, 95, 100, 110];
 
 export default function LibraryStatisticsPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState("This Month");
+
+  const exportStats = () => {
+    const rows = [
+      ["Metric", "Value"],
+      ["Total Books", "4,250"],
+      ["Available", "2,840"],
+      ["Borrowed", "1,180"],
+      ["Overdue", "230"],
+      ["Returned", "3,420"],
+      ["Reserved", "125"],
+      ["Fines Collected", "₦245,000"],
+      ["Damaged", "38"],
+    ];
+
+    const csv = rows
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `library-stats-${selectedPeriod.toLowerCase().replace(/\s+/g, "-")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -22,14 +51,14 @@ export default function LibraryStatisticsPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <select className="border rounded-xl px-4 py-3">
+          <select value={selectedPeriod} onChange={(event) => setSelectedPeriod(event.target.value)} className="border rounded-xl px-4 py-3">
             <option>This Month</option>
             <option>This Week</option>
             <option>This Year</option>
             <option>Custom Range</option>
           </select>
 
-          <button className="border rounded-xl px-5 py-3 flex items-center justify-center gap-2">
+          <button onClick={exportStats} className="border rounded-xl px-5 py-3 flex items-center justify-center gap-2">
             <Download size={18} />
             Export Report
           </button>

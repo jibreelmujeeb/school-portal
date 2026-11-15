@@ -54,6 +54,7 @@ export default function LibrarianLibraryInventoryPage() {
   const [location, setLocation] = useState("All Locations");
   const [condition, setCondition] = useState("All Conditions");
   const [activeTab, setActiveTab] = useState("All");
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const filteredInventory = useMemo(() => {
     return inventory.filter((item) => {
@@ -141,7 +142,30 @@ export default function LibrarianLibraryInventoryPage() {
   };
 
   const viewInventory = (item) => {
-    window.alert(`${item.title}\nID: ${item.id}\nTotal: ${item.total}\nAvailable: ${item.available}\nBorrowed: ${item.borrowed}\nDamaged: ${item.damaged}\nLost: ${item.lost}\nLocation: ${item.location}`);
+    setSelectedItem(item);
+  };
+
+  const exportInventory = () => {
+    const csv = [
+      ["ID", "Title", "Total", "Available", "Borrowed", "Damaged", "Lost", "Location", "Condition"],
+      ...filteredInventory.map((item) => [item.id, item.title, item.total, item.available, item.borrowed, item.damaged, item.lost, item.location, item.condition]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "library-inventory.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const transferInventory = (item) => {
+    const newLocation = window.prompt("Transfer to new location:", item.location);
+    if (!newLocation || !newLocation.trim()) return;
+    setInventory((current) => current.map((entry) => entry.id === item.id ? { ...entry, location: newLocation.trim() } : entry));
   };
 
   return (
@@ -153,7 +177,7 @@ export default function LibrarianLibraryInventoryPage() {
         </div>
 
         <div className="flex gap-3">
-          <button className="border rounded-xl px-5 py-3 flex items-center gap-2">
+          <button onClick={exportInventory} className="border rounded-xl px-5 py-3 flex items-center gap-2">
             <Download size={18} />
             Export
           </button>
@@ -260,12 +284,34 @@ export default function LibrarianLibraryInventoryPage() {
                   onView={viewInventory}
                   onEdit={handleEditInventory}
                   onDelete={handleDeleteInventory}
+                  onTransfer={transferInventory}
                 />
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Inventory Details</h3>
+              <button onClick={() => setSelectedItem(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedItem.title}</p>
+              <p><span className="font-medium text-gray-900">ID:</span> {selectedItem.id}</p>
+              <p><span className="font-medium text-gray-900">Total:</span> {selectedItem.total}</p>
+              <p><span className="font-medium text-gray-900">Available:</span> {selectedItem.available}</p>
+              <p><span className="font-medium text-gray-900">Borrowed:</span> {selectedItem.borrowed}</p>
+              <p><span className="font-medium text-gray-900">Damaged:</span> {selectedItem.damaged}</p>
+              <p><span className="font-medium text-gray-900">Lost:</span> {selectedItem.lost}</p>
+              <p><span className="font-medium text-gray-900">Location:</span> {selectedItem.location}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -280,7 +326,7 @@ function StatCard({ value, label }) {
   );
 }
 
-function InventoryRow({ item, onView, onEdit, onDelete }) {
+function InventoryRow({ item, onView, onEdit, onDelete, onTransfer }) {
   return (
     <tr className="border-b">
       <td className="p-4">
@@ -320,7 +366,7 @@ function InventoryRow({ item, onView, onEdit, onDelete }) {
             <Edit size={16} />
           </button>
 
-          <button className="border rounded-lg p-2" aria-label={`Transfer ${item.title}`}>
+          <button onClick={() => onTransfer(item)} className="border rounded-lg p-2" aria-label={`Transfer ${item.title}`}>
             <ArrowRightLeft size={16} />
           </button>
 

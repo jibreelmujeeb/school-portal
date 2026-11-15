@@ -56,6 +56,7 @@ export default function LibrarianLibraryCatalogPage() {
   const [subject, setSubject] = useState("All Subjects");
   const [availability, setAvailability] = useState("All Availability");
   const [activeTab, setActiveTab] = useState("All Books");
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
@@ -162,9 +163,24 @@ export default function LibrarianLibraryCatalogPage() {
   };
 
   const viewBook = (book) => {
-    window.alert(
-      `${book.title}\nAuthor: ${book.author}\nCategory: ${book.category}\nSubject: ${book.subject}\nCopies: ${book.copies}\nAvailable: ${book.available}\nLocation: ${book.location}`
-    );
+    setSelectedBook(book);
+  };
+
+  const exportCatalog = () => {
+    const csv = [
+      ["ID", "Title", "Author", "Category", "Subject", "Copies", "Available", "Borrowed", "Location", "Status"],
+      ...filteredBooks.map((book) => [book.id, book.title, book.author, book.category, book.subject, book.copies, book.available, book.borrowed, book.location, book.status]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "library-catalog.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -176,7 +192,7 @@ export default function LibrarianLibraryCatalogPage() {
         </div>
 
         <div className="flex gap-3">
-          <button className="border rounded-xl px-5 py-3 flex items-center gap-2">
+          <button onClick={exportCatalog} className="border rounded-xl px-5 py-3 flex items-center gap-2">
             <Download size={18} />
             Export
           </button>
@@ -297,6 +313,29 @@ export default function LibrarianLibraryCatalogPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 id="book-details-title" className="text-xl font-semibold">Book Details</h3>
+              <button onClick={() => setSelectedBook(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Book ID:</span> {selectedBook.id}</p>
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedBook.title}</p>
+              <p><span className="font-medium text-gray-900">Author:</span> {selectedBook.author}</p>
+              <p><span className="font-medium text-gray-900">Category:</span> {selectedBook.category}</p>
+              <p><span className="font-medium text-gray-900">Subject:</span> {selectedBook.subject}</p>
+              <p><span className="font-medium text-gray-900">Copies:</span> {selectedBook.copies}</p>
+              <p><span className="font-medium text-gray-900">Available:</span> {selectedBook.available}</p>
+              <p><span className="font-medium text-gray-900">Borrowed:</span> {selectedBook.borrowed}</p>
+              <p><span className="font-medium text-gray-900">Location:</span> {selectedBook.location}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedBook.status}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

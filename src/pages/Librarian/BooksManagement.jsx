@@ -13,6 +13,7 @@ export default function BooksManagement() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
@@ -53,6 +54,23 @@ export default function BooksManagement() {
     setBooks((current) => current.map((book) => book.id === id ? { ...book, status } : book));
   };
 
+  const exportBooks = () => {
+    const csv = [
+      ["ID", "Title", "Author", "Category", "Copies", "Available", "Shelf", "Status"],
+      ...filteredBooks.map((book) => [book.id, book.title, book.author, book.category, book.copies, book.available, book.shelf, book.status]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "books-management.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const totalBooks = books.length;
   const available = books.filter((book) => book.status === "Available").length;
   const borrowed = books.filter((book) => book.status === "Borrowed").length;
@@ -66,10 +84,15 @@ export default function BooksManagement() {
           <p className="text-gray-500">Manage all books available in the school library.</p>
         </div>
 
-        <button onClick={handleAddBook} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
-          <Plus size={18} />
-          Add Book
-        </button>
+        <div className="flex gap-3">
+          <button onClick={exportBooks} className="border rounded-xl px-4 py-3">
+            Export
+          </button>
+          <button onClick={handleAddBook} className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
+            <Plus size={18} />
+            Add Book
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
@@ -132,7 +155,7 @@ export default function BooksManagement() {
                   <td className="p-4"><span className={`px-3 py-1 rounded-full text-xs font-medium ${book.status === "Available" ? "bg-green-100 text-green-700" : book.status === "Borrowed" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{book.status}</span></td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                      <button className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
+                      <button onClick={() => setSelectedBook(book)} className="border rounded-lg p-2" title="View"><Eye size={16} /></button>
                       <button onClick={() => handleStatusChange(book.id, book.status === "Available" ? "Borrowed" : "Available")} className="border rounded-lg p-2" title="Toggle status"><Pencil size={16} /></button>
                       <button onClick={() => handleDelete(book.id)} className="border rounded-lg p-2" title="Delete"><Trash2 size={16} /></button>
                     </div>
@@ -143,6 +166,26 @@ export default function BooksManagement() {
           </tbody>
         </table>
       </div>
+
+      {selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Book Details</h3>
+              <button onClick={() => setSelectedBook(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Title:</span> {selectedBook.title}</p>
+              <p><span className="font-medium text-gray-900">Author:</span> {selectedBook.author}</p>
+              <p><span className="font-medium text-gray-900">Category:</span> {selectedBook.category}</p>
+              <p><span className="font-medium text-gray-900">Copies:</span> {selectedBook.copies}</p>
+              <p><span className="font-medium text-gray-900">Available:</span> {selectedBook.available}</p>
+              <p><span className="font-medium text-gray-900">Shelf:</span> {selectedBook.shelf}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedBook.status}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

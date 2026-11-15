@@ -22,6 +22,7 @@ export default function ReservationsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [priorityFilter, setPriorityFilter] = useState("All Priorities");
+  const [selectedReservation, setSelectedReservation] = useState(null);
 
   const filteredReservations = useMemo(() => {
     return reservations.filter((item) => {
@@ -53,6 +54,23 @@ export default function ReservationsPage() {
 
   const updateReservation = (id, status) => {
     setReservations((current) => current.map((entry) => (entry.id === id ? { ...entry, status } : entry)));
+  };
+
+  const exportReservations = () => {
+    const csv = [
+      ["ID", "Borrower", "Book", "Reserved On", "Priority", "Pickup Date", "Status"],
+      ...filteredReservations.map((item) => [item.id, item.borrower, item.book, item.date, item.priority, item.pickup, item.status]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "reservations.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -105,7 +123,7 @@ export default function ReservationsPage() {
           <option>Low</option>
         </select>
 
-        <button className="border rounded-xl px-4 py-3 flex items-center justify-center gap-2">
+        <button onClick={exportReservations} className="border rounded-xl px-4 py-3 flex items-center justify-center gap-2">
           <Download size={18} />
           Export
         </button>
@@ -131,12 +149,31 @@ export default function ReservationsPage() {
               </tr>
             ) : (
               filteredReservations.map((item) => (
-                <ReservationRow key={item.id} item={item} onUpdate={updateReservation} />
+                <ReservationRow key={item.id} item={item} onUpdate={updateReservation} onView={setSelectedReservation} />
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {selectedReservation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Reservation Details</h3>
+              <button onClick={() => setSelectedReservation(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Borrower:</span> {selectedReservation.borrower}</p>
+              <p><span className="font-medium text-gray-900">Book:</span> {selectedReservation.book}</p>
+              <p><span className="font-medium text-gray-900">Reserved On:</span> {selectedReservation.date}</p>
+              <p><span className="font-medium text-gray-900">Priority:</span> {selectedReservation.priority}</p>
+              <p><span className="font-medium text-gray-900">Pickup Date:</span> {selectedReservation.pickup}</p>
+              <p><span className="font-medium text-gray-900">Status:</span> {selectedReservation.status}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -151,7 +188,7 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-function ReservationRow({ item, onUpdate }) {
+function ReservationRow({ item, onUpdate, onView }) {
   return (
     <tr className="border-b">
       <td className="p-4 font-medium">{item.borrower}</td>
@@ -162,9 +199,9 @@ function ReservationRow({ item, onUpdate }) {
       <td className="p-4"><span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === "Ready" ? "bg-blue-100 text-blue-700" : item.status === "Collected" ? "bg-green-100 text-green-700" : item.status === "Pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{item.status}</span></td>
       <td className="p-4">
         <div className="flex gap-2">
-          <button title="View" className="border rounded-lg p-2"><Eye size={16} /></button>
+          <button onClick={() => onView(item)} title="View" className="border rounded-lg p-2"><Eye size={16} /></button>
           <button onClick={() => onUpdate(item.id, "Ready")} title="Approve" className="border rounded-lg p-2"><Check size={16} /></button>
-          <button title="Notify" className="border rounded-lg p-2"><Bell size={16} /></button>
+          <button onClick={() => onUpdate(item.id, "Ready")} title="Notify" className="border rounded-lg p-2"><Bell size={16} /></button>
           <button onClick={() => onUpdate(item.id, "Cancelled")} title="Cancel" className="border rounded-lg p-2"><X size={16} /></button>
         </div>
       </td>
