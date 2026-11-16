@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   User,
   GraduationCap,
@@ -15,7 +16,7 @@ import {
   Eye,
 } from "lucide-react";
 
-const student = {
+const defaultStudent = {
   name: "John Doe",
   admissionNo: "STD001",
   gender: "Male",
@@ -37,6 +38,16 @@ const student = {
 };
 
 export default function ParentChildProfilePage() {
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const selectedChild = state?.child;
+  const hasExtendedDetails = !selectedChild || selectedChild.admissionNo === "STD001";
+  const student = selectedChild
+    ? hasExtendedDetails
+      ? { ...defaultStudent, ...selectedChild }
+      : selectedChild
+    : defaultStudent;
+
   return (
     <div className="space-y-8">
 
@@ -65,9 +76,11 @@ export default function ParentChildProfilePage() {
                 {student.class}
               </span>
 
-              <span className="px-3 py-1 rounded-full bg-green-100 text-green-700">
-                {student.session}
-              </span>
+              {student.session && (
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-700">
+                  {student.session}
+                </span>
+              )}
 
               <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700">
                 Active Student
@@ -87,7 +100,7 @@ export default function ParentChildProfilePage() {
         <div className="border rounded-3xl p-5">
           <ClipboardCheck className="text-green-600 mb-3"/>
           <h2 className="text-2xl font-bold">
-            {student.attendance}
+            {formatPercent(student.attendance)}
           </h2>
           <p>Attendance</p>
         </div>
@@ -95,7 +108,7 @@ export default function ParentChildProfilePage() {
         <div className="border rounded-3xl p-5">
           <Award className="text-blue-600 mb-3"/>
           <h2 className="text-2xl font-bold">
-            {student.average}
+            {formatPercent(student.average)}
           </h2>
           <p>Academic Average</p>
         </div>
@@ -103,7 +116,7 @@ export default function ParentChildProfilePage() {
         <div className="border rounded-3xl p-5">
           <Wallet className="text-purple-600 mb-3"/>
           <h2 className="text-xl font-bold">
-            {student.feeStatus}
+            {student.feeStatus || student.fees || "—"}
           </h2>
           <p>Fee Status</p>
         </div>
@@ -111,7 +124,7 @@ export default function ParentChildProfilePage() {
         <div className="border rounded-3xl p-5">
           <BookOpen className="text-orange-600 mb-3"/>
           <h2 className="text-2xl font-bold">
-            SS2
+            {student.class?.split(" ")[0] || "—"}
           </h2>
           <p>Current Class</p>
         </div>
@@ -140,25 +153,29 @@ export default function ParentChildProfilePage() {
               <span>{student.class}</span>
             </div>
 
-            <div className="flex gap-3">
-              <Calendar />
-              <span>{student.dob}</span>
-            </div>
+            {hasExtendedDetails && (
+              <>
+                <div className="flex gap-3">
+                  <Calendar />
+                  <span>{student.dob}</span>
+                </div>
 
-            <div className="flex gap-3">
-              <Phone />
-              <span>{student.phone}</span>
-            </div>
+                <div className="flex gap-3">
+                  <Phone />
+                  <span>{student.phone}</span>
+                </div>
 
-            <div className="flex gap-3">
-              <Mail />
-              <span>{student.email}</span>
-            </div>
+                <div className="flex gap-3">
+                  <Mail />
+                  <span>{student.email}</span>
+                </div>
 
-            <div className="flex gap-3">
-              <MapPin />
-              <span>{student.address}</span>
-            </div>
+                <div className="flex gap-3">
+                  <MapPin />
+                  <span>{student.address}</span>
+                </div>
+              </>
+            )}
 
           </div>
 
@@ -171,42 +188,46 @@ export default function ParentChildProfilePage() {
             Parent / Guardian
           </h2>
 
-          <div className="space-y-4">
+          {hasExtendedDetails ? (
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <Users />
+                <span>{student.parent}</span>
+              </div>
 
-            <div className="flex gap-3">
-              <Users />
-              <span>{student.parent}</span>
+              <div className="flex gap-3">
+                <Phone />
+                <span>{student.parentPhone}</span>
+              </div>
+
+              <div className="flex gap-3">
+                <Mail />
+                <span>{student.parentEmail}</span>
+              </div>
             </div>
-
-            <div className="flex gap-3">
-              <Phone />
-              <span>{student.parentPhone}</span>
-            </div>
-
-            <div className="flex gap-3">
-              <Mail />
-              <span>{student.parentEmail}</span>
-            </div>
-
-          </div>
+          ) : (
+            <p className="text-sm text-gray-500">Contact details are not available in this demo profile.</p>
+          )}
 
           <h2 className="text-xl font-semibold mt-8 mb-5">
             Medical Information
           </h2>
 
-          <div className="space-y-4">
+          {hasExtendedDetails ? (
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <Heart />
+                <span>Blood Group: {student.bloodGroup}</span>
+              </div>
 
-            <div className="flex gap-3">
-              <Heart />
-              <span>Blood Group: {student.bloodGroup}</span>
+              <div className="flex gap-3">
+                <Heart />
+                <span>Genotype: {student.genotype}</span>
+              </div>
             </div>
-
-            <div className="flex gap-3">
-              <Heart />
-              <span>Genotype: {student.genotype}</span>
-            </div>
-
-          </div>
+          ) : (
+            <p className="text-sm text-gray-500">Medical details are not available in this demo profile.</p>
+          )}
 
         </div>
 
@@ -221,22 +242,22 @@ export default function ParentChildProfilePage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-          <button className="border rounded-xl py-4 flex flex-col items-center gap-2">
+          <button onClick={() => navigate("/parent/results", { state: { child: selectedChild } })} className="border rounded-xl py-4 flex flex-col items-center gap-2">
             <Eye />
             Results
           </button>
 
-          <button className="border rounded-xl py-4 flex flex-col items-center gap-2">
+          <button onClick={() => navigate("/parent/attendance", { state: { child: selectedChild } })} className="border rounded-xl py-4 flex flex-col items-center gap-2">
             <ClipboardCheck />
             Attendance
           </button>
 
-          <button className="border rounded-xl py-4 flex flex-col items-center gap-2">
+          <button onClick={() => navigate("/parent/fees", { state: { child: selectedChild } })} className="border rounded-xl py-4 flex flex-col items-center gap-2">
             <Wallet />
             Fees
           </button>
 
-          <button className="border rounded-xl py-4 flex flex-col items-center gap-2">
+          <button onClick={() => navigate("/parent/assignments", { state: { child: selectedChild } })} className="border rounded-xl py-4 flex flex-col items-center gap-2">
             <BookOpen />
             Assignments
           </button>
@@ -247,4 +268,9 @@ export default function ParentChildProfilePage() {
 
     </div>
   );
+}
+
+function formatPercent(value) {
+  if (typeof value === "number") return `${value}%`;
+  return value || "—";
 }

@@ -29,6 +29,23 @@ const assignments = [
 ];
 
 const ParentAssignmentsPage = () => {
+  const downloadAssignmentDetails = (assignment) => {
+    const contents = [
+      `Assignment: ${assignment.title}`,
+      `Subject: ${assignment.subject}`,
+      `Deadline: ${assignment.deadline}`,
+      `Status: ${assignment.status}`,
+    ].join("\r\n");
+    const blob = new Blob([contents], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeTitle = assignment.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    link.href = url;
+    link.download = `${safeTitle || "assignment"}-details.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-10">
 
@@ -96,9 +113,12 @@ const ParentAssignmentsPage = () => {
                 </div>
 
                 {/* DOWNLOAD */}
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition">
+                <button
+                  onClick={() => downloadAssignmentDetails(item)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition"
+                >
                   <Download className="w-4 h-4" />
-                  Download
+                  Download Details
                 </button>
 
               </div>

@@ -69,25 +69,47 @@ function ParentHolidayManagement() {
   const [search, setSearch] = useState("");
   const [term, setTerm] = useState("All Terms");
   const [child, setChild] = useState("all");
+  const [session, setSession] = useState("2026/2027");
   const [selectedHoliday, setSelectedHoliday] = useState(null);
 
-  const filteredHolidays = useMemo(() => {
+  const scopedHolidays = useMemo(() => {
     return holidays.filter((holiday) => {
-      const matchesSearch = holiday.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
+      const matchesSession = holiday.session === session;
       const matchesTerm =
         term === "All Terms" || holiday.term === term;
-
       const matchesChild =
         child === "all" ||
         holiday.children.includes("all") ||
         holiday.children.includes(child);
-
-      return matchesSearch && matchesTerm && matchesChild;
+      return matchesSession && matchesTerm && matchesChild;
     });
-  }, [search, term, child]);
+  }, [session, term, child]);
+
+  const filteredHolidays = useMemo(
+    () => scopedHolidays.filter((holiday) =>
+      holiday.name.toLowerCase().includes(search.toLowerCase())
+    ),
+    [scopedHolidays, search]
+  );
+
+  const today = new Date().toISOString().slice(0, 10);
+  const nextHoliday = scopedHolidays
+    .filter((holiday) => holiday.startDate >= today)
+    .sort((first, second) => first.startDate.localeCompare(second.startDate))[0];
+  const daysUntilNextHoliday = nextHoliday
+    ? Math.max(
+      0,
+      Math.ceil(
+        (new Date(`${nextHoliday.startDate}T00:00:00`).getTime() -
+          new Date(`${today}T00:00:00`).getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    )
+    : null;
+
+  const downloadFilteredCalendar = () => {
+    downloadCalendar(filteredHolidays, "school-holidays.ics");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -114,9 +136,12 @@ function ParentHolidayManagement() {
         </div>
 
         <button
+          onClick={downloadFilteredCalendar}
+          disabled={filteredHolidays.length === 0}
           className="flex items-center justify-center gap-2
           rounded-xl border border-gray-200 bg-white px-4 py-2.5
-          text-sm font-medium hover:bg-gray-50"
+          text-sm font-medium hover:bg-gray-50 disabled:cursor-not-allowed
+          disabled:opacity-50"
         >
           <Download size={17} />
           Download Calendar
@@ -152,11 +177,13 @@ function ParentHolidayManagement() {
         </div>
 
         <select
+          value={session}
+          onChange={(e) => setSession(e.target.value)}
           className="rounded-xl border border-gray-200
           bg-white px-4 py-3"
         >
-          <option>2026/2027</option>
-          <option>2025/2026</option>
+          <option value="2026/2027">2026/2027</option>
+          <option value="2025/2026">2025/2026</option>
         </select>
 
         <select
@@ -180,25 +207,25 @@ function ParentHolidayManagement() {
         <StatCard
           icon={<CalendarDays />}
           title="Next Holiday"
-          value="Christmas Break"
+          value={nextHoliday?.name || "None scheduled"}
         />
 
         <StatCard
           icon={<Clock3 />}
-          title="Days Remaining"
-          value="106 Days"
+          title="Days Until Next"
+          value={daysUntilNextHoliday === null ? "—" : `${daysUntilNextHoliday} Days`}
         />
 
         <StatCard
           icon={<CalendarDays />}
           title="This Term"
-          value="3"
+          value={scopedHolidays.length.toLocaleString()}
         />
 
         <StatCard
           icon={<Bell />}
           title="Total Holidays"
-          value="18"
+          value={scopedHolidays.length.toLocaleString()}
         />
 
       </div>
@@ -366,7 +393,11 @@ function HolidayDetails({ holiday, onClose }) {
     <div className="fixed inset-0 z-50 flex
       items-center justify-center bg-black/40 p-4">
 
-      <div className="max-h-[90vh] w-full max-w-lg
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="holiday-details-title"
+        className="max-h-[90vh] w-full max-w-lg
         overflow-y-auto rounded-2xl bg-white">
 
         <div className="flex items-start justify-between
@@ -380,7 +411,7 @@ function HolidayDetails({ holiday, onClose }) {
             </div>
 
             <h2 className="mt-4 text-xl font-bold">
-              {holiday.name}
+              <span id="holiday-details-title">{holiday.name}</span>
             </h2>
 
             <p className="text-sm text-gray-500">
@@ -455,10 +486,11 @@ function HolidayDetails({ holiday, onClose }) {
           <div className="flex gap-3">
 
             <button
+              onClick={() => downloadCalendar([holiday], `${holiday.id.toLowerCase()}.ics`)}
               className="flex-1 rounded-xl border
               border-gray-200 px-4 py-3 font-medium"
             >
-              Add to Calendar
+              Download Event
             </button>
 
             <button
@@ -500,6 +532,48 @@ function formatDate(date) {
     month: "short",
     year: "numeric",
   });
+}
+
+function downloadCalendar(entries, filename) {
+  const events = entries.map((holiday) => {
+    const endDate = new Date(`${holiday.endDate}T00:00:00Z`);
+    endDate.setUTCDate(endDate.getUTCDate() + 1);
+    const timestamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+
+    return [
+      "BEGIN:VEVENT",
+      `UID:${holiday.id}@school-portal`,
+      `DTSTAMP:${timestamp}`,
+      `DTSTART;VALUE=DATE:${holiday.startDate.replace(/-/g, "")}`,
+      `DTEND;VALUE=DATE:${endDate.toISOString().slice(0, 10).replace(/-/g, "")}`,
+      `SUMMARY:${escapeCalendarText(holiday.name)}`,
+      `DESCRIPTION:${escapeCalendarText(holiday.description)}`,
+      "END:VEVENT",
+    ].join("\r\n");
+  });
+  const contents = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//School Portal//Parent Holidays//EN",
+    "CALSCALE:GREGORIAN",
+    ...events,
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([contents], { type: "text/calendar;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeCalendarText(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
 }
 
 export default ParentHolidayManagement;

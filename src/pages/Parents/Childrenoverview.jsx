@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   Search,
@@ -38,6 +39,14 @@ const children = [
 
 export default function ParentChildrenOverviewPage() {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+  const averagePerformance = (
+    children.reduce((sum, child) => sum + child.average, 0) / children.length
+  ).toFixed(1);
+  const averageAttendance = (
+    children.reduce((sum, child) => sum + child.attendance, 0) / children.length
+  ).toFixed(1);
+  const pendingFees = children.filter((child) => child.fees === "Pending").length;
 
   const filteredChildren = children.filter((child) =>
     child.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -65,25 +74,25 @@ export default function ParentChildrenOverviewPage() {
 
         <div className="border rounded-3xl p-5">
           <Users className="text-blue-600 mb-3" />
-          <h2 className="text-2xl font-bold">2</h2>
+          <h2 className="text-2xl font-bold">{children.length}</h2>
           <p>Registered Children</p>
         </div>
 
         <div className="border rounded-3xl p-5">
           <GraduationCap className="text-green-600 mb-3" />
-          <h2 className="text-2xl font-bold">89.5%</h2>
+          <h2 className="text-2xl font-bold">{averagePerformance}%</h2>
           <p>Average Performance</p>
         </div>
 
         <div className="border rounded-3xl p-5">
           <CalendarCheck className="text-purple-600 mb-3" />
-          <h2 className="text-2xl font-bold">94.5%</h2>
+          <h2 className="text-2xl font-bold">{averageAttendance}%</h2>
           <p>Attendance</p>
         </div>
 
         <div className="border rounded-3xl p-5">
           <Wallet className="text-orange-600 mb-3" />
-          <h2 className="text-2xl font-bold">1 Pending</h2>
+          <h2 className="text-2xl font-bold">{pendingFees} Pending</h2>
           <p>Fee Status</p>
         </div>
 
@@ -95,6 +104,7 @@ export default function ParentChildrenOverviewPage() {
         <input
           type="text"
           placeholder="Search child..."
+          aria-label="Search children by name or admission number"
           className="w-full outline-none"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -104,7 +114,11 @@ export default function ParentChildrenOverviewPage() {
       {/* Children Cards */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-        {filteredChildren.map((child) => (
+        {filteredChildren.length === 0 ? (
+          <p className="col-span-full rounded-2xl border p-8 text-center text-gray-500">
+            No children match your search.
+          </p>
+        ) : filteredChildren.map((child) => (
 
           <div
             key={child.id}
@@ -171,12 +185,18 @@ export default function ParentChildrenOverviewPage() {
 
             <div className="grid grid-cols-2 gap-3 mt-6">
 
-              <button className="border rounded-xl py-2 flex justify-center items-center gap-2">
+              <button
+                onClick={() => navigate("/parent/child-profile", { state: { child } })}
+                className="border rounded-xl py-2 flex justify-center items-center gap-2"
+              >
                 <Eye size={16} />
                 Profile
               </button>
 
-              <button className="bg-blue-600 text-white rounded-xl py-2 flex justify-center items-center gap-2">
+              <button
+                onClick={() => navigate("/parent/dashboard", { state: { child } })}
+                className="bg-blue-600 text-white rounded-xl py-2 flex justify-center items-center gap-2"
+              >
                 View Dashboard
                 <ArrowRight size={16} />
               </button>

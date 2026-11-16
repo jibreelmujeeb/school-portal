@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
   User,
@@ -39,6 +39,8 @@ const subjects = [
 ];
 
 const ParentSubjectsPage = () => {
+  const [selectedSubject, setSelectedSubject] = useState(null);
+
   return (
     <div className="space-y-8">
 
@@ -179,7 +181,10 @@ const ParentSubjectsPage = () => {
             </div>
 
             {/* ACTION */}
-            <button className="w-full mt-6 py-3 border border-blue-600 text-blue-600 rounded-2xl hover:bg-blue-50">
+            <button
+              onClick={() => setSelectedSubject(item)}
+              className="w-full mt-6 py-3 border border-blue-600 text-blue-600 rounded-2xl hover:bg-blue-50"
+            >
               View Details
             </button>
 
@@ -247,6 +252,36 @@ const ParentSubjectsPage = () => {
         </div>
 
       </div>
+
+      {selectedSubject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subject-details-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between">
+              <h2 id="subject-details-title" className="text-xl font-semibold">
+                {selectedSubject.subject} Details
+              </h2>
+              <button
+                onClick={() => setSelectedSubject(null)}
+                className="rounded-lg border px-3 py-1 text-sm"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-5 space-y-3 text-sm text-gray-700">
+              <p><span className="font-medium text-gray-900">Teacher:</span> {selectedSubject.teacher}</p>
+              <p><span className="font-medium text-gray-900">Grade:</span> {selectedSubject.grade}</p>
+              <p><span className="font-medium text-gray-900">Attendance:</span> {selectedSubject.attendance}</p>
+              <p><span className="font-medium text-gray-900">Assignments:</span> {selectedSubject.assignments}</p>
+              <p><span className="font-medium text-gray-900">Progress:</span> {selectedSubject.progress}%</p>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -30,6 +30,26 @@ const results = [
 ];
 
 const ParentResultPage = () => {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownload = () => {
+    const csv = [
+      ["Subject", "Score", "Grade"],
+      ...results.map((item) => [item.subject, `${item.score}%`, item.grade]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "academic-results.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const total = results.reduce(
     (acc, item) => acc + item.score,
     0
@@ -58,12 +78,12 @@ const ParentResultPage = () => {
         {/* ACTIONS */}
         <div className="flex items-center gap-3">
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition">
+          <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition">
             <Printer className="w-4 h-4" />
             Print
           </button>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
+          <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
             <Download className="w-4 h-4" />
             Download
           </button>

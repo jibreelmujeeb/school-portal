@@ -4,6 +4,7 @@ import {
   CheckCircle,
   XCircle,
   Clock3,
+  Download,
 } from "lucide-react";
 
 const attendanceData = [
@@ -26,6 +27,10 @@ const attendanceData = [
 ];
 
 const ParentAttendancePage = () => {
+  const [statusFilter, setStatusFilter] = React.useState("All Statuses");
+  const filteredAttendance = attendanceData.filter(
+    (item) => statusFilter === "All Statuses" || item.status === statusFilter
+  );
   const totalDays = attendanceData.length;
 
   const presentDays = attendanceData.filter(
@@ -35,6 +40,26 @@ const ParentAttendancePage = () => {
   const attendanceRate = (
     (presentDays / totalDays) * 100
   ).toFixed(0);
+
+  const downloadAttendance = () => {
+    const csv = [
+      ["Date", "Status", "Remark"],
+      ...filteredAttendance.map((item) => [
+        item.date,
+        item.status,
+        item.status === "Present" ? "Attended classes" : item.status === "Absent" ? "Absent from school" : "Arrived late",
+      ]),
+    ]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "attendance-records.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -62,14 +87,36 @@ const ParentAttendancePage = () => {
     <div className="space-y-10">
 
       {/* HEADER */}
-      <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Attendance
-        </h1>
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-semibold">
+            Attendance
+          </h1>
 
-        <p className="text-sm text-gray-600 mt-2">
-          Track your child’s school attendance
-        </p>
+          <p className="text-sm text-gray-600 mt-2">
+            Track your child’s school attendance
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            aria-label="Filter attendance by status"
+            className="rounded-full border border-gray-300 px-4 py-2 text-sm"
+          >
+            <option>All Statuses</option>
+            <option>Present</option>
+            <option>Absent</option>
+            <option>Late</option>
+          </select>
+          <button
+            onClick={downloadAttendance}
+            className="flex items-center justify-center gap-2 rounded-full border border-blue-600 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+          >
+            <Download className="w-4 h-4" />
+            Download CSV
+          </button>
+        </div>
       </section>
 
       {/* SUMMARY */}
@@ -121,9 +168,11 @@ const ParentAttendancePage = () => {
         </div>
 
         {/* TABLE BODY */}
-        {attendanceData.map((item, idx) => (
+        {filteredAttendance.length === 0 ? (
+          <p className="p-6 text-center text-sm text-gray-500">No attendance records found.</p>
+        ) : filteredAttendance.map((item) => (
           <div
-            key={idx}
+            key={item.date}
             className="grid md:grid-cols-3 gap-2 p-4 border-b border-gray-100 text-sm items-center"
           >
             {/* DATE */}
