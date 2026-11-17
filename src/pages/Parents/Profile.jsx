@@ -1,207 +1,171 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Camera,
   GraduationCap,
+  Mail,
+  MapPin,
+  Phone,
   Save,
+  User,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
-const ParentProfilePage = () => {
+const initialProfile = {
+  fullName: "Adewale Johnson",
+  email: "parent@email.com",
+  phone: "+234 800 000 0000",
+  address: "Lagos, Nigeria",
+};
+
+export default function ParentProfilePage() {
+  const [profile, setProfile, storageError] = usePersistentState(
+    "parent-portal-profile",
+    initialProfile
+  );
+  const [saved, setSaved] = useState(false);
+  const [validationError, setValidationError] = useState("");
+
+  const updateField = (field, value) => {
+    setProfile((current) => ({ ...current, [field]: value }));
+    setSaved(false);
+    setValidationError("");
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!profile.fullName.trim() || !profile.email.trim()) {
+      setValidationError("Name and email address are required.");
+      return;
+    }
+    setSaved(true);
+  };
+
   return (
-    <div className="space-y-10">
-
-      {/* HEADER */}
+    <div className="space-y-8">
       <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Parent Profile
-        </h1>
-
-        <p className="text-sm text-gray-600 mt-2">
-          Manage your personal and student information
+        <h1 className="text-2xl font-semibold sm:text-3xl">Parent Profile</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Update your contact information and review linked students.
         </p>
       </section>
 
-      {/* PROFILE CARD */}
-      <section className="border border-gray-200 rounded-2xl p-6 bg-white">
-
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-
-          {/* AVATAR */}
-          <div className="relative">
-
-            <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center">
-              <User className="w-10 h-10 text-gray-500" />
-            </div>
-
-            {/* CAMERA */}
-            <button className="absolute bottom-0 right-0 w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition">
-              <Camera className="w-4 h-4 text-gray-600" />
-            </button>
-
-          </div>
-
-          {/* BASIC INFO */}
-          <div className="text-center sm:text-left">
-
-            <h2 className="text-xl font-semibold">
-              Mr. Adewale Johnson
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-              Parent Account
-            </p>
-
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4 text-sm text-gray-600">
-
-              <div className="flex items-center gap-1">
-                <Mail className="w-4 h-4" />
-                parent@email.com
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Phone className="w-4 h-4" />
-                +234 800 000 0000
-              </div>
-
-            </div>
-
-          </div>
-
+      <section className="flex flex-col items-center gap-6 rounded-2xl border border-gray-200 bg-white p-6 sm:flex-row">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
+          <User className="h-10 w-10 text-gray-500" />
         </div>
-
+        <div className="text-center sm:text-left">
+          <h2 className="text-xl font-semibold">{profile.fullName}</h2>
+          <p className="mt-1 text-sm text-gray-500">Parent Account</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3 text-sm text-gray-600 sm:justify-start">
+            <span className="flex items-center gap-1">
+              <Mail className="h-4 w-4" />
+              {profile.email}
+            </span>
+            <span className="flex items-center gap-1">
+              <Phone className="h-4 w-4" />
+              {profile.phone}
+            </span>
+          </div>
+        </div>
       </section>
 
-      {/* FORM */}
-      <section className="grid gap-6 lg:grid-cols-2">
-
-        {/* PERSONAL INFO */}
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white">
-
-          <h2 className="text-lg font-semibold mb-5">
-            Personal Information
-          </h2>
-
-          <div className="space-y-4">
-
-            {/* FULL NAME */}
-            <div>
-              <label className="text-sm text-gray-500 mb-2 block">
-                Full Name
-              </label>
-
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                <User className="w-4 h-4 text-gray-500 mr-2" />
-
-                <input
-                  type="text"
-                  defaultValue="Adewale Johnson"
-                  className="w-full outline-none text-sm bg-transparent"
-                />
-              </div>
-            </div>
-
-            {/* EMAIL */}
-            <div>
-              <label className="text-sm text-gray-500 mb-2 block">
-                Email Address
-              </label>
-
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                <Mail className="w-4 h-4 text-gray-500 mr-2" />
-
-                <input
-                  type="email"
-                  defaultValue="parent@email.com"
-                  className="w-full outline-none text-sm bg-transparent"
-                />
-              </div>
-            </div>
-
-            {/* PHONE */}
-            <div>
-              <label className="text-sm text-gray-500 mb-2 block">
-                Phone Number
-              </label>
-
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                <Phone className="w-4 h-4 text-gray-500 mr-2" />
-
-                <input
-                  type="text"
-                  defaultValue="+234 800 000 0000"
-                  className="w-full outline-none text-sm bg-transparent"
-                />
-              </div>
-            </div>
-
-            {/* ADDRESS */}
-            <div>
-              <label className="text-sm text-gray-500 mb-2 block">
-                Address
-              </label>
-
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                <MapPin className="w-4 h-4 text-gray-500 mr-2" />
-
-                <input
-                  type="text"
-                  defaultValue="Lagos, Nigeria"
-                  className="w-full outline-none text-sm bg-transparent"
-                />
-              </div>
-            </div>
-
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <section className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5">
+            <h2 className="text-lg font-semibold">Personal Information</h2>
+            <ProfileField
+              icon={User}
+              label="Full Name"
+              value={profile.fullName}
+              onChange={(value) => updateField("fullName", value)}
+              required
+            />
+            <ProfileField
+              icon={Mail}
+              label="Email Address"
+              type="email"
+              value={profile.email}
+              onChange={(value) => updateField("email", value)}
+              required
+            />
+            <ProfileField
+              icon={Phone}
+              label="Phone Number"
+              type="tel"
+              value={profile.phone}
+              onChange={(value) => updateField("phone", value)}
+            />
+            <ProfileField
+              icon={MapPin}
+              label="Address"
+              value={profile.address}
+              onChange={(value) => updateField("address", value)}
+            />
           </div>
 
-        </div>
-
-        {/* STUDENT INFO */}
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white">
-
-          <h2 className="text-lg font-semibold mb-5">
-            Linked Student
-          </h2>
-
-          <div className="space-y-4">
-
-            {/* STUDENT CARD */}
-            <div className="border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-blue-600" />
+          <div className="rounded-2xl border border-gray-200 bg-white p-5">
+            <h2 className="mb-5 text-lg font-semibold">Linked Students</h2>
+            <div className="flex items-center gap-3 rounded-xl border border-gray-200 p-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                <GraduationCap className="h-5 w-5 text-blue-600" />
               </div>
-
               <div>
-                <h3 className="font-medium">
-                  John Doe
-                </h3>
-
+                <h3 className="font-medium">John Doe</h3>
                 <p className="text-sm text-gray-500">
                   SS2 • Admission No: STD1023
                 </p>
               </div>
-
             </div>
-
+            <p className="mt-4 text-sm text-gray-500">
+              Student records are managed by the school. Contact the office if
+              a linked student is missing.
+            </p>
           </div>
+        </section>
 
+        {(storageError || validationError) && (
+          <p role="alert" className="text-sm text-red-600">
+            {storageError || validationError}
+          </p>
+        )}
+        {saved && !storageError && (
+          <p role="status" className="text-sm text-green-700">
+            Profile changes saved in this browser.
+          </p>
+        )}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm text-white transition hover:bg-blue-700"
+          >
+            <Save className="h-4 w-4" />
+            Save Changes
+          </button>
         </div>
-
-      </section>
-
-      {/* SAVE BUTTON */}
-      <section className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
-          <Save className="w-4 h-4" />
-          Save Changes
-        </button>
-      </section>
-
+      </form>
     </div>
   );
-};
+}
 
-export default ParentProfilePage;
+function ProfileField({ icon: Icon, label, value, onChange, type = "text", required = false }) {
+  const id = `parent-profile-${label.toLowerCase().replaceAll(" ", "-")}`;
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm text-gray-500">
+        {label}
+      </label>
+      <div className="flex items-center rounded-lg border border-gray-300 px-3 py-2">
+        {React.createElement(Icon, {
+          className: "mr-2 h-4 w-4 shrink-0 text-gray-500",
+        })}
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          required={required}
+          className="w-full bg-transparent text-sm outline-none"
+        />
+      </div>
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -16,6 +17,12 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import {
+  createParentPaymentRequest,
+  initialParentPayments,
+  parentPaymentsStorageKey,
+} from "../../data/parentPortal";
 
 const children = [
   {
@@ -158,7 +165,10 @@ function StatCard({ icon: Icon, title, value, description }) {
         </div>
 
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-          <Icon size={21} className="text-slate-700" />
+          {React.createElement(Icon, {
+            size: 21,
+            className: "text-slate-700",
+          })}
         </div>
       </div>
     </div>
@@ -180,17 +190,27 @@ function ActionButton({
           : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       }`}
     >
-      <Icon size={16} />
+      {React.createElement(Icon, { size: 16 })}
       {children}
     </button>
   );
 }
 
 export default function ParentOutstanding() {
+  const navigate = useNavigate();
   const [selectedChild, setSelectedChild] = useState("all");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [, setPaymentRecords, paymentStorageError] = usePersistentState(
+    parentPaymentsStorageKey,
+    initialParentPayments
+  );
 
   const outstandingInvoices = useMemo(() => {
     return invoices.filter(
@@ -245,16 +265,53 @@ export default function ParentOutstanding() {
     );
 
   const handlePay = (invoice) => {
-    alert(
-      `Starting payment for ${invoice.invoiceNumber} - ${formatCurrency(
-        
-        invoice.totalAmount - invoice.amountPaid
-      )}`
-    );
+    setPaymentInvoice(invoice);
+    setPaymentReference("");
+    setPaymentSubmitted(false);
+    setPaymentMessage("");
   };
 
   const handleDownload = (invoice) => {
-    alert(`Downloading ${invoice.invoiceNumber}`);
+    const contents = [
+      "School invoice",
+      `Invoice: ${invoice.invoiceNumber}`,
+      `Student: ${invoice.studentName}`,
+      `Fee: ${invoice.feeName}`,
+      `Session: ${invoice.session}`,
+      `Term: ${invoice.term}`,
+      `Total: ${formatCurrency(invoice.totalAmount)}`,
+      `Paid: ${formatCurrency(invoice.amountPaid)}`,
+      `Outstanding: ${formatCurrency(invoice.totalAmount - invoice.amountPaid)}`,
+      `Due date: ${invoice.dueDate}`,
+    ].join("\r\n");
+    const url = URL.createObjectURL(
+      new Blob([contents], { type: "text/plain;charset=utf-8;" })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${invoice.invoiceNumber.toLowerCase()}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const submitPaymentRecord = (event) => {
+    event.preventDefault();
+    if (!paymentInvoice || !paymentReference.trim()) return;
+    setPaymentRecords((current) => [
+      createParentPaymentRequest({
+        child: paymentInvoice.studentName,
+        feeType: paymentInvoice.feeName,
+        amount: paymentInvoice.totalAmount - paymentInvoice.amountPaid,
+        method: paymentMethod,
+        reference: paymentReference.trim(),
+      }),
+      ...current,
+    ]);
+    setPaymentSubmitted(true);
+    setPaymentReference("");
+    setPaymentMessage(
+      "Payment details submitted for school verification. No payment was processed."
+    );
   };
 
   const handlePrint = () => {
@@ -287,9 +344,7 @@ export default function ParentOutstanding() {
           <div className="flex flex-wrap gap-2">
             <ActionButton
               icon={Receipt}
-              onClick={() =>
-                alert("Opening payment history")
-              }
+              onClick={() => navigate("/parent/payment-history")}
             >
               Payment History
             </ActionButton>
@@ -867,6 +922,85 @@ export default function ParentOutstanding() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {paymentInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={submitPaymentRecord}
+            className="w-full max-w-lg space-y-5 rounded-2xl bg-white p-6"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Submit Payment Details
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {paymentInvoice.invoiceNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close payment form"
+                onClick={() => setPaymentInvoice(null)}
+                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+              Frontend demo only. No money is charged and the outstanding
+              balance will not change until the school verifies the payment.
+            </p>
+            {paymentMessage && !paymentStorageError && (
+              <p role="status" className="text-sm text-green-700">
+                {paymentMessage}
+              </p>
+            )}
+            {paymentStorageError && (
+              <p role="alert" className="text-sm text-red-600">
+                {paymentStorageError}
+              </p>
+            )}
+            <div>
+              <p className="text-sm text-slate-500">Amount to verify</p>
+              <p className="mt-1 text-2xl font-bold">
+                {formatCurrency(
+                  paymentInvoice.totalAmount - paymentInvoice.amountPaid
+                )}
+              </p>
+            </div>
+            <label className="block text-sm">
+              Payment method
+              <select
+                value={paymentMethod}
+                onChange={(event) => setPaymentMethod(event.target.value)}
+                className="mt-2 w-full rounded-xl border px-3 py-3"
+              >
+                <option>Bank Transfer</option>
+                <option>Card Payment</option>
+                <option>Cash at Finance Office</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              Payment reference
+              <input
+                required
+                value={paymentReference}
+                onChange={(event) => setPaymentReference(event.target.value)}
+                placeholder="Enter your transfer or receipt reference"
+                className="mt-2 w-full rounded-xl border px-3 py-3"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={paymentSubmitted || Boolean(paymentStorageError)}
+              className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {paymentSubmitted ? "Submitted" : "Submit for Verification"}
+            </button>
+          </form>
         </div>
       )}
     </div>

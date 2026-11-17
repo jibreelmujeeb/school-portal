@@ -17,6 +17,12 @@ import {
   Clock3,
   Receipt,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import {
+  createParentPaymentRequest,
+  initialParentPayments,
+  parentPaymentsStorageKey,
+} from "../../data/parentPortal";
 
 const children = [
   {
@@ -127,6 +133,13 @@ export default function ParentInvoice() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  const [, setPaymentRecords, paymentStorageError] =
+    usePersistentState(parentPaymentsStorageKey, initialParentPayments);
 
   const childInvoices = useMemo(() => {
     return invoices.filter((invoice) => invoice.childId === selectedChild);
@@ -169,6 +182,34 @@ export default function ParentInvoice() {
     currentInvoice && currentInvoice.total > 0
       ? Math.round((currentInvoice.paid / currentInvoice.total) * 100)
       : 0;
+
+  const submitPaymentRecord = (event) => {
+    event.preventDefault();
+    if (!paymentInvoice || !paymentReference.trim()) return;
+    const balance = paymentInvoice.total - paymentInvoice.paid;
+    setPaymentRecords((current) => [
+      createParentPaymentRequest({
+        child: paymentInvoice.childName,
+        feeType: `${paymentInvoice.term} fees`,
+        amount: balance,
+        method: paymentMethod,
+        reference: paymentReference.trim(),
+      }),
+      ...current,
+    ]);
+    setPaymentMessage(
+      "Payment details submitted for school verification. No payment was processed."
+    );
+    setPaymentSubmitted(true);
+    setPaymentReference("");
+  };
+
+  const startPayment = (invoice) => {
+    setPaymentInvoice(invoice);
+    setPaymentMessage("");
+    setPaymentSubmitted(false);
+    setPaymentReference("");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -338,8 +379,10 @@ export default function ParentInvoice() {
               </div>
 
               <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-                onClick={() => alert("Payment process started")}
+                type="button"
+                disabled={currentInvoice.total <= currentInvoice.paid}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => startPayment(currentInvoice)}
               >
                 <CreditCard size={17} />
                 Pay Balance
@@ -525,17 +568,17 @@ export default function ParentInvoice() {
                           </button>
 
                           <button
+                            onClick={() => downloadInvoice(invoice)}
                             className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-50 hover:text-blue-600"
                             title="Download"
+                            type="button"
                           >
                             <Download size={17} />
                           </button>
 
                           {balance > 0 && (
                             <button
-                              onClick={() =>
-                                alert(`Pay ${formatMoney(balance)}`)
-                              }
+                              onClick={() => startPayment(invoice)}
                               className="rounded-lg bg-blue-600 p-2 text-white hover:bg-blue-700"
                               title="Pay"
                             >
@@ -700,18 +743,33 @@ export default function ParentInvoice() {
 
               {/* Actions */}
               <div className="flex flex-col gap-3 sm:flex-row">
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                <button
+                  type="button"
+                  onClick={() => downloadInvoice(selectedInvoice)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
                   <Download size={17} />
                   Download
                 </button>
 
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
                   <Printer size={17} />
                   Print
                 </button>
 
                 {selectedInvoice.total > selectedInvoice.paid && (
-                  <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedInvoice(null);
+                      startPayment(selectedInvoice);
+                    }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+                  >
                     <CreditCard size={17} />
                     Pay Balance
                   </button>
@@ -721,6 +779,106 @@ export default function ParentInvoice() {
           </div>
         </div>
       )}
+
+      {paymentInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={submitPaymentRecord}
+            className="w-full max-w-lg space-y-5 rounded-2xl bg-white p-6"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Submit Payment Details
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">{paymentInvoice.id}</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close payment form"
+                onClick={() => setPaymentInvoice(null)}
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+              Frontend demo only. No money is charged and the invoice balance
+              will not change until the school verifies the payment.
+            </div>
+            {paymentMessage && !paymentStorageError && (
+              <p role="status" className="text-sm text-green-700">
+                {paymentMessage}
+              </p>
+            )}
+            {paymentStorageError && (
+              <p role="alert" className="text-sm text-red-600">
+                {paymentStorageError}
+              </p>
+            )}
+            <div>
+              <p className="text-sm text-gray-500">Amount to verify</p>
+              <p className="mt-1 text-2xl font-bold">
+                {formatMoney(paymentInvoice.total - paymentInvoice.paid)}
+              </p>
+            </div>
+            <label className="block text-sm">
+              Payment method
+              <select
+                value={paymentMethod}
+                onChange={(event) => setPaymentMethod(event.target.value)}
+                className="mt-2 w-full rounded-xl border px-3 py-3"
+              >
+                <option>Bank Transfer</option>
+                <option>Card Payment</option>
+                <option>Cash at Finance Office</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              Payment reference
+              <input
+                required
+                value={paymentReference}
+                onChange={(event) => setPaymentReference(event.target.value)}
+                placeholder="Enter your transfer or receipt reference"
+                className="mt-2 w-full rounded-xl border px-3 py-3"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={paymentSubmitted || Boolean(paymentStorageError)}
+              className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {paymentSubmitted ? "Submitted" : "Submit for Verification"}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
+}
+
+function downloadInvoice(invoice) {
+  const lines = [
+    "School invoice",
+    `Invoice: ${invoice.id}`,
+    `Student: ${invoice.childName}`,
+    `Term: ${invoice.term}`,
+    `Session: ${invoice.session}`,
+    ...invoice.items.map(
+      (item) => `${item.name}: ${formatMoney(item.amount)}`
+    ),
+    `Total: ${formatMoney(invoice.total)}`,
+    `Paid: ${formatMoney(invoice.paid)}`,
+    `Balance: ${formatMoney(invoice.total - invoice.paid)}`,
+    `Status: ${invoice.status}`,
+  ];
+  const url = URL.createObjectURL(
+    new Blob([lines.join("\r\n")], { type: "text/plain;charset=utf-8;" })
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${invoice.id.toLowerCase()}.txt`;
+  link.click();
+  URL.revokeObjectURL(url);
 }

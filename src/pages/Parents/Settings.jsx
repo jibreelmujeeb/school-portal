@@ -1,202 +1,199 @@
 import React, { useState } from "react";
-import {
-  Bell,
-  Lock,
-  Moon,
-  Globe,
-  Save,
-} from "lucide-react";
+import { Bell, Globe, Lock, Moon, Save } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
-const ParentSettingsPage = () => {
-  const [notifications, setNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+const initialSettings = {
+  notifications: true,
+  emailAlerts: true,
+  darkMode: false,
+  language: "English",
+};
+
+export default function ParentSettingsPage() {
+  const [settings, setSettings, storageError] = usePersistentState(
+    "parent-portal-settings",
+    initialSettings
+  );
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const updateSetting = (key, value) => {
+    setSettings((current) => ({ ...current, [key]: value }));
+    setMessage("");
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (newPassword && newPassword !== confirmPassword) {
+      setMessage("The new password and confirmation do not match.");
+      return;
+    }
+
+    if (newPassword) {
+      setMessage(
+        "Preferences were saved. Password changes need an account service and were not applied."
+      );
+      setNewPassword("");
+      setConfirmPassword("");
+      return;
+    }
+    setMessage("Settings saved in this browser.");
+  };
 
   return (
-    <div className="space-y-10">
-
-      {/* HEADER */}
+    <div className="space-y-8">
       <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Settings
-        </h1>
-
-        <p className="text-sm text-gray-600 mt-2">
-          Manage your account preferences and security
+        <h1 className="text-2xl font-semibold sm:text-3xl">Settings</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Manage your account preferences and security.
         </p>
       </section>
 
-      {/* NOTIFICATION SETTINGS */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Notifications
-        </h2>
-
-        <div className="space-y-4">
-
-          {/* APP NOTIFICATIONS */}
-          <div className="flex justify-between items-center border border-gray-200 rounded-xl p-4">
-
-            <div className="flex items-center gap-2 text-sm">
-              <Bell className="w-4 h-4 text-blue-600" />
-              In-app Notifications
-            </div>
-
-            <button
-              onClick={() =>
-                setNotifications(!notifications)
-              }
-              className={`w-10 h-5 flex items-center rounded-full transition ${
-                notifications
-                  ? "bg-blue-600"
-                  : "bg-gray-300"
-              }`}
-            >
-              <div
-                className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  notifications
-                    ? "translate-x-5"
-                    : "translate-x-1"
-                }`}
-              />
-            </button>
-
-          </div>
-
-          {/* EMAIL ALERTS */}
-          <div className="flex justify-between items-center border border-gray-200 rounded-xl p-4">
-
-            <div className="flex items-center gap-2 text-sm">
-              <Bell className="w-4 h-4 text-green-600" />
-              Email Notifications
-            </div>
-
-            <button
-              onClick={() =>
-                setEmailAlerts(!emailAlerts)
-              }
-              className={`w-10 h-5 flex items-center rounded-full transition ${
-                emailAlerts
-                  ? "bg-blue-600"
-                  : "bg-gray-300"
-              }`}
-            >
-              <div
-                className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  emailAlerts
-                    ? "translate-x-5"
-                    : "translate-x-1"
-                }`}
-              />
-            </button>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* SECURITY */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Security
-        </h2>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-
-          {/* NEW PASSWORD */}
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-
-            <Lock className="w-4 h-4 text-gray-500 mr-2" />
-
-            <input
-              type="password"
-              placeholder="New Password"
-              className="w-full outline-none text-sm bg-transparent"
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">Notifications</h2>
+          <div className="space-y-4">
+            <PreferenceToggle
+              icon={Bell}
+              label="In-app Notifications"
+              description="Show school alerts in the parent portal."
+              checked={settings.notifications}
+              onChange={(value) => updateSetting("notifications", value)}
             />
-
-          </div>
-
-          {/* CONFIRM PASSWORD */}
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-
-            <Lock className="w-4 h-4 text-gray-500 mr-2" />
-
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              className="w-full outline-none text-sm bg-transparent"
+            <PreferenceToggle
+              icon={Bell}
+              label="Email Notifications"
+              description="Receive school updates by email."
+              checked={settings.emailAlerts}
+              onChange={(value) => updateSetting("emailAlerts", value)}
             />
-
           </div>
+        </section>
 
-        </div>
-      </section>
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">Security</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <PasswordField
+              id="parent-new-password"
+              label="New Password"
+              value={newPassword}
+              onChange={setNewPassword}
+            />
+            <PasswordField
+              id="parent-confirm-password"
+              label="Confirm New Password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+            />
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Password changes are unavailable until account services are
+            connected. Passwords are not stored in this browser.
+          </p>
+        </section>
 
-      {/* APPEARANCE */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Appearance
-        </h2>
-
-        <div className="space-y-4">
-
-          {/* DARK MODE */}
-          <div className="flex justify-between items-center border border-gray-200 rounded-xl p-4">
-
-            <div className="flex items-center gap-2 text-sm">
-              <Moon className="w-4 h-4 text-purple-600" />
-              Dark Mode
-            </div>
-
-            <button
-              onClick={() =>
-                setDarkMode(!darkMode)
-              }
-              className={`w-10 h-5 flex items-center rounded-full transition ${
-                darkMode
-                  ? "bg-blue-600"
-                  : "bg-gray-300"
-              }`}
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">Appearance</h2>
+          <div className="space-y-4">
+            <PreferenceToggle
+              icon={Moon}
+              label="Dark Mode"
+              description="Save your preferred appearance."
+              checked={settings.darkMode}
+              onChange={(value) => updateSetting("darkMode", value)}
+            />
+            <label
+              htmlFor="parent-language"
+              className="flex items-center gap-3 rounded-xl border border-gray-200 p-4"
             >
-              <div
-                className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  darkMode
-                    ? "translate-x-5"
-                    : "translate-x-1"
-                }`}
-              />
-            </button>
-
+              <Globe className="h-4 w-4 text-gray-500" />
+              <span className="text-sm">Language</span>
+              <select
+                id="parent-language"
+                value={settings.language}
+                onChange={(event) => updateSetting("language", event.target.value)}
+                className="ml-auto rounded-lg border px-3 py-2 text-sm outline-none"
+              >
+                <option>English</option>
+                <option>French</option>
+                <option>Arabic</option>
+              </select>
+            </label>
           </div>
+        </section>
 
-          {/* LANGUAGE */}
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+        {(storageError || message) && (
+          <p
+            role={storageError || message.includes("match") ? "alert" : "status"}
+            className={`text-sm ${
+              storageError || message.includes("match")
+                ? "text-red-600"
+                : "text-green-700"
+            }`}
+          >
+            {storageError || message}
+          </p>
+        )}
 
-            <Globe className="w-4 h-4 text-gray-500 mr-2" />
-
-            <select className="w-full outline-none text-sm bg-transparent">
-              <option>English</option>
-              <option>French</option>
-              <option>Arabic</option>
-            </select>
-
-          </div>
-
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm text-white transition hover:bg-blue-700"
+          >
+            <Save className="h-4 w-4" />
+            Save Settings
+          </button>
         </div>
-      </section>
-
-      {/* SAVE BUTTON */}
-      <section className="flex justify-end">
-
-        <button className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
-          <Save className="w-4 h-4" />
-          Save Settings
-        </button>
-
-      </section>
-
+      </form>
     </div>
   );
-};
+}
 
-export default ParentSettingsPage;
+function PreferenceToggle({ icon: Icon, label, description, checked, onChange }) {
+  const id = `parent-setting-${label.toLowerCase().replaceAll(" ", "-")}`;
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-gray-200 p-4"
+    >
+      <span className="flex items-start gap-3">
+        {React.createElement(Icon, {
+          className: "mt-0.5 h-4 w-4 text-blue-600",
+        })}
+        <span>
+          <span className="block text-sm font-medium">{label}</span>
+          <span className="mt-1 block text-xs text-gray-500">{description}</span>
+        </span>
+      </span>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-4 w-4 accent-blue-600"
+      />
+    </label>
+  );
+}
+
+function PasswordField({ id, label, value, onChange }) {
+  return (
+    <label
+      htmlFor={id}
+      className="flex items-center rounded-lg border border-gray-300 px-3 py-2"
+    >
+      <Lock className="mr-2 h-4 w-4 text-gray-500" />
+      <span className="sr-only">{label}</span>
+      <input
+        id={id}
+        type="password"
+        autoComplete="new-password"
+        placeholder={label}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full bg-transparent text-sm outline-none"
+      />
+    </label>
+  );
+}
