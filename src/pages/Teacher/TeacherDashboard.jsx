@@ -1,144 +1,101 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import {
-  Users,
+  ArrowRight,
   BookOpen,
   ClipboardList,
-  Megaphone,
-  ArrowRight,
+  GraduationCap,
+  Users,
 } from "lucide-react";
 
 const TeacherDashboard = () => {
-  return (
-    <div className="space-y-10">
+  const students = useSelector((state) => state.students.items);
+  const subjects = useSelector((state) => state.subjects.items);
+  const classes = [...new Set(students.map((student) => student.class).filter(Boolean))];
+  const activeStudents = students.filter((student) => student.status === "Active").length;
 
-      {/* HEADER */}
+  const stats = [
+    { label: "My Classes", value: classes.length, icon: Users, color: "text-blue-600" },
+    { label: "Subjects", value: subjects.length, icon: BookOpen, color: "text-green-600" },
+    { label: "Students", value: students.length, icon: GraduationCap, color: "text-purple-600" },
+    { label: "Active Students", value: activeStudents, icon: ClipboardList, color: "text-orange-600" },
+  ];
+
+  const shortcuts = [
+    { label: "View my classes", path: "/teacher/classes", icon: Users },
+    { label: "Browse students", path: "/teacher/students-list", icon: GraduationCap },
+    { label: "Manage subjects", path: "/teacher/subjects", icon: BookOpen },
+    { label: "Review results", path: "/teacher/results", icon: ClipboardList },
+  ];
+
+  return (
+    <div className="space-y-8">
       <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Dashboard
-        </h1>
-        <p className="text-sm text-gray-600 mt-2">
-          Welcome back, manage your classes and activities
+        <h1 className="text-2xl font-semibold sm:text-3xl">Dashboard</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Your teaching overview and quick access to classroom tools.
         </p>
       </section>
 
-      {/* STATS */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        <div className="border border-gray-200 rounded-2xl p-5 flex items-center gap-3">
-          <Users className="w-5 h-5 text-blue-600" />
-          <div>
-            <p className="text-sm text-gray-500">My Classes</p>
-            <h2 className="text-lg font-semibold">3</h2>
+        {stats.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="flex items-center gap-3 rounded-2xl border border-gray-200 p-5">
+            {React.createElement(Icon, { className: `h-5 w-5 ${color}` })}
+            <div>
+              <p className="text-sm text-gray-500">{label}</p>
+              <p className="text-lg font-semibold">{value}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 flex items-center gap-3">
-          <BookOpen className="w-5 h-5 text-green-600" />
-          <div>
-            <p className="text-sm text-gray-500">Subjects</p>
-            <h2 className="text-lg font-semibold">5</h2>
-          </div>
-        </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 flex items-center gap-3">
-          <ClipboardList className="w-5 h-5 text-orange-600" />
-          <div>
-            <p className="text-sm text-gray-500">Assignments</p>
-            <h2 className="text-lg font-semibold">12</h2>
-          </div>
-        </div>
-
-        <div className="border border-gray-200 rounded-2xl p-5 flex items-center gap-3">
-          <Megaphone className="w-5 h-5 text-purple-600" />
-          <div>
-            <p className="text-sm text-gray-500">Announcements</p>
-            <h2 className="text-lg font-semibold">4</h2>
-          </div>
-        </div>
-
+        ))}
       </section>
 
-      {/* MAIN GRID */}
       <section className="grid gap-6 lg:grid-cols-2">
-
-        {/* MY CLASSES */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">
-            My Classes
-          </h2>
-
-          <div className="space-y-3">
-            {["SS2", "JSS3", "SS1"].map((cls, idx) => (
-              <div
-                key={idx}
-                className="border border-gray-200 rounded-xl p-4 flex justify-between items-center"
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm">{cls}</span>
-                </div>
-
-                <button className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
-                  View <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+        <div className="rounded-2xl border border-gray-200 p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">My Classes</h2>
+            <Link to="/teacher/classes" className="text-sm text-blue-600 hover:underline">
+              All classes
+            </Link>
           </div>
+          {classes.length ? (
+            <div className="space-y-3">
+              {classes.map((className) => {
+                const count = students.filter((student) => student.class === className).length;
+                return (
+                  <Link
+                    key={className}
+                    to={`/teacher/students-list?class=${encodeURIComponent(className)}`}
+                    className="flex items-center justify-between rounded-xl border border-gray-200 p-4 hover:bg-gray-50"
+                  >
+                    <span className="text-sm font-medium">{className}</span>
+                    <span className="flex items-center gap-2 text-sm text-gray-500">
+                      {count} {count === 1 ? "student" : "students"}
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No classes have students assigned yet.</p>
+          )}
         </div>
 
-        {/* RECENT ANNOUNCEMENTS */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">
-            Recent Announcements
-          </h2>
-
-          <div className="space-y-3">
-            {[
-              "Submit assignment before Friday",
-              "Staff meeting tomorrow",
-              "Exam schedule released",
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="border border-gray-200 rounded-xl p-4 flex items-start gap-2"
+        <div className="rounded-2xl border border-gray-200 p-5">
+          <h2 className="mb-4 text-lg font-semibold">Quick access</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {shortcuts.map(({ label, path, icon: Icon }) => (
+              <Link
+                key={path}
+                to={path}
+                className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-sm hover:bg-gray-50"
               >
-                <Megaphone className="w-4 h-4 text-blue-600 mt-1" />
-                <p className="text-sm text-gray-600">{item}</p>
-              </div>
+                {React.createElement(Icon, { className: "h-4 w-4 text-blue-600" })}
+                {label}
+              </Link>
             ))}
           </div>
-        </div>
-
-      </section>
-
-      {/* QUICK ACTIONS */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Quick Actions
-        </h2>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-          <button className="border border-gray-200 rounded-xl p-4 text-sm flex items-center gap-2 hover:bg-gray-50">
-            <ClipboardList className="w-4 h-4" />
-            Create Assignment
-          </button>
-
-          <button className="border border-gray-200 rounded-xl p-4 text-sm flex items-center gap-2 hover:bg-gray-50">
-            <BookOpen className="w-4 h-4" />
-            Manage Subjects
-          </button>
-
-          <button className="border border-gray-200 rounded-xl p-4 text-sm flex items-center gap-2 hover:bg-gray-50">
-            <Users className="w-4 h-4" />
-            View Students
-          </button>
-
-          <button className="border border-gray-200 rounded-xl p-4 text-sm flex items-center gap-2 hover:bg-gray-50">
-            <Megaphone className="w-4 h-4" />
-            Post Announcement
-          </button>
-
         </div>
       </section>
     </div>

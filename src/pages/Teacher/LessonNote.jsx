@@ -1,261 +1,445 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   BookOpen,
+  CalendarDays,
+  Download,
+  Edit,
+  Eye,
+  FileText,
   Plus,
   Search,
-  Calendar,
-  FileText,
-  Edit,
-  Trash2,
-  Eye,
-  Download,
-  Save,
   Send,
+  Trash2,
+  X,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
-const lessonNotes = [
+const initialNotes = [
   {
-    id: 1,
+    id: "lesson-algebra",
     title: "Introduction to Algebra",
     subject: "Mathematics",
-    class: "SS1",
+    className: "SS1",
     week: "Week 2",
     date: "2026-06-12",
+    content: "Introduce algebraic expressions, variables, and simple substitution.",
     status: "Published",
   },
   {
-    id: 2,
+    id: "lesson-chemistry",
     title: "Chemical Reactions",
     subject: "Chemistry",
-    class: "SS2",
+    className: "SS2",
     week: "Week 3",
     date: "2026-06-15",
+    content: "Describe reactants and products, and balance simple reaction equations.",
     status: "Draft",
   },
 ];
 
-export default function TeacherLessonNotesPage() {
-  const [search, setSearch] = useState("");
+const emptyForm = {
+  title: "",
+  subject: "",
+  className: "",
+  week: "",
+  date: "",
+  content: "",
+};
 
-  const filteredNotes = lessonNotes.filter(
-    (note) =>
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.subject.toLowerCase().includes(search.toLowerCase())
+const TeacherLessonNotesPage = () => {
+  const students = useSelector((state) => state.students.items);
+  const subjects = useSelector((state) => state.subjects.items);
+  const [notes, setNotes, persistenceError] = usePersistentState(
+    "teacher-lesson-notes",
+    initialNotes,
   );
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(emptyForm);
+  const [expandedNoteId, setExpandedNoteId] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+
+  const classes = [...new Set([
+    ...students.map((student) => student.class),
+    ...notes.map((note) => note.className),
+  ].filter(Boolean))];
+  const subjectNames = [...new Set([
+    ...subjects.map((subject) => subject.name),
+    ...notes.map((note) => note.subject),
+  ].filter(Boolean))];
+  const filteredNotes = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return notes.filter((note) => {
+      const matchesSearch = [note.title, note.subject, note.className, note.content]
+        .some((value) => value?.toLowerCase().includes(query));
+      const matchesStatus = statusFilter === "All" || note.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [notes, search, statusFilter]);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm({ ...emptyForm, date: new Date().toISOString().slice(0, 10) });
+    setError("");
+    setShowForm(true);
+  };
+
+  const openEdit = (note) => {
+    setEditingId(note.id);
+    setForm({
+      title: note.title,
+      subject: note.subject,
+      className: note.className,
+      week: note.week,
+      date: note.date,
+      content: note.content,
+    });
+    setError("");
+    setShowForm(true);
+  };
+
+  const saveNote = (status) => {
+    setError("");
+    if (
+      !form.title.trim() ||
+      !form.subject.trim() ||
+      !form.className ||
+      !form.week.trim() ||
+      !form.date ||
+      !form.content.trim()
+    ) {
+      setError("Complete the title, subject, class, week, date, and lesson content.");
+      return;
+    }
+
+    const note = {
+      ...form,
+      title: form.title.trim(),
+      subject: form.subject.trim(),
+      week: form.week.trim(),
+      content: form.content.trim(),
+      id: editingId || `lesson-${Date.now()}`,
+      status,
+    };
+    setNotes((current) =>
+      editingId
+        ? current.map((item) => item.id === editingId ? note : item)
+        : [note, ...current],
+    );
+    setShowForm(false);
+    setNotice(status === "Published" ? "Lesson note published." : "Lesson note saved as a draft.");
+  };
+
+  const deleteNote = (note) => {
+    if (!window.confirm(`Delete "${note.title}"?`)) return;
+    setNotes((current) => current.filter((item) => item.id !== note.id));
+    if (expandedNoteId === note.id) setExpandedNoteId(null);
+    setNotice("Lesson note deleted.");
+  };
+
+  const downloadNote = (note) => {
+    const text = [
+      note.title,
+      `${note.subject} | ${note.className} | ${note.week} | ${note.date}`,
+      `Status: ${note.status}`,
+      "",
+      note.content,
+    ].join("\r\n");
+    const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${note.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "lesson-note"}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const publishedCount = notes.filter((note) => note.status === "Published").length;
+  const draftCount = notes.filter((note) => note.status === "Draft").length;
+  const thisMonthCount = notes.filter((note) => note.date?.startsWith(thisMonth)).length;
 
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
-
+      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">
-            Lesson Notes
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Create, organize, and manage lesson notes for your classes.
+          <h1 className="text-2xl font-semibold sm:text-3xl">Lesson Notes</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Create lesson plans, save drafts, and publish notes for your classes.
           </p>
         </div>
-
-        <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl">
-          <Plus size={18} />
-          New Lesson Note
+        <button
+          type="button"
+          onClick={openCreate}
+          className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm text-white hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4" /> New lesson note
         </button>
+      </section>
 
-      </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-
-        <div className="border rounded-3xl p-5">
-          <BookOpen className="text-blue-600 mb-3"/>
-          <h2 className="text-2xl font-bold">48</h2>
-          <p>Total Notes</p>
+      {persistenceError && (
+        <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          {persistenceError}
+        </p>
+      )}
+      {notice && (
+        <div className="flex items-center justify-between rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          {notice}
+          <button type="button" onClick={() => setNotice("")} aria-label="Dismiss message">
+            <X className="h-4 w-4" />
+          </button>
         </div>
+      )}
 
-        <div className="border rounded-3xl p-5">
-          <FileText className="text-green-600 mb-3"/>
-          <h2 className="text-2xl font-bold">36</h2>
-          <p>Published</p>
-        </div>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          ["Total notes", notes.length, BookOpen],
+          ["Published", publishedCount, FileText],
+          ["Drafts", draftCount, Edit],
+          ["This month", thisMonthCount, CalendarDays],
+        ].map(([label, value, Icon]) => (
+          <div key={label} className="rounded-2xl border border-gray-200 p-5">
+            {React.createElement(Icon, { className: "mb-3 h-5 w-5 text-blue-600" })}
+            <p className="text-2xl font-semibold">{value}</p>
+            <p className="text-sm text-gray-500">{label}</p>
+          </div>
+        ))}
+      </section>
 
-        <div className="border rounded-3xl p-5">
-          <Save className="text-yellow-600 mb-3"/>
-          <h2 className="text-2xl font-bold">12</h2>
-          <p>Drafts</p>
-        </div>
+      <section className="flex flex-col gap-3 sm:flex-row">
+        <label className="flex flex-1 items-center rounded-xl border border-gray-300 px-4 py-3 focus-within:border-blue-600">
+          <Search className="mr-3 h-4 w-4 text-gray-500" />
+          <span className="sr-only">Search lesson notes</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search title, subject, class, or note"
+            className="w-full outline-none"
+          />
+        </label>
+        <label className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3">
+          <span className="text-sm text-gray-600">Status</span>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="bg-transparent text-sm outline-none"
+          >
+            <option>All</option>
+            <option>Draft</option>
+            <option>Published</option>
+          </select>
+        </label>
+      </section>
 
-        <div className="border rounded-3xl p-5">
-          <Calendar className="text-purple-600 mb-3"/>
-          <h2 className="text-2xl font-bold">14</h2>
-          <p>This Month</p>
-        </div>
-
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center border rounded-2xl px-4 py-3">
-
-        <Search className="mr-3 text-gray-500"/>
-
-        <input
-          type="text"
-          placeholder="Search lesson notes..."
-          className="w-full outline-none"
-          value={search}
-          onChange={(e)=>setSearch(e.target.value)}
-        />
-
-      </div>
-
-      {/* Lesson Notes Table */}
-      <div className="border rounded-3xl overflow-hidden">
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[900px]">
-
-            <thead className="bg-gray-50">
-
-              <tr>
-                <th className="text-left p-4">Title</th>
-                <th className="text-left p-4">Subject</th>
-                <th className="text-left p-4">Class</th>
-                <th className="text-left p-4">Week</th>
-                <th className="text-left p-4">Status</th>
-                <th className="text-center p-4">Actions</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {filteredNotes.map((note)=>(
-                <tr key={note.id} className="border-t">
-
-                  <td className="p-4">{note.title}</td>
-
-                  <td className="p-4">{note.subject}</td>
-
-                  <td className="p-4">{note.class}</td>
-
-                  <td className="p-4">{note.week}</td>
-
-                  <td className="p-4">
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        note.status === "Published"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {note.status}
-                    </span>
-
-                  </td>
-
-                  <td className="p-4">
-
-                    <div className="flex justify-center gap-2">
-
-                      <button className="border rounded-lg p-2">
-                        <Eye size={16}/>
-                      </button>
-
-                      <button className="border rounded-lg p-2">
-                        <Edit size={16}/>
-                      </button>
-
-                      <button className="border rounded-lg p-2">
-                        <Download size={16}/>
-                      </button>
-
-                      <button className="border rounded-lg p-2">
-                        <Trash2 size={16}/>
-                      </button>
-
-                    </div>
-
-                  </td>
-
+      {filteredNotes.length ? (
+        <section className="overflow-hidden rounded-2xl border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[850px] text-left text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="p-4 font-medium">Title</th>
+                  <th className="p-4 font-medium">Subject / Class</th>
+                  <th className="p-4 font-medium">Week / Date</th>
+                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 text-right font-medium">Actions</th>
                 </tr>
-              ))}
-
-            </tbody>
-
-          </table>
-
+              </thead>
+              <tbody>
+                {filteredNotes.map((note) => (
+                  <React.Fragment key={note.id}>
+                    <tr className="border-t border-gray-100">
+                      <td className="p-4 font-medium">{note.title}</td>
+                      <td className="p-4">
+                        <p>{note.subject}</p>
+                        <p className="mt-1 text-xs text-gray-500">{note.className}</p>
+                      </td>
+                      <td className="p-4">
+                        <p>{note.week}</p>
+                        <p className="mt-1 text-xs text-gray-500">{note.date}</p>
+                      </td>
+                      <td className="p-4">
+                        <span className={`rounded-full px-3 py-1 text-xs ${
+                          note.status === "Published"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {note.status}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
+                            aria-label={`${expandedNoteId === note.id ? "Hide" : "View"} ${note.title}`}
+                            aria-expanded={expandedNoteId === note.id}
+                            className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEdit(note)}
+                            aria-label={`Edit ${note.title}`}
+                            className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadNote(note)}
+                            aria-label={`Download ${note.title}`}
+                            className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteNote(note)}
+                            aria-label={`Delete ${note.title}`}
+                            className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedNoteId === note.id && (
+                      <tr className="border-t border-gray-100 bg-gray-50">
+                        <td colSpan="5" className="whitespace-pre-wrap p-4 text-gray-700">
+                          {note.content}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <div className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+          {notes.length ? "No lesson notes match your search." : "No lesson notes created yet."}
         </div>
+      )}
 
-      </div>
-
-      {/* Lesson Note Form */}
-      <div className="border rounded-3xl p-6">
-
-        <h2 className="text-xl font-semibold mb-6">
-          Create Lesson Note
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-5">
-
-          <input
-            type="text"
-            placeholder="Lesson Title"
-            className="border rounded-xl px-4 py-3"
-          />
-
-          <select className="border rounded-xl px-4 py-3">
-            <option>Select Subject</option>
-            <option>Mathematics</option>
-            <option>English</option>
-            <option>Chemistry</option>
-          </select>
-
-          <select className="border rounded-xl px-4 py-3">
-            <option>Select Class</option>
-            <option>JSS1</option>
-            <option>SS1</option>
-            <option>SS2</option>
-          </select>
-
-          <input
-            type="text"
-            placeholder="Week"
-            className="border rounded-xl px-4 py-3"
-          />
-
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lesson-note-dialog-title"
+            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white"
+          >
+            <div className="flex items-center justify-between border-b p-5">
+              <h2 id="lesson-note-dialog-title" className="font-semibold">
+                {editingId ? "Edit lesson note" : "Create lesson note"}
+              </h2>
+              <button type="button" onClick={() => setShowForm(false)} aria-label="Close form">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                saveNote("Draft");
+              }}
+              className="space-y-4 p-5"
+            >
+              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+              <label className="block text-sm font-medium">
+                Lesson title
+                <input
+                  required
+                  value={form.title}
+                  onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                />
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium">
+                  Subject
+                  <input
+                    required
+                    list="lesson-subjects"
+                    value={form.subject}
+                    onChange={(event) => setForm((current) => ({ ...current, subject: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                  />
+                  <datalist id="lesson-subjects">
+                    {subjectNames.map((subject) => <option key={subject} value={subject} />)}
+                  </datalist>
+                </label>
+                <label className="block text-sm font-medium">
+                  Class
+                  <select
+                    required
+                    value={form.className}
+                    onChange={(event) => setForm((current) => ({ ...current, className: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                  >
+                    <option value="">Select class</option>
+                    {classes.map((className) => <option key={className}>{className}</option>)}
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  Week
+                  <input
+                    required
+                    value={form.week}
+                    onChange={(event) => setForm((current) => ({ ...current, week: event.target.value }))}
+                    placeholder="e.g. Week 4"
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  Date
+                  <input
+                    required
+                    type="date"
+                    value={form.date}
+                    onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                  />
+                </label>
+              </div>
+              <label className="block text-sm font-medium">
+                Lesson content
+                <textarea
+                  required
+                  rows={7}
+                  value={form.content}
+                  onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal"
+                />
+              </label>
+              <div className="flex flex-col-reverse justify-end gap-3 border-t pt-4 sm:flex-row">
+                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border px-4 py-2.5 text-sm">
+                  Cancel
+                </button>
+                <button type="submit" className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm hover:bg-gray-50">
+                  Save draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => saveNote("Published")}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm text-white hover:bg-blue-700"
+                >
+                  <Send className="h-4 w-4" /> Publish
+                </button>
+              </div>
+            </form>
+          </section>
         </div>
-
-        <textarea
-          rows="8"
-          placeholder="Write your lesson note..."
-          className="border rounded-xl w-full mt-5 p-4"
-        />
-
-        <input
-          type="file"
-          className="mt-5"
-        />
-
-        <div className="flex gap-3 mt-6">
-
-          <button className="border px-5 py-3 rounded-xl flex items-center gap-2">
-            <Save size={18}/>
-            Save Draft
-          </button>
-
-          <button className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2">
-            <Send size={18}/>
-            Publish
-          </button>
-
-        </div>
-
-      </div>
-
+      )}
     </div>
   );
-}
+};
+
+export default TeacherLessonNotesPage;

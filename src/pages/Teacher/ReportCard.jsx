@@ -1,5 +1,6 @@
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import usePersistentState from "../../hooks/usePersistentState";
 import {
   Award,
   BookOpen,
@@ -111,7 +112,7 @@ function StatCard({ title, value, detail, icon: Icon }) {
           <p className="mt-1 text-xs text-slate-500">{detail}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <Icon size={21} className="text-slate-700" />
+          {React.createElement(Icon, { size: 21, className: "text-slate-700" })}
         </div>
       </div>
     </div>
@@ -131,7 +132,10 @@ function StatusBadge({ status }) {
 }
 
 export default function TeacherReportCard() {
-  const [students, setStudents] = useState(initialStudents);
+  const [students, setStudents, persistenceError] = usePersistentState(
+    "teacher-report-card-records",
+    initialStudents,
+  );
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -296,7 +300,7 @@ export default function TeacherReportCard() {
         </table>
         <div class="comment"><strong>Teacher's Comment:</strong><p>${student.comment || "No comment added."}</p></div>
         <div class="signatures"><span>Teacher's Signature: ______________</span><span>Principal's Signature: ______________</span></div>
-        <script>window.onload = () => window.print();<\/script>
+        <script>window.onload = () => window.print();</script>
       </body>
       </html>
     `);
@@ -339,6 +343,11 @@ export default function TeacherReportCard() {
               <X size={17} />
             </button>
           </div>
+        )}
+        {persistenceError && (
+          <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            {persistenceError}
+          </p>
         )}
 
         {/* Stats */}

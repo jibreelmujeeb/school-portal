@@ -1,5 +1,6 @@
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import usePersistentState from "../../hooks/usePersistentState";
 import {
   ClipboardList, Plus, Search, CalendarDays, Users,
   CheckCircle, Clock, AlertCircle, FileText, Eye,
@@ -104,7 +105,7 @@ function StatCard({ title, value, icon: Icon, note }) {
           <p className="mt-1 text-xs text-slate-500">{note}</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2.5 text-slate-700">
-          <Icon size={21} />
+          {React.createElement(Icon, { size: 21 })}
         </div>
       </div>
     </div>
@@ -112,7 +113,10 @@ function StatCard({ title, value, icon: Icon, note }) {
 }
 
 export default function TeacherAssignmentSubmission() {
-  const [assignments, setAssignments] = useState(initialAssignments);
+  const [assignments, setAssignments, persistenceError] = usePersistentState(
+    "teacher-assignment-submissions",
+    initialAssignments,
+  );
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("All Classes");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
@@ -353,6 +357,11 @@ export default function TeacherAssignmentSubmission() {
               <X size={17} />
             </button>
           </div>
+        )}
+        {persistenceError && (
+          <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {persistenceError}
+          </p>
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

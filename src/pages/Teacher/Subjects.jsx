@@ -1,235 +1,100 @@
-import React from "react";
-import {
-  BookOpen,
-  Users,
-  FileText,
-  TrendingUp,
-  Upload,
-  Eye,
-} from "lucide-react";
-
-const subjects = [
-  {
-    id: 1,
-    name: "Mathematics",
-    class: "SS2A",
-    students: 45,
-    assignments: 12,
-    averageScore: 82,
-  },
-  {
-    id: 2,
-    name: "Further Mathematics",
-    class: "SS3B",
-    students: 32,
-    assignments: 8,
-    averageScore: 78,
-  },
-  {
-    id: 3,
-    name: "Physics",
-    class: "SS1A",
-    students: 40,
-    assignments: 10,
-    averageScore: 85,
-  },
-];
+import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { BookOpen, Search, Users } from "lucide-react";
 
 const TeacherSubjectsPage = () => {
+  const subjects = useSelector((state) => state.subjects.items);
+  const students = useSelector((state) => state.students.items);
+  const [search, setSearch] = useState("");
+
+  const filteredSubjects = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return subjects.filter((subject) =>
+      [subject.name, subject.code, subject.teacher]
+        .some((value) => value?.toLowerCase().includes(query)),
+    );
+  }, [search, subjects]);
+
   return (
     <div className="space-y-8">
-
-      {/* PAGE HEADER */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold">
-          My Subjects
-        </h1>
-
-        <p className="text-gray-500 mt-2">
-          Manage subjects, assignments, learning materials,
-          and monitor student performance.
+      <section>
+        <h1 className="text-2xl font-semibold sm:text-3xl">My Subjects</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Browse available subjects and open the related teaching tools.
         </p>
-      </div>
+      </section>
 
-      {/* STATISTICS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-
-        <div className="border border-gray-200 rounded-3xl p-5">
-          <BookOpen className="w-6 h-6 text-blue-600 mb-3" />
-          <h2 className="text-3xl font-bold">8</h2>
-          <p className="text-sm text-gray-500">
-            Assigned Subjects
-          </p>
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-gray-200 p-5">
+          <BookOpen className="mb-3 h-5 w-5 text-blue-600" />
+          <p className="text-2xl font-semibold">{subjects.length}</p>
+          <p className="text-sm text-gray-500">Subjects in the portal</p>
         </div>
-
-        <div className="border border-gray-200 rounded-3xl p-5">
-          <Users className="w-6 h-6 text-green-600 mb-3" />
-          <h2 className="text-3xl font-bold">320</h2>
-          <p className="text-sm text-gray-500">
-            Total Students
-          </p>
+        <div className="rounded-2xl border border-gray-200 p-5">
+          <Users className="mb-3 h-5 w-5 text-green-600" />
+          <p className="text-2xl font-semibold">{students.length}</p>
+          <p className="text-sm text-gray-500">Students in the portal</p>
         </div>
-
-        <div className="border border-gray-200 rounded-3xl p-5">
-          <FileText className="w-6 h-6 text-orange-600 mb-3" />
-          <h2 className="text-3xl font-bold">45</h2>
-          <p className="text-sm text-gray-500">
-            Assignments
+        <div className="rounded-2xl border border-gray-200 p-5">
+          <Users className="mb-3 h-5 w-5 text-purple-600" />
+          <p className="text-2xl font-semibold">
+            {[...new Set(students.map((student) => student.class).filter(Boolean))].length}
           </p>
+          <p className="text-sm text-gray-500">Classes in the portal</p>
         </div>
+      </section>
 
-        <div className="border border-gray-200 rounded-3xl p-5">
-          <TrendingUp className="w-6 h-6 text-purple-600 mb-3" />
-          <h2 className="text-3xl font-bold">81%</h2>
-          <p className="text-sm text-gray-500">
-            Average Performance
-          </p>
-        </div>
+      <label className="flex max-w-xl items-center rounded-xl border border-gray-300 px-4 py-3 focus-within:border-blue-600">
+        <Search className="mr-3 h-4 w-4 text-gray-500" />
+        <span className="sr-only">Search subjects</span>
+        <input
+          type="search"
+          placeholder="Search subject, code, or teacher"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="w-full outline-none"
+        />
+      </label>
 
-      </div>
-
-      {/* SUBJECTS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-        {subjects.map((subject) => (
-          <div
-            key={subject.id}
-            className="border border-gray-200 rounded-3xl p-6"
-          >
-
-            {/* HEADER */}
-            <div className="flex items-center justify-between">
-
-              <div className="w-12 h-12 rounded-2xl border border-gray-200 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600" />
+      {filteredSubjects.length ? (
+        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredSubjects.map((subject) => (
+            <article key={subject.code || subject.name} className="rounded-2xl border border-gray-200 p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="font-semibold">{subject.name}</h2>
+                  <p className="text-sm text-gray-500">{subject.code || "No subject code"}</p>
+                </div>
               </div>
-
-              <span className="px-3 py-1 rounded-full text-xs border border-blue-200 bg-blue-50 text-blue-600">
-                {subject.class}
-              </span>
-
-            </div>
-
-            {/* SUBJECT INFO */}
-            <div className="mt-5">
-
-              <h2 className="text-lg font-semibold">
-                {subject.name}
-              </h2>
-
-            </div>
-
-            {/* DETAILS */}
-            <div className="space-y-3 mt-5">
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">
-                  Students
-                </span>
-
-                <span className="font-medium">
-                  {subject.students}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">
-                  Assignments
-                </span>
-
-                <span className="font-medium">
-                  {subject.assignments}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">
-                  Average Score
-                </span>
-
-                <span className="font-medium">
-                  {subject.averageScore}%
-                </span>
-              </div>
-
-            </div>
-
-            {/* ACTIONS */}
-            <div className="grid grid-cols-2 gap-3 mt-6">
-
-              <button className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
-
-                <Eye className="w-4 h-4" />
-
-                View
-
-              </button>
-
-              <button className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-green-600 text-green-600 hover:bg-green-50">
-
-                <Upload className="w-4 h-4" />
-
-                Upload
-
-              </button>
-
-            </div>
-
-          </div>
-        ))}
-
-      </div>
-
-      {/* SUBJECT PERFORMANCE TABLE */}
-      <div className="border border-gray-200 rounded-3xl p-6">
-
-        <h2 className="text-lg font-semibold mb-5">
-          Subject Performance Overview
-        </h2>
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[700px]">
-
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3">Subject</th>
-                <th className="text-left py-3">Class</th>
-                <th className="text-left py-3">Students</th>
-                <th className="text-left py-3">Assignments</th>
-                <th className="text-left py-3">Average Score</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {subjects.map((subject) => (
-                <tr
-                  key={subject.id}
-                  className="border-b border-gray-100"
+              <p className="mt-5 text-sm text-gray-600">
+                Teacher: {subject.teacher || "Unassigned"}
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Link
+                  to="/teacher/students-list"
+                  className="rounded-xl border border-gray-300 px-3 py-2 text-center text-sm hover:bg-gray-50"
                 >
-                  <td className="py-4">
-                    {subject.name}
-                  </td>
-
-                  <td>{subject.class}</td>
-
-                  <td>{subject.students}</td>
-
-                  <td>{subject.assignments}</td>
-
-                  <td>{subject.averageScore}%</td>
-                </tr>
-              ))}
-
-            </tbody>
-
-          </table>
-
+                  Browse students
+                </Link>
+                <Link
+                  to="/teacher/learning-materials"
+                  className="rounded-xl border border-blue-600 px-3 py-2 text-center text-sm text-blue-600 hover:bg-blue-50"
+                >
+                  Teaching materials
+                </Link>
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <div className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+          {subjects.length ? "No subjects match your search." : "No subjects are available."}
         </div>
-
-      </div>
-
+      )}
     </div>
   );
 };
