@@ -1,28 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Bell,
   CheckCircle,
-  Megaphone,
   ClipboardList,
+  Megaphone,
+  Trash2,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const initialNotifications = [
   {
-    id: 1,
+    id: "notification-1",
     type: "announcement",
     message: "Staff meeting scheduled for Friday",
     time: "2 hours ago",
     read: false,
   },
   {
-    id: 2,
+    id: "notification-2",
     type: "assignment",
     message: "10 students submitted assignments",
     time: "5 hours ago",
     read: false,
   },
   {
-    id: 3,
+    id: "notification-3",
     type: "system",
     message: "Your profile was updated successfully",
     time: "1 day ago",
@@ -30,84 +32,98 @@ const initialNotifications = [
   },
 ];
 
+const icons = {
+  announcement: Megaphone,
+  assignment: ClipboardList,
+  system: Bell,
+};
+
 const TeacherNotifications = () => {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications, persistenceError] = usePersistentState(
+    "teacher-notifications",
+    initialNotifications,
+  );
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   const markAsRead = (id) => {
-    const updated = notifications.map((n) =>
-      n.id === id ? { ...n, read: true } : n
-    );
-    setNotifications(updated);
+    setNotifications((current) => current.map((notification) =>
+      notification.id === id ? { ...notification, read: true } : notification,
+    ));
   };
 
-  const getIcon = (type) => {
-    if (type === "announcement")
-      return <Megaphone className="w-5 h-5 text-blue-600" />;
-    if (type === "assignment")
-      return <ClipboardList className="w-5 h-5 text-green-600" />;
-    return <Bell className="w-5 h-5 text-gray-600" />;
+  const markAllAsRead = () => {
+    setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
+      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-semibold sm:text-3xl">Notifications</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            {unreadCount} unread {unreadCount === 1 ? "notification" : "notifications"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={markAllAsRead}
+          disabled={!unreadCount}
+          className="rounded-xl border border-gray-300 px-4 py-3 text-sm hover:bg-gray-50 disabled:opacity-50"
+        >
+          Mark all as read
+        </button>
+      </section>
 
-      {/* HEADER */}
-      <section>
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Notifications
-        </h1>
-        <p className="text-sm text-gray-600 mt-2">
-          Stay updated with important activities
+      {persistenceError && (
+        <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          {persistenceError}
         </p>
-      </section>
+      )}
 
-      {/* LIST */}
-      <section className="space-y-3">
-
-        {notifications.map((item) => (
-          <div
-            key={item.id}
-            className={`border rounded-2xl p-4 flex items-start gap-3 ${
-              item.read
-                ? "border-gray-200 bg-white"
-                : "border-blue-600 bg-blue-50"
-            }`}
-          >
-            {/* ICON */}
-            <div>{getIcon(item.type)}</div>
-
-            {/* CONTENT */}
-            <div className="flex-1">
-              <p className="text-sm font-medium">
-                {item.message}
-              </p>
-              <span className="text-xs text-gray-500">
-                {item.time}
-              </span>
-            </div>
-
-            {/* ACTION */}
-            {!item.read && (
-              <button
-                onClick={() => markAsRead(item.id)}
-                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+      {notifications.length ? (
+        <section className="space-y-3">
+          {notifications.map((item) => {
+            const Icon = icons[item.type] || Bell;
+            return (
+              <article
+                key={item.id}
+                className={`flex items-start gap-3 rounded-2xl border p-4 ${
+                  item.read ? "border-gray-200 bg-white" : "border-blue-200 bg-blue-50"
+                }`}
               >
-                <CheckCircle className="w-4 h-4" />
-                Mark read
-              </button>
-            )}
-          </div>
-        ))}
-
-      </section>
-
-      {/* EMPTY */}
-      {notifications.length === 0 && (
-        <div className="text-center text-sm text-gray-500">
+                {React.createElement(Icon, {
+                  className: `h-5 w-5 shrink-0 ${item.type === "assignment" ? "text-green-600" : "text-blue-600"}`,
+                })}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{item.message}</p>
+                  <p className="mt-1 text-xs text-gray-500">{item.time}</p>
+                </div>
+                {!item.read && (
+                  <button
+                    type="button"
+                    onClick={() => markAsRead(item.id)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  >
+                    <CheckCircle className="h-4 w-4" /> Mark read
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setNotifications((current) => current.filter((entry) => entry.id !== item.id))}
+                  aria-label={`Dismiss ${item.message}`}
+                  className="rounded p-1 text-gray-500 hover:bg-white"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </article>
+            );
+          })}
+        </section>
+      ) : (
+        <div className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-500">
           No notifications available.
         </div>
       )}
-
     </div>
   );
 };

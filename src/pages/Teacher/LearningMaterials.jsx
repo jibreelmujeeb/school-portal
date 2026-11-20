@@ -1,5 +1,7 @@
 
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import usePersistentState from "../../hooks/usePersistentState";
 import {
   BookOpen, Search, Plus, UploadCloud, FileText,
   FileImage, FileVideo, Presentation, Download, Eye,
@@ -119,7 +121,7 @@ function StatCard({ title, value, icon: Icon, description }) {
           <p className="mt-1 text-xs text-slate-500">{description}</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2.5 text-slate-700">
-          <Icon size={21} />
+          {React.createElement(Icon, { size: 21 })}
         </div>
       </div>
     </div>
@@ -127,7 +129,12 @@ function StatCard({ title, value, icon: Icon, description }) {
 }
 
 export default function TeacherLearningMaterials() {
-  const [materials, setMaterials] = useState(initialMaterials);
+  const students = useSelector((state) => state.students.items);
+  const schoolSubjectItems = useSelector((state) => state.subjects.items);
+  const [materials, setMaterials, persistenceError] = usePersistentState(
+    "teacher-learning-materials",
+    initialMaterials,
+  );
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("All Classes");
   const [subjectFilter, setSubjectFilter] = useState("All Subjects");
@@ -146,14 +153,13 @@ export default function TeacherLearningMaterials() {
   // classes/subjects from your authenticated user/API.
   const teacherName = "You";
 
-  const subjects = useMemo(
-    () => [
-      ...new Set(
-        materials.map((m) => m.subject).filter(Boolean)
-      ),
-    ],
-    [materials]
-  );
+  const schoolClasses = students.map((student) => student.class).filter(Boolean);
+  const schoolSubjects = schoolSubjectItems.map((subject) => subject.name).filter(Boolean);
+  const classOptions = [...new Set([...classes, ...schoolClasses, ...materials.map((material) => material.className)].filter(Boolean))];
+  const subjects = [...new Set([
+    ...schoolSubjects,
+    ...materials.map((material) => material.subject),
+  ].filter(Boolean))];
 
   const myMaterials = materials.filter(
     (m) => m.owner === teacherName
@@ -382,6 +388,11 @@ export default function TeacherLearningMaterials() {
     setSubjectFilter("All Subjects");
     setTab("All Materials");
   };
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    classFilter !== "All Classes" ||
+    subjectFilter !== "All Subjects" ||
+    tab !== "All Materials";
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
@@ -420,6 +431,11 @@ export default function TeacherLearningMaterials() {
               <X size={17} />
             </button>
           </div>
+        )}
+        {persistenceError && (
+          <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {persistenceError}
+          </p>
         )}
 
         {/* Summary cards */}
@@ -503,7 +519,7 @@ export default function TeacherLearningMaterials() {
                 className="rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none"
               >
                 <option>All Classes</option>
-                {classes.map((c) => (
+                {classOptions.map((c) => (
                   <option key={c}>{c}</option>
                 ))}
               </select>
@@ -520,7 +536,9 @@ export default function TeacherLearningMaterials() {
               </select>
 
               <button
+                type="button"
                 onClick={resetFilters}
+                disabled={!hasActiveFilters}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm hover:bg-slate-50"
               >
                 <Filter size={16} />
@@ -734,7 +752,7 @@ export default function TeacherLearningMaterials() {
                     className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-500"
                   >
                     <option value="">Select class</option>
-                    {classes.map((c) => (
+                    {classOptions.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
@@ -784,6 +802,9 @@ export default function TeacherLearningMaterials() {
                     PDF, Word, PowerPoint, images or video · Maximum 20 MB
                   </span>
                 </button>
+                <p className="text-xs text-slate-500">
+                  The file name and details are saved in this browser. The file itself requires connected server storage to persist or be shared.
+                </p>
               </div>
 
               <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">

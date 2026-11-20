@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 import {
   Lightbulb,
@@ -32,8 +33,12 @@ const initialSuggestions = [
 ];
 
 const TeacherSuggestionPage = () => {
-  const [suggestions, setSuggestions] =
-    useState(initialSuggestions);
+  const [suggestions, setSuggestions, persistenceError] = usePersistentState(
+    "teacher-suggestions",
+    initialSuggestions,
+  );
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -43,30 +48,35 @@ const TeacherSuggestionPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+    setNotice("");
 
     if (
-      !formData.title ||
+      !formData.title.trim() ||
       !formData.category ||
-      !formData.message
-    )
+      !formData.message.trim()
+    ) {
+      setError("Enter a title, category, and suggestion details.");
       return;
+    }
 
     const newSuggestion = {
-      id: Date.now(),
-      title: formData.title,
+      id: `suggestion-${Date.now()}`,
+      title: formData.title.trim(),
       category: formData.category,
-      message: formData.message,
+      message: formData.message.trim(),
       status: "Pending",
       date: new Date().toISOString().split("T")[0],
     };
 
-    setSuggestions([newSuggestion, ...suggestions]);
+    setSuggestions((current) => [newSuggestion, ...current]);
 
     setFormData({
       title: "",
       category: "",
       message: "",
     });
+    setNotice("Suggestion submitted.");
   };
 
   const getStatusStyle = (status) => {
@@ -114,6 +124,14 @@ const TeacherSuggestionPage = () => {
         </p>
       </section>
 
+      {persistenceError && (
+        <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          {persistenceError}
+        </p>
+      )}
+      {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+      {notice && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">{notice}</p>}
+
       {/* FORM */}
       <section className="border border-gray-200 rounded-2xl p-5 bg-white">
 
@@ -142,6 +160,7 @@ const TeacherSuggestionPage = () => {
             <input
               type="text"
               placeholder="Enter suggestion title"
+              required
               value={formData.title}
               onChange={(e) =>
                 setFormData({
@@ -166,6 +185,7 @@ const TeacherSuggestionPage = () => {
               <BookOpen className="w-4 h-4 text-gray-500 mr-2" />
 
               <select
+                required
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({
@@ -209,6 +229,7 @@ const TeacherSuggestionPage = () => {
             </label>
 
             <textarea
+              required
               rows="5"
               placeholder="Write your suggestion..."
               value={formData.message}

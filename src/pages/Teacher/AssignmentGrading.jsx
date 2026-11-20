@@ -1,241 +1,250 @@
-import React, { useState } from "react";
-import {
-  Search,
-  Filter,
-  FileText,
-  Download,
-  Eye,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Save,
-  Send,
-} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { Download, Search, Users } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import downloadCsv from "../../utils/downloadCsv";
 
-const submissions = [
-  {
-    id: 1,
-    student: "John Doe",
-    admissionNo: "STD001",
-    class: "SS2 Science",
-    submittedAt: "2026-06-22 09:45",
-    score: "",
-    status: "Submitted",
-    late: false,
-  },
-  {
-    id: 2,
-    student: "Mary Johnson",
-    admissionNo: "STD002",
-    class: "SS2 Science",
-    submittedAt: "2026-06-23 11:20",
-    score: "",
-    status: "Late",
-    late: true,
-  },
-  {
-    id: 3,
-    student: "David Smith",
-    admissionNo: "STD003",
-    class: "SS2 Science",
-    submittedAt: "-",
-    score: "",
-    status: "Missing",
-    late: false,
-  },
-];
+const assessments = ["Weekly Assignment", "Class Exercise", "Topic Test"];
+const initialGrades = {
+  "SS2:Mathematics:Weekly Assignment:STD-001": { status: "Submitted", score: "", feedback: "" },
+  "SS2:Mathematics:Weekly Assignment:STD-002": { status: "Late", score: "", feedback: "" },
+  "SS2:Mathematics:Weekly Assignment:STD-003": { status: "Missing", score: "", feedback: "" },
+};
 
-export default function TeacherAssignmentGradingPage() {
-  const [search, setSearch] = useState("");
+const recordKey = (className, subject, assessment, studentId) =>
+  `${className}:${subject}:${assessment}:${studentId}`;
 
-  const filtered = submissions.filter((item) =>
-    item.student.toLowerCase().includes(search.toLowerCase())
+const TeacherAssignmentGradingPage = () => {
+  const allStudents = useSelector((state) => state.students.items);
+  const subjects = useSelector((state) => state.subjects.items);
+  const classes = [...new Set(allStudents.map((student) => student.class).filter(Boolean))];
+  const [records, setRecords, persistenceError] = usePersistentState(
+    "teacher-assignment-grades",
+    initialGrades,
   );
+  const [publication, setPublication, publicationError] = usePersistentState(
+    "teacher-assignment-grade-publication",
+    {},
+  );
+  const [drafts, setDrafts] = useState({});
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [assessment, setAssessment] = useState(assessments[0]);
+  const [search, setSearch] = useState("");
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+
+  const activeClass = selectedClass || classes[0] || "";
+  const activeSubject = selectedSubject || subjects[0]?.name || "";
+  const classStudents = useMemo(
+    () => allStudents.filter((student) => student.class === activeClass),
+    [allStudents, activeClass],
+  );
+  const filteredStudents = classStudents.filter((student) =>
+    [student.name, student.id].some((value) =>
+      value?.toLowerCase().includes(search.trim().toLowerCase()),
+    ),
+  );
+  const periodKey = `${activeClass}:${activeSubject}:${assessment}`;
+  const isPublished = publication[periodKey] === "Published";
+
+  const getRecord = (student) => {
+    const key = recordKey(activeClass, activeSubject, assessment, student.id);
+    return drafts[key] || records[key] || { status: "Missing", score: "", feedback: "" };
+  };
+
+  const updateRecord = (student, values) => {
+    const key = recordKey(activeClass, activeSubject, assessment, student.id);
+    setDrafts((current) => ({ ...current, [key]: { ...getRecord(student), ...values } }));
+    setError("");
+    setNotice("");
+  };
+
+  const saveGrades = (publish = false) => {
+    setError("");
+    const submitted = classStudents.filter((student) => getRecord(student).status !== "Missing");
+    if (!submitted.length) {
+      setError("There are no submitted assignments to grade for this class.");
+      return;
+    }
+
+    const updates = {};
+    for (const student of submitted) {
+      const record = getRecord(student);
+      if (record.score === "" || !Number.isFinite(Number(record.score)) || Number(record.score) < 0 || Number(record.score) > 100) {
+        if (publish) {
+          setError(`Enter a score from 0 to 100 for ${student.name} before publishing.`);
+          return;
+        }
+        if (record.score !== "") {
+          setError(`Score for ${student.name} must be between 0 and 100.`);
+          return;
+        }
+      }
+      updates[recordKey(activeClass, activeSubject, assessment, student.id)] = record;
+    }
+
+    setRecords((current) => ({ ...current, ...updates }));
+    setDrafts((current) => {
+      const remaining = { ...current };
+      Object.keys(updates).forEach((key) => delete remaining[key]);
+      return remaining;
+    });
+    setPublication((current) => ({ ...current, [periodKey]: publish ? "Published" : "Draft" }));
+    setNotice(publish ? "Assignment grades published." : "Assignment grade draft saved.");
+  };
+
+  const reopenGrades = () => {
+    setPublication((current) => ({ ...current, [periodKey]: "Draft" }));
+    setNotice("Grades reopened for editing.");
+  };
+
+  const submittedCount = classStudents.filter((student) => getRecord(student).status !== "Missing").length;
+  const gradedCount = classStudents.filter((student) => getRecord(student).score !== "").length;
+  const lateCount = classStudents.filter((student) => getRecord(student).status === "Late").length;
+  const missingCount = classStudents.length - submittedCount;
+
+  const exportGrades = () => {
+    downloadCsv(`assignment-grades-${activeClass}-${assessment}.csv`, [
+      ["Student ID", "Student", "Class", "Subject", "Assessment", "Status", "Score", "Feedback"],
+      ...filteredStudents.map((student) => {
+        const row = getRecord(student);
+        return [student.id, student.name, activeClass, activeSubject, assessment, row.status, row.score, row.feedback];
+      }),
+    ]);
+  };
 
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
-
+      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">
-            Assignment Grading
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Review submissions, grade assignments, and publish results.
-          </p>
+          <h1 className="text-2xl font-semibold sm:text-3xl">Assignment Grading</h1>
+          <p className="mt-2 text-sm text-gray-600">Review submissions, enter scores, and publish grades.</p>
         </div>
-
-        <div className="flex gap-3">
-          <button className="border rounded-xl px-5 py-3 flex items-center gap-2">
-            <Save size={18}/>
-            Save Draft
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={exportGrades} className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm hover:bg-gray-50">
+            <Download className="h-4 w-4" /> Export CSV
           </button>
-
-          <button className="bg-blue-600 text-white rounded-xl px-5 py-3 flex items-center gap-2">
-            <Send size={18}/>
-            Publish Grades
+          <button type="button" onClick={() => saveGrades(false)} className="rounded-xl border border-blue-600 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50">
+            Save draft
           </button>
+          <button type="button" onClick={() => saveGrades(true)} className="rounded-xl bg-blue-600 px-4 py-3 text-sm text-white hover:bg-blue-700">
+            Publish grades
+          </button>
+          {isPublished && (
+            <button type="button" onClick={reopenGrades} className="rounded-xl border border-gray-300 px-4 py-3 text-sm hover:bg-gray-50">
+              Reopen for editing
+            </button>
+          )}
         </div>
+      </section>
 
-      </div>
+      {(persistenceError || publicationError) && (
+        <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{persistenceError || publicationError}</p>
+      )}
+      {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+      {notice && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">{notice}</p>}
 
-      {/* Assignment Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl border border-gray-200 p-5"><Users className="mb-3 h-5 w-5 text-blue-600" /><p className="text-2xl font-semibold">{classStudents.length}</p><p className="text-sm text-gray-500">Students</p></div>
+        <div className="rounded-2xl border border-gray-200 p-5"><p className="mb-3 text-xl font-semibold text-green-600">{submittedCount}</p><p className="text-sm text-gray-500">Submitted</p></div>
+        <div className="rounded-2xl border border-gray-200 p-5"><p className="mb-3 text-xl font-semibold text-amber-600">{lateCount}</p><p className="text-sm text-gray-500">Late</p></div>
+        <div className="rounded-2xl border border-gray-200 p-5"><p className="mb-3 text-xl font-semibold text-red-600">{missingCount}</p><p className="text-sm text-gray-500">Missing</p></div>
+      </section>
 
-        <div className="border rounded-3xl p-5">
-          <FileText className="text-blue-600 mb-3"/>
-          <h2 className="text-2xl font-bold">42</h2>
-          <p>Total Students</p>
-        </div>
+      <section className="grid gap-3 sm:grid-cols-3">
+        <label className="rounded-xl border border-gray-300 px-4 py-3 text-sm">
+          <span className="sr-only">Class</span>
+          <select value={activeClass} onChange={(event) => setSelectedClass(event.target.value)} className="w-full bg-transparent outline-none">
+            {classes.map((className) => <option key={className}>{className}</option>)}
+          </select>
+        </label>
+        <label className="rounded-xl border border-gray-300 px-4 py-3 text-sm">
+          <span className="sr-only">Subject</span>
+          <select value={activeSubject} onChange={(event) => setSelectedSubject(event.target.value)} className="w-full bg-transparent outline-none">
+            {subjects.map((subject) => <option key={subject.code || subject.name} value={subject.name}>{subject.name}</option>)}
+          </select>
+        </label>
+        <label className="rounded-xl border border-gray-300 px-4 py-3 text-sm">
+          <span className="sr-only">Assessment</span>
+          <select value={assessment} onChange={(event) => setAssessment(event.target.value)} className="w-full bg-transparent outline-none">
+            {assessments.map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+      </section>
 
-        <div className="border rounded-3xl p-5">
-          <CheckCircle className="text-green-600 mb-3"/>
-          <h2 className="text-2xl font-bold">35</h2>
-          <p>Submitted</p>
-        </div>
+      <label className="flex max-w-xl items-center rounded-xl border border-gray-300 px-4 py-3">
+        <Search className="mr-3 h-4 w-4 text-gray-500" />
+        <span className="sr-only">Search students</span>
+        <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search students" className="w-full outline-none" />
+      </label>
 
-        <div className="border rounded-3xl p-5">
-          <Clock className="text-yellow-600 mb-3"/>
-          <h2 className="text-2xl font-bold">4</h2>
-          <p>Late</p>
-        </div>
-
-        <div className="border rounded-3xl p-5">
-          <AlertTriangle className="text-red-600 mb-3"/>
-          <h2 className="text-2xl font-bold">3</h2>
-          <p>Missing</p>
-        </div>
-
-      </div>
-
-      {/* Search & Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-
-        <div className="flex items-center flex-1 border rounded-2xl px-4 py-3">
-          <Search className="mr-3 text-gray-500" />
-          <input
-            className="w-full outline-none"
-            placeholder="Search student..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <button className="border rounded-2xl px-5 flex items-center gap-2">
-          <Filter size={18}/>
-          Filters
-        </button>
-
-      </div>
-
-      {/* Grading Table */}
-      <div className="border rounded-3xl overflow-x-auto">
-
-        <table className="w-full min-w-[1100px]">
-
-          <thead className="bg-gray-50">
-
-            <tr>
-              <th className="p-4 text-left">Student</th>
-              <th className="p-4 text-left">Admission No.</th>
-              <th className="p-4 text-left">Submission</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-center">File</th>
-              <th className="p-4 text-center">Score / 100</th>
-              <th className="p-4 text-left">Feedback</th>
-              <th className="p-4 text-center">Save</th>
-            </tr>
-
+      <section className="overflow-x-auto rounded-2xl border border-gray-200">
+        <table className="w-full min-w-[850px] text-left text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr><th className="p-4">Student</th><th className="p-4">ID</th><th className="p-4">Status</th><th className="p-4">Score / 100</th><th className="p-4">Feedback</th></tr>
           </thead>
-
           <tbody>
-
-            {filtered.map((student) => (
-
-              <tr key={student.id} className="border-t">
-
-                <td className="p-4">{student.student}</td>
-
-                <td className="p-4">{student.admissionNo}</td>
-
-                <td className="p-4">{student.submittedAt}</td>
-
-                <td className="p-4">
-
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm
-                    ${
-                      student.status === "Submitted"
-                        ? "bg-green-100 text-green-700"
-                        : student.status === "Late"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {student.status}
-                  </span>
-
-                </td>
-
-                <td className="p-4">
-
-                  <div className="flex justify-center gap-2">
-
-                    <button className="border rounded-lg p-2">
-                      <Eye size={16}/>
-                    </button>
-
-                    <button className="border rounded-lg p-2">
-                      <Download size={16}/>
-                    </button>
-
-                  </div>
-
-                </td>
-
-                <td className="p-4">
-
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder="Score"
-                    className="border rounded-lg px-3 py-2 w-24"
-                  />
-
-                </td>
-
-                <td className="p-4">
-
-                  <textarea
-                    rows="2"
-                    className="border rounded-lg w-full p-2"
-                    placeholder="Teacher feedback..."
-                  />
-
-                </td>
-
-                <td className="p-4 text-center">
-
-                  <button className="bg-blue-600 text-white rounded-lg px-4 py-2">
-                    Save
-                  </button>
-
-                </td>
-
-              </tr>
-
-            ))}
-
+            {filteredStudents.map((student) => {
+              const record = getRecord(student);
+              return (
+                <tr key={student.id} className="border-t border-gray-100">
+                  <td className="p-4 font-medium">{student.name}</td>
+                  <td className="p-4">{student.id}</td>
+                  <td className="p-4">
+                    <label>
+                      <span className="sr-only">Submission status for {student.name}</span>
+                      <select
+                        disabled={isPublished}
+                        value={record.status}
+                        onChange={(event) => updateRecord(student, { status: event.target.value })}
+                        className={`rounded-full px-3 py-1 text-xs disabled:opacity-70 ${
+                          record.status === "Missing" ? "bg-red-100 text-red-700" :
+                          record.status === "Late" ? "bg-amber-100 text-amber-700" :
+                          "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        <option>Submitted</option>
+                        <option>Late</option>
+                        <option>Missing</option>
+                      </select>
+                    </label>
+                  </td>
+                  <td className="p-4">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      disabled={record.status === "Missing" || isPublished}
+                      value={record.score}
+                      onChange={(event) => updateRecord(student, { score: event.target.value })}
+                      aria-label={`Score for ${student.name}`}
+                      className="w-24 rounded-lg border border-gray-300 px-3 py-2 disabled:bg-gray-100"
+                    />
+                  </td>
+                  <td className="p-4">
+                    <textarea
+                      rows="2"
+                      disabled={record.status === "Missing" || isPublished}
+                      value={record.feedback}
+                      onChange={(event) => updateRecord(student, { feedback: event.target.value })}
+                      aria-label={`Feedback for ${student.name}`}
+                      className="w-full rounded-lg border border-gray-300 p-2 disabled:bg-gray-100"
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+            {!filteredStudents.length && <tr><td colSpan="5" className="p-8 text-center text-gray-500">No students match this class and search.</td></tr>}
           </tbody>
-
         </table>
-
-      </div>
-
+        <div className="border-t bg-gray-50 p-4 text-sm text-gray-600">
+          {gradedCount} grades entered · {publication[periodKey] || "Draft"}
+        </div>
+      </section>
     </div>
   );
-}
+};
+
+export default TeacherAssignmentGradingPage;
