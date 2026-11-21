@@ -1,20 +1,36 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   User,
-  FileText,
   Printer,
+  Download,
 } from "lucide-react";
-
-const subjects = [
-  { name: "Mathematics", score: 75, grade: "B" },
-  { name: "English", score: 88, grade: "A" },
-  { name: "Physics", score: 65, grade: "C" },
-  { name: "Chemistry", score: 70, grade: "B" },
-];
+import {
+  studentAcademicProfile,
+  studentResultsData,
+  getGradeForScore,
+} from "../../data/studentPortal";
+import downloadCsv from "../../utils/downloadCsv";
 
 const StudentResult = () => {
+  const subjects = studentResultsData.map((subject) => ({
+    ...subject,
+    grade: getGradeForScore(subject.score),
+  }));
   const total = subjects.reduce((acc, sub) => acc + sub.score, 0);
-  const average = (total / subjects.length).toFixed(1);
+  const average = subjects.length ? (total / subjects.length).toFixed(1) : "0.0";
+  const passedCount = subjects.filter((subject) => subject.score >= 50).length;
+  const exportResults = () => downloadCsv("student-result-sheet.csv", [
+    ["Subject", "Score", "Grade", "Status"],
+    ...subjects.map((subject) => [
+      subject.subject,
+      `${subject.score}%`,
+      subject.grade,
+      subject.score >= 50 ? "Pass" : "Fail",
+    ]),
+    ["Total", total, "", ""],
+    ["Average", `${average}%`, "", ""],
+  ]);
 
   return (
     <div className="space-y-10">
@@ -31,11 +47,30 @@ const StudentResult = () => {
           </p>
         </div>
 
-        {/* PRINT */}
-        <button className="flex items-center gap-2 px-5 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
-          <Printer className="w-4 h-4" />
-          Print
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/student/grades"
+            className="rounded-full border border-gray-300 px-5 py-2 text-sm hover:bg-gray-50"
+          >
+            View grades
+          </Link>
+          <button
+            type="button"
+            onClick={exportResults}
+            className="flex items-center gap-2 rounded-full border border-blue-600 px-5 py-2 text-sm text-blue-600 transition hover:bg-blue-50"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-2 rounded-full border border-blue-600 px-5 py-2 text-sm text-blue-600 transition hover:bg-blue-50"
+          >
+            <Printer className="w-4 h-4" />
+            Print
+          </button>
+        </div>
       </section>
 
       {/* STUDENT INFO */}
@@ -43,12 +78,12 @@ const StudentResult = () => {
         
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-blue-600" />
-          <span className="text-sm">John Doe</span>
+          <span className="text-sm">{studentAcademicProfile.name}</span>
         </div>
 
-        <div className="text-sm">Class: SS2</div>
-        <div className="text-sm">Term: 2nd Term</div>
-        <div className="text-sm">Session: 2025/2026</div>
+        <div className="text-sm">Class: {studentAcademicProfile.className}</div>
+        <div className="text-sm">Term: {studentAcademicProfile.term}</div>
+        <div className="text-sm">Session: {studentAcademicProfile.session}</div>
 
       </section>
 
@@ -63,12 +98,12 @@ const StudentResult = () => {
         </div>
 
         {/* BODY */}
-        {subjects.map((sub, idx) => (
+        {subjects.map((sub) => (
           <div
-            key={idx}
+            key={sub.subject}
             className="grid grid-cols-3 p-4 border-b border-gray-100 text-sm"
           >
-            <span className="font-medium">{sub.name}</span>
+            <span className="font-medium">{sub.subject}</span>
             <span>{sub.score}%</span>
             <span>{sub.grade}</span>
           </div>
@@ -91,7 +126,7 @@ const StudentResult = () => {
 
         <div className="border border-gray-200 rounded-xl p-4 text-center">
           <p className="text-xs text-gray-500">Position</p>
-          <h2 className="text-lg font-semibold">2nd</h2>
+          <h2 className="text-lg font-semibold">{passedCount}/{subjects.length}</h2>
         </div>
 
       </section>

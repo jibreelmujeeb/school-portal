@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ClipboardList,
@@ -8,27 +9,46 @@ import {
   Megaphone,
   ArrowRight,
 } from "lucide-react";
+import {
+  attendanceData,
+  coursesData,
+  getAverageGrade,
+  getGradeForScore,
+  getAttendanceSummary,
+  studentResultsData,
+  subjectsData,
+} from "../../data/studentPortal";
 
 const StudentDashboard = () => {
+  const navigate = useNavigate();
+  const attendance = getAttendanceSummary(attendanceData);
+  const assignmentCount = subjectsData.reduce(
+    (total, subject) => total + subject.assignments,
+    0,
+  );
+  const averageGrade = getAverageGrade(
+    studentResultsData.map((item) => ({ ...item, grade: getGradeForScore(item.score) })),
+  );
+
   const stats = [
     {
       title: "Courses",
-      value: 6,
+      value: coursesData.length,
       icon: <BookOpen className="w-5 h-5 text-blue-600" />,
     },
     {
       title: "Assignments",
-      value: 12,
+      value: assignmentCount,
       icon: <ClipboardList className="w-5 h-5 text-green-600" />,
     },
     {
       title: "Average Grade",
-      value: "A",
+      value: averageGrade,
       icon: <GraduationCap className="w-5 h-5 text-purple-600" />,
     },
     {
       title: "Attendance",
-      value: "92%",
+      value: `${attendance.attendanceRate}%`,
       icon: <CalendarDays className="w-5 h-5 text-orange-600" />,
     },
   ];
@@ -37,18 +57,27 @@ const StudentDashboard = () => {
     {
       title: "View Courses",
       icon: <BookOpen className="w-5 h-5 text-blue-600" />,
+      path: "/student/courses",
     },
     {
       title: "Submit Assignment",
       icon: <ClipboardList className="w-5 h-5 text-green-600" />,
+      path: "/student/assignments",
     },
     {
       title: "Check Results",
       icon: <GraduationCap className="w-5 h-5 text-purple-600" />,
+      path: "/student/results",
+    },
+    {
+      title: "View Grades",
+      icon: <GraduationCap className="w-5 h-5 text-indigo-600" />,
+      path: "/student/grades",
     },
     {
       title: "Pay Fees",
       icon: <CreditCard className="w-5 h-5 text-pink-600" />,
+      path: "/student/fees",
     },
   ];
 
@@ -89,10 +118,12 @@ const StudentDashboard = () => {
           Quick Actions
         </h2>
 
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          {actions.map((action, idx) => (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5">
+          {actions.map((action) => (
             <button
-              key={idx}
+              key={action.title}
+              type="button"
+              onClick={() => navigate(action.path)}
               className="border border-gray-200 rounded-2xl p-5 bg-white flex items-center justify-between hover:bg-gray-50 transition"
             >
               <div className="flex items-center gap-3">

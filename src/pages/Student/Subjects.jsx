@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   User,
@@ -6,48 +7,32 @@ import {
   FileText,
   TrendingUp,
   Search,
+  X,
 } from "lucide-react";
-
-const subjects = [
-  {
-    id: 1,
-    name: "Mathematics",
-    teacher: "Mr. Johnson",
-    grade: "A",
-    assignments: 12,
-    nextClass: "Monday, 9:00 AM",
-    progress: 92,
-  },
-  {
-    id: 2,
-    name: "English Language",
-    teacher: "Mrs. Grace",
-    grade: "B+",
-    assignments: 8,
-    nextClass: "Tuesday, 10:00 AM",
-    progress: 85,
-  },
-  {
-    id: 3,
-    name: "Physics",
-    teacher: "Mr. David",
-    grade: "A-",
-    assignments: 10,
-    nextClass: "Wednesday, 8:00 AM",
-    progress: 88,
-  },
-  {
-    id: 4,
-    name: "Chemistry",
-    teacher: "Mrs. Sarah",
-    grade: "B",
-    assignments: 7,
-    nextClass: "Thursday, 11:00 AM",
-    progress: 76,
-  },
-];
+import { getAverageGrade, subjectsData } from "../../data/studentPortal";
 
 const StudentSubjectsPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const initialSubject = location.state?.selectedSubject?.toLowerCase();
+  const [selectedSubject, setSelectedSubject] = useState(
+    () => initialSubject
+      ? subjectsData.find((subject) => subject.name.toLowerCase().startsWith(initialSubject)) || null
+      : null,
+  );
+  const subjects = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return subjectsData.filter((subject) =>
+      [subject.name, subject.teacher, subject.grade]
+        .some((value) => value.toLowerCase().includes(query)),
+    );
+  }, [search]);
+  const totalAssignments = subjectsData.reduce((total, subject) => total + subject.assignments, 0);
+  const averageProgress = Math.round(
+    subjectsData.reduce((total, subject) => total + subject.progress, 0) / subjectsData.length,
+  );
+
   return (
     <div className="space-y-8">
 
@@ -70,6 +55,9 @@ const StudentSubjectsPage = () => {
           <input
             type="text"
             placeholder="Search subjects..."
+            aria-label="Search subjects"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full outline-none text-sm"
           />
         </div>
@@ -85,7 +73,7 @@ const StudentSubjectsPage = () => {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            12
+            {subjectsData.length}
           </h2>
         </div>
 
@@ -95,7 +83,7 @@ const StudentSubjectsPage = () => {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            B+
+            {getAverageGrade(subjectsData)}
           </h2>
         </div>
 
@@ -105,7 +93,7 @@ const StudentSubjectsPage = () => {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            37
+            {totalAssignments}
           </h2>
         </div>
 
@@ -115,7 +103,7 @@ const StudentSubjectsPage = () => {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            85%
+            {averageProgress}%
           </h2>
         </div>
 
@@ -207,7 +195,11 @@ const StudentSubjectsPage = () => {
             </div>
 
             {/* ACTION BUTTON */}
-            <button className="w-full mt-6 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50 transition">
+            <button
+              type="button"
+              onClick={() => setSelectedSubject(subject)}
+              className="w-full mt-6 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50 transition"
+            >
               View Subject
             </button>
 
@@ -215,6 +207,63 @@ const StudentSubjectsPage = () => {
         ))}
 
       </section>
+
+      {subjects.length === 0 && (
+        <p className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+          No subjects match your search.
+        </p>
+      )}
+
+      {selectedSubject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subject-details-title"
+            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="subject-details-title" className="text-xl font-semibold">
+                  {selectedSubject.name}
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  {selectedSubject.teacher} · Grade {selectedSubject.grade}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSubject(null)}
+                aria-label="Close subject details"
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
+              <p className="rounded-xl bg-gray-50 p-4">{selectedSubject.assignments} assignments</p>
+              <p className="rounded-xl bg-gray-50 p-4">{selectedSubject.progress}% progress</p>
+              <p className="col-span-2 rounded-xl bg-gray-50 p-4">Next class: {selectedSubject.nextClass}</p>
+            </div>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/student/assignments")}
+                className="rounded-xl border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                View assignments
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/student/timetable")}
+                className="rounded-xl bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+              >
+                Open timetable
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
     </div>
   );

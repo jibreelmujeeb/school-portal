@@ -1,44 +1,31 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
   User,
   Search,
   ArrowRight,
 } from "lucide-react";
-
-const coursesData = [
-  {
-    title: "Mathematics",
-    code: "MTH101",
-    instructor: "Mr. Ade",
-    progress: 80,
-  },
-  {
-    title: "Physics",
-    code: "PHY102",
-    instructor: "Mrs. Bello",
-    progress: 60,
-  },
-  {
-    title: "English",
-    code: "ENG103",
-    instructor: "Mr. James",
-    progress: 90,
-  },
-  {
-    title: "Chemistry",
-    code: "CHM104",
-    instructor: "Dr. Musa",
-    progress: 50,
-  },
-];
+import { coursesData } from "../../data/studentPortal";
 
 const StudentCourses = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
 
-  const filteredCourses = coursesData.filter((course) =>
-    course.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCourses = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return coursesData
+      .filter((course) =>
+        [course.title, course.code, course.instructor]
+          .some((value) => value.toLowerCase().includes(query)),
+      )
+      .sort((first, second) =>
+        sortBy === "progress"
+          ? second.progress - first.progress
+          : first.title.localeCompare(second.title),
+      );
+  }, [search, sortBy]);
 
   return (
     <div className="space-y-10">
@@ -54,24 +41,36 @@ const StudentCourses = () => {
       </section>
 
       {/* SEARCH */}
-      <section className="max-w-md">
-        <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-600 transition">
+      <section className="flex flex-col gap-3 sm:flex-row">
+        <label className="flex flex-1 items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:border-blue-600 transition">
           <Search className="w-5 h-5 text-gray-500 mr-2" />
           <input
+            aria-label="Search courses"
             type="text"
-            placeholder="Search courses..."
+            placeholder="Search name, code, or instructor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full outline-none text-sm bg-transparent"
           />
-        </div>
+        </label>
+        <label className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600">
+          Sort by
+          <select
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+            className="bg-transparent text-gray-900 outline-none"
+          >
+            <option value="name">Name</option>
+            <option value="progress">Progress</option>
+          </select>
+        </label>
       </section>
 
       {/* COURSES GRID */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredCourses.map((course, idx) => (
+        {filteredCourses.map((course) => (
           <div
-            key={idx}
+            key={course.code}
             className="border border-gray-200 rounded-2xl p-5 bg-white flex flex-col justify-between"
           >
             {/* TOP */}
@@ -108,7 +107,11 @@ const StudentCourses = () => {
             </div>
 
             {/* ACTION */}
-            <button className="mt-5 flex items-center justify-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
+            <button
+              type="button"
+              onClick={() => navigate("/student/subjects", { state: { selectedSubject: course.title } })}
+              className="mt-5 flex items-center justify-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition"
+            >
               View Course <ArrowRight className="w-4 h-4" />
             </button>
           </div>
