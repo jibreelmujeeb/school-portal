@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Wallet,
   CheckCircle,
@@ -6,6 +7,7 @@ import {
   Receipt,
   ArrowRight,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const paymentHistory = [
   {
@@ -21,6 +23,33 @@ const paymentHistory = [
 ];
 
 const StudentFees = () => {
+  const navigate = useNavigate();
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("40000");
+  const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
+  const [notice, setNotice] = useState("");
+  const [fees, setFees, feesError] = usePersistentState("student-fees-balance", {
+    total: 120000,
+    paid: 80000,
+  });
+  const balance = useMemo(() => Math.max(0, fees.total - fees.paid), [fees]);
+
+  const submitPayment = (event) => {
+    event.preventDefault();
+    const amount = Number(paymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setNotice("Enter a valid payment amount.");
+      return;
+    }
+    if (amount > balance) {
+      setNotice("Payment amount cannot exceed the outstanding balance.");
+      return;
+    }
+    setFees((current) => ({ ...current, paid: current.paid + amount }));
+    setNotice(`₦${amount.toLocaleString()} payment recorded via ${paymentMethod}.`);
+    setShowPayment(false);
+  };
+
   return (
     <div className="space-y-10">
 
@@ -41,7 +70,7 @@ const StudentFees = () => {
           <Wallet className="w-5 h-5 text-blue-600" />
           <div>
             <p className="text-sm text-gray-500">Total Fees</p>
-            <h2 className="text-lg font-semibold">₦120,000</h2>
+            <h2 className="text-lg font-semibold">₦{fees.total.toLocaleString()}</h2>
           </div>
         </div>
 
@@ -49,7 +78,7 @@ const StudentFees = () => {
           <CheckCircle className="w-5 h-5 text-green-600" />
           <div>
             <p className="text-sm text-gray-500">Paid</p>
-            <h2 className="text-lg font-semibold">₦80,000</h2>
+            <h2 className="text-lg font-semibold">₦{fees.paid.toLocaleString()}</h2>
           </div>
         </div>
 
@@ -57,7 +86,7 @@ const StudentFees = () => {
           <AlertCircle className="w-5 h-5 text-red-600" />
           <div>
             <p className="text-sm text-gray-500">Balance</p>
-            <h2 className="text-lg font-semibold">₦40,000</h2>
+            <h2 className="text-lg font-semibold">₦{balance.toLocaleString()}</h2>
           </div>
         </div>
 
@@ -119,10 +148,51 @@ const StudentFees = () => {
 
       {/* PAY BUTTON */}
       <section className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
-          Pay Now <ArrowRight className="w-4 h-4" />
+        {notice && <p className="mr-auto rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{notice}</p>}
+        {feesError && <p className="mr-auto text-sm text-red-600">{feesError}</p>}
+        <button
+          type="button"
+          onClick={() => balance > 0 ? setShowPayment(true) : navigate("/student/payment-history")}
+          className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition"
+        >
+          {balance > 0 ? "Pay Now" : "View Payments"} <ArrowRight className="w-4 h-4" />
         </button>
       </section>
+
+      {showPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form onSubmit={submitPayment} className="w-full max-w-md rounded-2xl bg-white p-6">
+            <h2 className="text-lg font-semibold">Make a Fee Payment</h2>
+            <p className="mt-1 text-sm text-gray-500">Outstanding balance: ₦{balance.toLocaleString()}</p>
+            <label className="mt-5 block text-sm">
+              Amount
+              <input
+                type="number"
+                min="1"
+                max={balance}
+                value={paymentAmount}
+                onChange={(event) => setPaymentAmount(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3 outline-none"
+              />
+            </label>
+            <label className="mt-4 block text-sm">
+              Payment method
+              <select
+                value={paymentMethod}
+                onChange={(event) => setPaymentMethod(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3 outline-none"
+              >
+                <option>Bank Transfer</option>
+                <option>Card Payment</option>
+              </select>
+            </label>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowPayment(false)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white">Confirm Payment</button>
+            </div>
+          </form>
+        </div>
+      )}
 
     </div>
   );

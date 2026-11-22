@@ -9,6 +9,7 @@ import {
   Calendar,
   User,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const materials = [
   {
@@ -47,12 +48,32 @@ const materials = [
 
 export default function StudentLearningMaterials() {
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [downloadCount, setDownloadCount, downloadError] = usePersistentState(
+    "student-learning-material-downloads",
+    0,
+  );
 
   const filteredMaterials = materials.filter(
     (item) =>
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.subject.toLowerCase().includes(search.toLowerCase())
+      (item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.subject.toLowerCase().includes(search.toLowerCase())) &&
+      (typeFilter === "All" || item.type === typeFilter)
   );
+
+  const downloadMaterial = (material) => {
+    const content = `${material.title}\nSubject: ${material.subject}\nTeacher: ${material.teacher}\nDate: ${material.date}\n\nThis is a downloadable learning resource from the student portal.`;
+    const url = URL.createObjectURL(
+      new Blob([content], { type: "text/plain;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${material.title.replaceAll(" ", "-").toLowerCase()}.${material.type === "PDF" ? "txt" : "txt"}`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setDownloadCount((count) => count + 1);
+  };
 
   return (
     <div className="space-y-8">
@@ -96,14 +117,20 @@ export default function StudentLearningMaterials() {
 
         <div className="border rounded-3xl p-5">
           <Download className="text-purple-600 mb-3"/>
-          <h2 className="text-3xl font-bold">215</h2>
+          <h2 className="text-3xl font-bold">{downloadCount}</h2>
           <p>Your Downloads</p>
         </div>
 
       </div>
 
+      {downloadError && (
+        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {downloadError}
+        </p>
+      )}
+
       {/* Search */}
-      <div className="flex items-center border rounded-2xl px-4 py-3">
+      <div className="flex items-center gap-3 rounded-2xl border px-4 py-3">
 
         <Search className="text-gray-500 mr-3"/>
 
@@ -114,6 +141,19 @@ export default function StudentLearningMaterials() {
           onChange={(e)=>setSearch(e.target.value)}
           className="w-full outline-none"
         />
+
+        <label className="shrink-0">
+          <span className="sr-only">Filter material type</span>
+          <select
+            value={typeFilter}
+            onChange={(event) => setTypeFilter(event.target.value)}
+            className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none"
+          >
+            {["All", "PDF", "Video", "DOCX"].map((type) => (
+              <option key={type}>{type}</option>
+            ))}
+          </select>
+        </label>
 
       </div>
 
@@ -158,12 +198,20 @@ export default function StudentLearningMaterials() {
 
             <div className="flex gap-3 mt-6">
 
-              <button className="flex-1 flex items-center justify-center gap-2 border rounded-xl py-2">
+              <button
+                type="button"
+                onClick={() => downloadMaterial(material)}
+                className="flex-1 flex items-center justify-center gap-2 border rounded-xl py-2"
+              >
                 <Download size={16}/>
                 Download
               </button>
 
-              <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white rounded-xl py-2">
+              <button
+                type="button"
+                onClick={() => setSelectedMaterial(material)}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white rounded-xl py-2"
+              >
                 <ExternalLink size={16}/>
                 Open
               </button>
@@ -174,6 +222,40 @@ export default function StudentLearningMaterials() {
         ))}
 
       </div>
+
+      {filteredMaterials.length === 0 && (
+        <div className="rounded-3xl border border-gray-200 p-10 text-center text-sm text-gray-500">
+          No learning materials match your search and filter.
+        </div>
+      )}
+
+      {selectedMaterial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-blue-600">{selectedMaterial.subject}</p>
+                <h2 className="mt-1 text-xl font-semibold">{selectedMaterial.title}</h2>
+              </div>
+              <button type="button" onClick={() => setSelectedMaterial(null)} className="rounded-lg border border-gray-200 px-3 py-1 text-sm">
+                Close
+              </button>
+            </div>
+            <div className="mt-5 space-y-2 text-sm text-gray-600">
+              <p>Type: {selectedMaterial.type}</p>
+              <p>Teacher: {selectedMaterial.teacher}</p>
+              <p>Added: {selectedMaterial.date}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => downloadMaterial(selectedMaterial)}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white"
+            >
+              <Download size={16} /> Download Material
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

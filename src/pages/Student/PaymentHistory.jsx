@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
   Search,
@@ -10,6 +11,8 @@ import {
   AlertCircle,
   Wallet,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import downloadCsv from "../../utils/downloadCsv";
 
 const payments = [
   {
@@ -45,14 +48,49 @@ const payments = [
 ];
 
 export default function StudentPaymentHistoryPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredPayments = payments.filter(
     (payment) =>
-      payment.feeType.toLowerCase().includes(search.toLowerCase()) ||
-      payment.session.toLowerCase().includes(search.toLowerCase()) ||
-      payment.status.toLowerCase().includes(search.toLowerCase())
+      (
+        payment.feeType.toLowerCase().includes(search.toLowerCase()) ||
+        payment.session.toLowerCase().includes(search.toLowerCase()) ||
+        payment.status.toLowerCase().includes(search.toLowerCase())
+      ) &&
+      (statusFilter === "All" || payment.status === statusFilter)
   );
+
+  const downloadPayment = (payment) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Payment Receipt", 20, 20);
+    doc.setFontSize(11);
+    doc.text(`Receipt: ${payment.id}`, 20, 35);
+    doc.text(`Fee: ${payment.feeType}`, 20, 43);
+    doc.text(`Session: ${payment.session}`, 20, 51);
+    doc.text(`Term: ${payment.term}`, 20, 59);
+    doc.text(`Amount: ${payment.amount}`, 20, 67);
+    doc.text(`Date: ${payment.date}`, 20, 75);
+    doc.text(`Method: ${payment.method}`, 20, 83);
+    doc.text(`Status: ${payment.status}`, 20, 91);
+    doc.save(`${payment.id}.pdf`);
+  };
+
+  const exportPayments = () => downloadCsv("payment-history.csv", [
+    ["Receipt", "Fee", "Session", "Term", "Amount", "Date", "Method", "Status"],
+    ...filteredPayments.map((payment) => [
+      payment.id,
+      payment.feeType,
+      payment.session,
+      payment.term,
+      payment.amount,
+      payment.date,
+      payment.method,
+      payment.status,
+    ]),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -69,6 +107,10 @@ export default function StudentPaymentHistoryPage() {
             View all school fee payments, receipts, and outstanding balances.
           </p>
         </div>
+
+        <button type="button" onClick={exportPayments} disabled={filteredPayments.length === 0} className="flex items-center justify-center gap-2 rounded-xl border border-blue-600 px-4 py-2 text-sm text-blue-600 disabled:opacity-50">
+          <Download size={16} /> Export CSV
+        </button>
 
       </div>
 
@@ -102,7 +144,8 @@ export default function StudentPaymentHistoryPage() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center border rounded-2xl px-4 py-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-1 items-center border rounded-2xl px-4 py-3">
 
         <Search className="text-gray-500 mr-3"/>
 
@@ -114,6 +157,16 @@ export default function StudentPaymentHistoryPage() {
           className="w-full outline-none"
         />
 
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          className="rounded-2xl border px-4 py-3 text-sm outline-none"
+        >
+          <option>All</option>
+          <option>Paid</option>
+          <option>Pending</option>
+        </select>
       </div>
 
       {/* Payments Table */}
@@ -175,11 +228,23 @@ export default function StudentPaymentHistoryPage() {
 
                     <div className="flex justify-center gap-2">
 
-                      <button className="border rounded-lg p-2">
+                      <button
+                        type="button"
+                        disabled={payment.status !== "Paid"}
+                        onClick={() => downloadPayment(payment)}
+                        className="border rounded-lg p-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        title="Download payment receipt"
+                      >
                         <Download size={16}/>
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button
+                        type="button"
+                        disabled={payment.status !== "Paid"}
+                        onClick={() => navigate("/student/payment-receipt", { state: payment })}
+                        className="border rounded-lg p-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        title="View or print receipt"
+                      >
                         <Printer size={16}/>
                       </button>
 

@@ -7,6 +7,7 @@ import {
   Download,
   Bell,
 } from "lucide-react";
+import downloadCsv from "../../utils/downloadCsv";
 
 const holidays = [
   {
@@ -17,6 +18,7 @@ const holidays = [
     endDate: "2026-10-01",
     session: "2026/2027",
     term: "First Term",
+    resumptionDate: "2026-10-02",
     description:
       "Public holiday. The school will remain closed for the day.",
   },
@@ -28,6 +30,7 @@ const holidays = [
     endDate: "2026-11-16",
     session: "2026/2027",
     term: "First Term",
+    resumptionDate: "2026-11-17",
     description:
       "Students will be on mid-term break during this period.",
   },
@@ -39,6 +42,7 @@ const holidays = [
     endDate: "2027-01-05",
     session: "2026/2027",
     term: "First Term",
+    resumptionDate: "2027-01-06",
     description:
       "Christmas and New Year school holiday.",
   },
@@ -47,6 +51,7 @@ const holidays = [
 function AdminStudentHolidays() {
   const [search, setSearch] = useState("");
   const [term, setTerm] = useState("All Terms");
+  const [session, setSession] = useState("2026/2027");
   const [selectedHoliday, setSelectedHoliday] = useState(null);
 
   const filteredHolidays = useMemo(() => {
@@ -57,10 +62,39 @@ function AdminStudentHolidays() {
 
       const matchesTerm =
         term === "All Terms" || holiday.term === term;
+      const matchesSession =
+        holiday.session === session;
 
-      return matchesSearch && matchesTerm;
+      return matchesSearch && matchesTerm && matchesSession;
     });
-  }, [search, term]);
+  }, [search, term, session]);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextHoliday = [...holidays]
+    .filter((holiday) => holiday.session === session)
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .find((holiday) => new Date(`${holiday.endDate}T00:00:00`) >= today);
+  const daysRemaining = nextHoliday
+    ? Math.max(0, Math.ceil((new Date(`${nextHoliday.startDate}T00:00:00`) - today) / 86400000))
+    : null;
+  const termHolidayCount = holidays.filter(
+    (holiday) => holiday.session === session &&
+      (term === "All Terms" || holiday.term === term),
+  ).length;
+
+  const downloadCalendar = () => downloadCsv("school-holidays.csv", [
+    ["Holiday", "Type", "Start Date", "End Date", "Resumption Date", "Term", "Session"],
+    ...filteredHolidays.map((holiday) => [
+      holiday.name,
+      holiday.type,
+      holiday.startDate,
+      holiday.endDate,
+      holiday.resumptionDate,
+      holiday.term,
+      holiday.session,
+    ]),
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -83,9 +117,12 @@ function AdminStudentHolidays() {
         </div>
 
         <button
+          type="button"
+          onClick={downloadCalendar}
+          disabled={filteredHolidays.length === 0}
           className="flex items-center justify-center gap-2 rounded-xl
           border border-gray-200 bg-white px-4 py-2.5 text-sm
-          font-medium hover:bg-gray-50"
+          font-medium hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Download size={17} />
           Download Calendar
@@ -96,7 +133,11 @@ function AdminStudentHolidays() {
       {/* Session */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row">
 
-        <select className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <select
+          value={session}
+          onChange={(event) => setSession(event.target.value)}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+        >
           <option>2026/2027</option>
           <option>2025/2026</option>
         </select>
@@ -120,25 +161,25 @@ function AdminStudentHolidays() {
         <StatCard
           icon={<CalendarDays />}
           title="Next Holiday"
-          value="Christmas Break"
+          value={nextHoliday?.name || "None scheduled"}
         />
 
         <StatCard
           icon={<Clock3 />}
           title="Days Remaining"
-          value="106"
+          value={daysRemaining === null ? "-" : `${daysRemaining} days`}
         />
 
         <StatCard
           icon={<CalendarDays />}
           title="This Term"
-          value="3"
+          value={String(termHolidayCount)}
         />
 
         <StatCard
           icon={<Bell />}
           title="Total Holidays"
-          value="18"
+          value={String(holidays.filter((holiday) => holiday.session === session).length)}
         />
 
       </div>
@@ -325,6 +366,11 @@ function HolidayDetails({ holiday, onClose }) {
           <Info
             label="End Date"
             value={formatDate(holiday.endDate)}
+          />
+
+          <Info
+            label="Resumption Date"
+            value={holiday.resumptionDate ? formatDate(holiday.resumptionDate) : "Check school notice"}
           />
 
           <Info

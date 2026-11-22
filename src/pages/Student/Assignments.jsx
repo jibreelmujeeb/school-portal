@@ -1,26 +1,32 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ClipboardList,
   CalendarDays,
   CheckCircle,
   Clock,
   Upload,
+  Search,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const assignmentsData = [
   {
+    id: "math-assignment",
     title: "Mathematics Assignment",
     course: "Mathematics",
     due: "2026-04-15",
     status: "Pending",
   },
   {
+    id: "physics-lab",
     title: "Physics Lab রিপোর্ট",
     course: "Physics",
     due: "2026-04-10",
     status: "Submitted",
   },
   {
+    id: "english-essay",
     title: "English Essay",
     course: "English",
     due: "2026-04-05",
@@ -29,12 +35,23 @@ const assignmentsData = [
 ];
 
 const StudentAssignments = () => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [assignments, , assignmentsError] = usePersistentState(
+    "student-assignments",
+    assignmentsData,
+  );
 
-  const filteredAssignments =
-    filter === "All"
-      ? assignmentsData
-      : assignmentsData.filter((a) => a.status === filter);
+  const filteredAssignments = assignments.filter((assignment) => {
+    const matchesFilter = filter === "All" || assignment.status === filter;
+    const query = search.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      assignment.title.toLowerCase().includes(query) ||
+      assignment.course.toLowerCase().includes(query);
+    return matchesFilter && matchesSearch;
+  });
 
   const statusStyle = (status) => {
     switch (status) {
@@ -75,9 +92,27 @@ const StudentAssignments = () => {
         </p>
       </section>
 
+      {assignmentsError && (
+        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {assignmentsError}
+        </p>
+      )}
+
+      <section className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
+        <Search className="h-4 w-4 text-gray-500" />
+        <span className="sr-only">Search assignments</span>
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search by title or subject"
+          className="w-full text-sm outline-none"
+        />
+      </section>
+
       {/* FILTER TABS */}
       <section className="flex flex-wrap gap-3">
-        {["All", "Pending", "Submitted"].map((tab) => (
+        {["All", "Pending", "Submitted", "Late"].map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
@@ -129,7 +164,15 @@ const StudentAssignments = () => {
 
               {/* ACTION */}
               {item.status !== "Submitted" && (
-                <button className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/student/assignmentSubmission", {
+                      state: { assignmentId: item.id, title: item.title, course: item.course, due: item.due },
+                    })
+                  }
+                  className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition"
+                >
                   <Upload className="w-4 h-4" />
                   Submit
                 </button>
@@ -137,6 +180,11 @@ const StudentAssignments = () => {
             </div>
           </div>
         ))}
+        {filteredAssignments.length === 0 && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+            No assignments match your search and filter.
+          </div>
+        )}
       </section>
 
     </div>

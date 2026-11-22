@@ -12,6 +12,9 @@ import {
   X,
   ArrowRight,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import usePersistentState from "../../hooks/usePersistentState";
+import downloadCsv from "../../utils/downloadCsv";
 
 const invoices = [
   {
@@ -121,9 +124,13 @@ export default function StudentInvoice() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceList, setInvoiceList, invoiceError] = usePersistentState("student-invoices", invoices);
+  const [payInvoice, setPayInvoice] = useState(null);
+  const [payAmount, setPayAmount] = useState("");
+  const [payNotice, setPayNotice] = useState("");
 
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((invoice) => {
+    return invoiceList.filter((invoice) => {
       const matchesSearch =
         invoice.id.toLowerCase().includes(search.toLowerCase()) ||
         invoice.term.toLowerCase().includes(search.toLowerCase());
@@ -134,28 +141,82 @@ export default function StudentInvoice() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [search, statusFilter]);
+  }, [invoiceList, search, statusFilter]);
 
-  const totalAmount = invoices.reduce(
+  const totalAmount = invoiceList.reduce(
     (sum, invoice) => sum + invoice.total,
     0
   );
 
-  const totalPaid = invoices.reduce(
+  const totalPaid = invoiceList.reduce(
     (sum, invoice) => sum + invoice.paid,
     0
   );
 
   const outstanding = totalAmount - totalPaid;
 
-  const currentInvoice = invoices[0];
+  const currentInvoice = invoiceList[0];
 
   const progress =
     (currentInvoice.paid / currentInvoice.total) * 100;
 
+  const downloadInvoice = (invoice) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Student Invoice", 20, 20);
+    doc.setFontSize(11);
+    doc.text(`Invoice: ${invoice.id}`, 20, 35);
+    doc.text(`Student: Jibreel Mujeeb`, 20, 43);
+    doc.text(`Session: ${invoice.session}`, 20, 51);
+    doc.text(`Term: ${invoice.term}`, 20, 59);
+    doc.text(`Total: ${formatCurrency(invoice.total)}`, 20, 67);
+    doc.text(`Paid: ${formatCurrency(invoice.paid)}`, 20, 75);
+    doc.text(`Balance: ${formatCurrency(invoice.total - invoice.paid)}`, 20, 83);
+    let y = 95;
+    invoice.items.forEach((item) => {
+      doc.text(`${item.name}: ${formatCurrency(item.amount)}`, 20, y);
+      y += 8;
+    });
+    doc.save(`${invoice.id}.pdf`);
+  };
+
+  const openPayment = (invoice) => {
+    setPayInvoice(invoice);
+    setPayAmount(String(invoice.total - invoice.paid));
+    setPayNotice("");
+  };
+
+  const confirmPayment = (event) => {
+    event.preventDefault();
+    const amount = Number(payAmount);
+    const balance = payInvoice.total - payInvoice.paid;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > balance) {
+      setPayNotice("Enter an amount that does not exceed the balance.");
+      return;
+    }
+    setInvoiceList((current) =>
+      current.map((invoice) =>
+        invoice.id === payInvoice.id
+          ? {
+              ...invoice,
+              paid: invoice.paid + amount,
+              status: invoice.paid + amount >= invoice.total ? "Paid" : "Partially Paid",
+            }
+          : invoice,
+      ),
+    );
+    setSelectedInvoice(null);
+    setPayInvoice(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
+        {invoiceError && (
+          <p role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {invoiceError}
+          </p>
+        )}
 
         {/* Header */}
         <div className="mb-6">
@@ -179,7 +240,7 @@ export default function StudentInvoice() {
           <StatCard
             icon={FileText}
             label="Total Invoices"
-            value={invoices.length}
+            value={invoiceList.length}
           />
 
           <StatCard
@@ -342,12 +403,20 @@ export default function StudentInvoice() {
               View Invoice
             </button>
 
-            <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={() => downloadInvoice(currentInvoice)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium hover:bg-gray-50"
+            >
               <Download size={17} />
               Download
             </button>
 
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white hover:bg-gray-800">
+            <button
+              type="button"
+              onClick={() => openPayment(currentInvoice)}
+              className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white hover:bg-gray-800"
+            >
               <CreditCard size={17} />
               Pay Balance
               <ArrowRight size={17} />
@@ -681,19 +750,31 @@ export default function StudentInvoice() {
             {/* Modal Actions */}
             <div className="flex flex-col gap-3 border-t border-gray-200 p-5 sm:flex-row sm:justify-end">
 
-              <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium"
+              >
                 <Printer size={17} />
                 Print
               </button>
 
-              <button className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium">
+              <button
+                type="button"
+                onClick={() => downloadInvoice(selectedInvoice)}
+                className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium"
+              >
                 <Download size={17} />
                 Download
               </button>
 
               {selectedInvoice.total >
                 selectedInvoice.paid && (
-                <button className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white">
+                <button
+                  type="button"
+                  onClick={() => openPayment(selectedInvoice)}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white"
+                >
                   <CreditCard size={17} />
                   Pay Balance
                 </button>
@@ -702,6 +783,30 @@ export default function StudentInvoice() {
             </div>
 
           </div>
+        </div>
+      )}
+      {payInvoice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+          <form onSubmit={confirmPayment} className="w-full max-w-md rounded-2xl bg-white p-6">
+            <h2 className="text-lg font-bold">Pay Invoice Balance</h2>
+            <p className="mt-1 text-sm text-gray-500">{payInvoice.id}</p>
+            <label className="mt-5 block text-sm">
+              Amount
+              <input
+                type="number"
+                min="1"
+                max={payInvoice.total - payInvoice.paid}
+                value={payAmount}
+                onChange={(event) => setPayAmount(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-gray-300 px-3 py-3 outline-none"
+              />
+            </label>
+            {payNotice && <p className="mt-3 text-sm text-red-600">{payNotice}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setPayInvoice(null)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white">Confirm Payment</button>
+            </div>
+          </form>
         </div>
       )}
     </div>

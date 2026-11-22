@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   User,
   Calendar,
@@ -9,6 +9,8 @@ import {
   CheckCircle,
   Users,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const results = [
   {
@@ -54,6 +56,28 @@ const results = [
 ];
 
 export default function StudentReportCardPage() {
+  const [term, setTerm] = usePersistentState("student-report-term", "First Term");
+  const [session, setSession] = usePersistentState("student-report-session", "2025/2026");
+
+  const downloadReport = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Greenwood International School", 20, 20);
+    doc.setFontSize(13);
+    doc.text("Student Report Card", 20, 30);
+    doc.setFontSize(11);
+    doc.text(`Student: John Doe`, 20, 42);
+    doc.text(`Session: ${session}`, 20, 50);
+    doc.text(`Term: ${term}`, 20, 58);
+    let y = 72;
+    results.forEach((subject) => {
+      doc.text(`${subject.subject}: ${subject.total}% (${subject.grade}) - ${subject.remark}`, 20, y);
+      y += 8;
+    });
+    doc.text("Teacher's Remark: Excellent performance. Keep up the great work.", 20, y + 10);
+    doc.save(`report-card-${session.replace("/", "-")}-${term.replaceAll(" ", "-")}.pdf`);
+  };
+
   return (
     <div className="space-y-8">
 
@@ -72,18 +96,36 @@ export default function StudentReportCardPage() {
 
         <div className="flex gap-3">
 
-          <button className="flex items-center gap-2 border rounded-xl px-5 py-3">
+          <button type="button" onClick={() => window.print()} className="flex items-center gap-2 border rounded-xl px-5 py-3">
             <Printer size={18} />
             Print
           </button>
 
-          <button className="flex items-center gap-2 bg-blue-600 text-white rounded-xl px-5 py-3">
+          <button type="button" onClick={downloadReport} className="flex items-center gap-2 bg-blue-600 text-white rounded-xl px-5 py-3">
             <Download size={18} />
             Download PDF
           </button>
 
         </div>
 
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <label className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm">
+          Session
+          <select value={session} onChange={(event) => setSession(event.target.value)} className="outline-none">
+            <option>2025/2026</option>
+            <option>2026/2027</option>
+          </select>
+        </label>
+        <label className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm">
+          Term
+          <select value={term} onChange={(event) => setTerm(event.target.value)} className="outline-none">
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+        </label>
       </div>
 
       {/* Student Information */}
@@ -104,8 +146,8 @@ export default function StudentReportCardPage() {
             </div>
 
             <div>
-              <p><strong>Session:</strong> 2025/2026</p>
-              <p><strong>Term:</strong> First Term</p>
+              <p><strong>Session:</strong> {session}</p>
+              <p><strong>Term:</strong> {term}</p>
               <p><strong>Class Teacher:</strong> Mrs. Grace</p>
             </div>
 

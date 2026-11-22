@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import {
   School,
   CheckCircle,
@@ -10,6 +11,7 @@ import {
   Hash,
   QrCode,
 } from "lucide-react";
+import jsPDF from "jspdf";
 
 const receipt = {
   receiptNo: "RCT-2026-001245",
@@ -43,6 +45,36 @@ const receipt = {
 };
 
 export default function StudentReceiptPage() {
+  const location = useLocation();
+  const payment = location.state;
+  const activeReceipt = useMemo(() => payment ? {
+    ...receipt,
+    receiptNo: `RCT-${payment.id.replace("PAY-", "")}`,
+    paymentDate: payment.date,
+    paymentMethod: payment.method,
+  } : receipt, [payment]);
+
+  const downloadReceipt = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Greenwood International School", 20, 20);
+    doc.setFontSize(12);
+    doc.text("Official Payment Receipt", 20, 28);
+    doc.setFontSize(11);
+    doc.text(`Receipt: ${activeReceipt.receiptNo}`, 20, 42);
+    doc.text(`Reference: ${activeReceipt.reference}`, 20, 50);
+    doc.text(`Student: ${activeReceipt.studentName}`, 20, 58);
+    doc.text(`Payment Date: ${activeReceipt.paymentDate}`, 20, 66);
+    doc.text(`Method: ${activeReceipt.paymentMethod}`, 20, 74);
+    let y = 88;
+    activeReceipt.items.forEach((item) => {
+      doc.text(`${item.name}: N${item.amount.toLocaleString()}`, 20, y);
+      y += 8;
+    });
+    doc.text(`Total Paid: N${activeReceipt.total.toLocaleString()}`, 20, y + 8);
+    doc.save(`${activeReceipt.receiptNo}.pdf`);
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
 
@@ -72,12 +104,12 @@ export default function StudentReceiptPage() {
 
         <div className="flex gap-3">
 
-          <button className="border rounded-xl px-5 py-3 flex items-center gap-2">
+          <button type="button" onClick={() => window.print()} className="border rounded-xl px-5 py-3 flex items-center gap-2">
             <Printer size={18}/>
             Print
           </button>
 
-          <button className="bg-blue-600 text-white rounded-xl px-5 py-3 flex items-center gap-2">
+          <button type="button" onClick={downloadReceipt} className="bg-blue-600 text-white rounded-xl px-5 py-3 flex items-center gap-2">
             <Download size={18}/>
             Download PDF
           </button>
@@ -122,7 +154,7 @@ export default function StudentReceiptPage() {
 
           <div className="flex items-center gap-2">
             <User size={18}/>
-            {receipt.studentName}
+            {activeReceipt.studentName}
           </div>
 
           <p>Admission No: {receipt.admissionNo}</p>
@@ -143,21 +175,21 @@ export default function StudentReceiptPage() {
 
           <div className="flex items-center gap-2">
             <Hash size={18}/>
-            Receipt: {receipt.receiptNo}
+            Receipt: {activeReceipt.receiptNo}
           </div>
 
           <div className="flex items-center gap-2">
             <CreditCard size={18}/>
-            {receipt.paymentMethod}
+            {activeReceipt.paymentMethod}
           </div>
 
           <div className="flex items-center gap-2">
             <Calendar size={18}/>
-            {receipt.paymentDate}
+            {activeReceipt.paymentDate}
           </div>
 
           <p>
-            Reference: {receipt.reference}
+            Reference: {activeReceipt.reference}
           </p>
 
           <span className="px-3 py-1 rounded-full bg-green-100 text-green-700">

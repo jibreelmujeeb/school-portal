@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -15,6 +16,8 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
+import downloadCsv from "../../utils/downloadCsv";
 
 const initialInvoices = [
   {
@@ -139,10 +142,14 @@ function ActionButton({ icon: Icon, children, onClick, primary = false }) {
 }
 
 export default function StudentOutstanding() {
-  const [invoices] = useState(initialInvoices);
+  const navigate = useNavigate();
+  const [invoices, setInvoices] = usePersistentState("student-outstanding-invoices", initialInvoices);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentNotice, setPaymentNotice] = useState("");
 
   const outstandingInvoices = useMemo(() => {
     return invoices.filter(
@@ -203,13 +210,26 @@ export default function StudentOutstanding() {
     );
 
   const handlePay = (invoice) => {
-    alert(
-      `Payment process started for ${invoice.invoiceNumber}`
-    );
+    setPaymentInvoice(invoice);
+    setPaymentAmount(String(invoice.totalAmount - invoice.amountPaid));
+    setPaymentNotice("");
   };
 
   const handleDownload = (invoice) => {
-    alert(`Downloading ${invoice.invoiceNumber}`);
+    downloadCsv(`${invoice.invoiceNumber}.csv`, [
+      ["Invoice", "Fee", "Session", "Term", "Due Date", "Total", "Paid", "Balance", "Status"],
+      [
+        invoice.invoiceNumber,
+        invoice.feeName,
+        invoice.session,
+        invoice.term,
+        invoice.dueDate,
+        invoice.totalAmount,
+        invoice.amountPaid,
+        invoice.totalAmount - invoice.amountPaid,
+        invoice.status,
+      ],
+    ]);
   };
 
   const handlePrint = () => {
@@ -241,9 +261,7 @@ export default function StudentOutstanding() {
           <div className="flex flex-wrap gap-2">
             <ActionButton
               icon={Receipt}
-              onClick={() =>
-                alert("Opening payment history")
-              }
+              onClick={() => navigate("/student/payment-history")}
             >
               Payment History
             </ActionButton>
@@ -407,7 +425,18 @@ export default function StudentOutstanding() {
             </div>
 
             <button
-              onClick={() => alert("Exporting outstanding invoices")}
+              onClick={() => downloadCsv("outstanding-fees.csv", [
+                ["Invoice", "Fee", "Due Date", "Total", "Paid", "Balance", "Status"],
+                ...filteredInvoices.map((invoice) => [
+                  invoice.invoiceNumber,
+                  invoice.feeName,
+                  invoice.dueDate,
+                  invoice.totalAmount,
+                  invoice.amountPaid,
+                  invoice.totalAmount - invoice.amountPaid,
+                  invoice.status,
+                ]),
+              ])}
               className="inline-flex items-center gap-2 self-start rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               <Download size={16} />
@@ -747,6 +776,58 @@ export default function StudentOutstanding() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {paymentInvoice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const amount = Number(paymentAmount);
+              const balance = paymentInvoice.totalAmount - paymentInvoice.amountPaid;
+              if (!Number.isFinite(amount) || amount <= 0 || amount > balance) {
+                setPaymentNotice("Enter an amount that does not exceed the balance.");
+                return;
+              }
+              setInvoices((current) =>
+                current.map((invoice) =>
+                  invoice.id === paymentInvoice.id
+                    ? {
+                        ...invoice,
+                        amountPaid: invoice.amountPaid + amount,
+                        status:
+                          invoice.amountPaid + amount >= invoice.totalAmount
+                            ? "Paid"
+                            : "Partially Paid",
+                      }
+                    : invoice,
+                ),
+              );
+              setPaymentNotice("Payment recorded successfully.");
+              setSelectedInvoice(null);
+              setPaymentInvoice(null);
+            }}
+            className="w-full max-w-md rounded-2xl bg-white p-6"
+          >
+            <h2 className="text-xl font-bold text-slate-900">Pay Outstanding Balance</h2>
+            <p className="mt-1 text-sm text-slate-500">{paymentInvoice.invoiceNumber}</p>
+            <label className="mt-5 block text-sm text-slate-700">
+              Amount
+              <input
+                type="number"
+                min="1"
+                max={paymentInvoice.totalAmount - paymentInvoice.amountPaid}
+                value={paymentAmount}
+                onChange={(event) => setPaymentAmount(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-3 outline-none"
+              />
+            </label>
+            {paymentNotice && <p className="mt-3 text-sm text-red-600">{paymentNotice}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setPaymentInvoice(null)} className="rounded-xl border border-slate-300 px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Confirm Payment</button>
+            </div>
+          </form>
         </div>
       )}
     </div>

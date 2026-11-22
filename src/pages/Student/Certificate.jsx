@@ -10,6 +10,7 @@ import {
  Clock,
   ShieldCheck,
 } from "lucide-react";
+import jsPDF from "jspdf";
 
 const certificates = [
   {
@@ -37,12 +38,31 @@ const certificates = [
 
 export default function StudentCertificatesPage() {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
 
   const filteredCertificates = certificates.filter(
     (certificate) =>
-      certificate.title.toLowerCase().includes(search.toLowerCase()) ||
-      certificate.type.toLowerCase().includes(search.toLowerCase())
+      (
+        certificate.title.toLowerCase().includes(search.toLowerCase()) ||
+        certificate.type.toLowerCase().includes(search.toLowerCase())
+      ) &&
+      (statusFilter === "All" || certificate.status === statusFilter)
   );
+
+  const downloadCertificate = (certificate) => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(22);
+    doc.text("Greenwood International School", 148, 35, { align: "center" });
+    doc.setFontSize(16);
+    doc.text("Certificate", 148, 55, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(`Awarded to: John Doe`, 148, 75, { align: "center" });
+    doc.text(certificate.title, 148, 88, { align: "center" });
+    doc.text(`Type: ${certificate.type}`, 148, 98, { align: "center" });
+    doc.text(`Issued: ${certificate.issuedDate}`, 148, 108, { align: "center" });
+    doc.save(`${certificate.title.replaceAll(" ", "-").toLowerCase()}-certificate.pdf`);
+  };
 
   return (
     <div className="space-y-8">
@@ -92,7 +112,8 @@ export default function StudentCertificatesPage() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center border rounded-2xl px-4 py-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-1 items-center border rounded-2xl px-4 py-3">
 
         <Search className="text-gray-500 mr-3"/>
 
@@ -104,6 +125,12 @@ export default function StudentCertificatesPage() {
           className="w-full outline-none"
         />
 
+        </div>
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-2xl border px-4 py-3 text-sm outline-none">
+          <option>All</option>
+          <option>Issued</option>
+          <option>Pending</option>
+        </select>
       </div>
 
       {/* Certificates */}
@@ -161,15 +188,15 @@ export default function StudentCertificatesPage() {
 
                     <div className="flex justify-center gap-2">
 
-                      <button className="border rounded-lg p-2">
+                      <button type="button" onClick={() => setSelectedCertificate(certificate)} className="border rounded-lg p-2" title="View certificate">
                         <Eye size={16}/>
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button type="button" disabled={certificate.status !== "Issued"} onClick={() => downloadCertificate(certificate)} className="border rounded-lg p-2 disabled:cursor-not-allowed disabled:opacity-40" title="Download certificate">
                         <Download size={16}/>
                       </button>
 
-                      <button className="border rounded-lg p-2">
+                      <button type="button" disabled={certificate.status !== "Issued"} onClick={() => { setSelectedCertificate(certificate); setTimeout(() => window.print(), 100); }} className="border rounded-lg p-2 disabled:cursor-not-allowed disabled:opacity-40" title="Print certificate">
                         <Printer size={16}/>
                       </button>
 
@@ -208,6 +235,27 @@ export default function StudentCertificatesPage() {
             </p>
 
           </div>
+
+          {selectedCertificate && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+              <div className="w-full max-w-xl rounded-3xl bg-white p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-purple-600">{selectedCertificate.type}</p>
+                    <h2 className="mt-1 text-2xl font-bold">{selectedCertificate.title}</h2>
+                  </div>
+                  <button type="button" onClick={() => setSelectedCertificate(null)} className="rounded-lg border px-3 py-1 text-sm">Close</button>
+                </div>
+                <div className="mt-6 rounded-2xl border-2 border-purple-200 p-8 text-center">
+                  <Award className="mx-auto text-purple-600" size={48} />
+                  <p className="mt-4 text-sm text-gray-500">This certifies that</p>
+                  <p className="mt-2 text-xl font-bold">John Doe</p>
+                  <p className="mt-3 text-gray-600">{selectedCertificate.title}</p>
+                  <p className="mt-4 text-sm text-gray-500">Issued: {selectedCertificate.issuedDate}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
 

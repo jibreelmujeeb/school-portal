@@ -11,8 +11,11 @@ import {
   getGradeForScore,
 } from "../../data/studentPortal";
 import downloadCsv from "../../utils/downloadCsv";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const StudentResult = () => {
+  const [term, setTerm] = usePersistentState("student-result-term", "2nd Term");
+  const [session, setSession] = usePersistentState("student-result-session", "2025/2026");
   const subjects = studentResultsData.map((subject) => ({
     ...subject,
     grade: getGradeForScore(subject.score),
@@ -43,7 +46,7 @@ const StudentResult = () => {
             Result Sheet
           </h1>
           <p className="text-sm text-gray-600 mt-2">
-            View your academic performance
+            View your academic performance for {session} - {term}
           </p>
         </div>
 
@@ -82,8 +85,21 @@ const StudentResult = () => {
         </div>
 
         <div className="text-sm">Class: {studentAcademicProfile.className}</div>
-        <div className="text-sm">Term: {studentAcademicProfile.term}</div>
-        <div className="text-sm">Session: {studentAcademicProfile.session}</div>
+        <label className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-gray-500">Term</span>
+          <select value={term} onChange={(event) => setTerm(event.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 outline-none">
+            <option>1st Term</option>
+            <option>2nd Term</option>
+            <option>3rd Term</option>
+          </select>
+        </label>
+        <label className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-gray-500">Session</span>
+          <select value={session} onChange={(event) => setSession(event.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 outline-none">
+            <option>2025/2026</option>
+            <option>2026/2027</option>
+          </select>
+        </label>
 
       </section>
 

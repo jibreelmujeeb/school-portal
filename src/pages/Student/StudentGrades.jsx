@@ -8,10 +8,13 @@ import {
 } from "lucide-react";
 import { studentResultsData, getGradeForScore } from "../../data/studentPortal";
 import downloadCsv from "../../utils/downloadCsv";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const StudentGrades = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [term, setTerm] = usePersistentState("student-grades-term", "2nd Term");
+  const [session, setSession] = usePersistentState("student-grades-session", "2025/2026");
   const resultsData = useMemo(() => studentResultsData.map((item) => ({
     ...item,
     grade: getGradeForScore(item.score),
@@ -52,8 +55,25 @@ const StudentGrades = () => {
           Grades
         </h1>
         <p className="text-sm text-gray-600 mt-2">
-          View your academic performance
+          View your academic performance for {session} - {term}
         </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <label className="flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 text-sm">
+            <span className="text-gray-600">Term</span>
+            <select value={term} onChange={(event) => setTerm(event.target.value)} className="bg-transparent outline-none">
+              <option>1st Term</option>
+              <option>2nd Term</option>
+              <option>3rd Term</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 text-sm">
+            <span className="text-gray-600">Session</span>
+            <select value={session} onChange={(event) => setSession(event.target.value)} className="bg-transparent outline-none">
+              <option>2025/2026</option>
+              <option>2026/2027</option>
+            </select>
+          </label>
+        </div>
       </section>
 
       {/* SUMMARY */}
@@ -115,6 +135,18 @@ const StudentGrades = () => {
                 {["All", "Pass", "Fail"].map((status) => <option key={status}>{status}</option>)}
               </select>
             </label>
+            {(search || statusFilter !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("All");
+                }}
+                className="rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Clear
+              </button>
+            )}
             <button
               type="button"
               onClick={exportGrades}
