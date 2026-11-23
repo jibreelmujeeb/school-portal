@@ -6,14 +6,49 @@ import {
   Save,
   Globe,
 } from "lucide-react";
+import usePersistentState from "../../hooks/usePersistentState";
 
 const StudentSettings = () => {
-  const [notifications, setNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [settings, setSettings, settingsError] = usePersistentState(
+    "student-settings",
+    { notifications: true, emailAlerts: false, darkMode: false, language: "English" },
+  );
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const updateSetting = (field, value) => {
+    setSettings((current) => ({ ...current, [field]: value }));
+  };
+
+  const saveSettings = (event) => {
+    event.preventDefault();
+    if (newPassword || confirmPassword) {
+      if (newPassword.length < 8) {
+        setNotice("Password must be at least 8 characters.");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setNotice("Passwords do not match.");
+        return;
+      }
+    }
+    setNotice("Settings saved successfully.");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
 
   return (
-    <div className="space-y-10">
+    <form className="space-y-10" onSubmit={saveSettings}>
+      {(notice || settingsError) && (
+        <p role={settingsError ? "alert" : "status"} className={`rounded-xl border px-4 py-3 text-sm ${
+          settingsError
+            ? "border-red-200 bg-red-50 text-red-700"
+            : "border-green-200 bg-green-50 text-green-700"
+        }`}>
+          {settingsError || notice}
+        </p>
+      )}
 
       {/* HEADER */}
       <section>
@@ -41,14 +76,17 @@ const StudentSettings = () => {
             </div>
 
             <button
-              onClick={() => setNotifications(!notifications)}
+              type="button"
+              onClick={() => updateSetting("notifications", !settings.notifications)}
+              aria-pressed={settings.notifications}
+              aria-label="Toggle in-app notifications"
               className={`w-10 h-5 flex items-center rounded-full transition ${
-                notifications ? "bg-blue-600" : "bg-gray-300"
+                settings.notifications ? "bg-blue-600" : "bg-gray-300"
               }`}
             >
               <div
                 className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  notifications ? "translate-x-5" : "translate-x-1"
+                  settings.notifications ? "translate-x-5" : "translate-x-1"
                 }`}
               />
             </button>
@@ -62,14 +100,17 @@ const StudentSettings = () => {
             </div>
 
             <button
-              onClick={() => setEmailAlerts(!emailAlerts)}
+              type="button"
+              onClick={() => updateSetting("emailAlerts", !settings.emailAlerts)}
+              aria-pressed={settings.emailAlerts}
+              aria-label="Toggle email notifications"
               className={`w-10 h-5 flex items-center rounded-full transition ${
-                emailAlerts ? "bg-blue-600" : "bg-gray-300"
+                settings.emailAlerts ? "bg-blue-600" : "bg-gray-300"
               }`}
             >
               <div
                 className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  emailAlerts ? "translate-x-5" : "translate-x-1"
+                  settings.emailAlerts ? "translate-x-5" : "translate-x-1"
                 }`}
               />
             </button>
@@ -92,6 +133,8 @@ const StudentSettings = () => {
             <input
               type="password"
               placeholder="New Password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
               className="w-full outline-none text-sm bg-transparent"
             />
           </div>
@@ -102,6 +145,8 @@ const StudentSettings = () => {
             <input
               type="password"
               placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
               className="w-full outline-none text-sm bg-transparent"
             />
           </div>
@@ -125,14 +170,17 @@ const StudentSettings = () => {
             </div>
 
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              type="button"
+              onClick={() => updateSetting("darkMode", !settings.darkMode)}
+              aria-pressed={settings.darkMode}
+              aria-label="Toggle dark mode"
               className={`w-10 h-5 flex items-center rounded-full transition ${
-                darkMode ? "bg-blue-600" : "bg-gray-300"
+                settings.darkMode ? "bg-blue-600" : "bg-gray-300"
               }`}
             >
               <div
                 className={`w-4 h-4 bg-white rounded-full transform transition ${
-                  darkMode ? "translate-x-5" : "translate-x-1"
+                  settings.darkMode ? "translate-x-5" : "translate-x-1"
                 }`}
               />
             </button>
@@ -142,7 +190,7 @@ const StudentSettings = () => {
           <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
             <Globe className="w-4 h-4 text-gray-500 mr-2" />
 
-            <select className="w-full outline-none text-sm bg-transparent">
+            <select value={settings.language} onChange={(event) => updateSetting("language", event.target.value)} className="w-full outline-none text-sm bg-transparent">
               <option>English</option>
               <option>French</option>
               <option>Arabic</option>
@@ -154,13 +202,13 @@ const StudentSettings = () => {
 
       {/* SAVE */}
       <section className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
+        <button type="submit" className="flex items-center gap-2 px-6 py-3 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-50 transition">
           <Save className="w-4 h-4" />
           Save Settings
         </button>
       </section>
 
-    </div>
+    </form>
   );
 };
 

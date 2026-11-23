@@ -41,13 +41,40 @@ const books = [
 
 const StudentLibraryPage = () => {
   const [search, setSearch] = useState("");
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [borrowedBooks, setBorrowedBooks] = useState(
+    () => books.filter((book) => book.title === "Essential Physics").map((book) => book.id),
+  );
+  const [notice, setNotice] = useState("");
 
   const filteredBooks = books.filter((book) =>
-    book.title.toLowerCase().includes(search.toLowerCase())
+    `${book.title} ${book.author} ${book.category}`.toLowerCase().includes(search.toLowerCase())
   );
+
+  const toggleBorrow = (book) => {
+    if (!book.available && !borrowedBooks.includes(book.id)) {
+      setNotice(`${book.title} is currently unavailable.`);
+      return;
+    }
+    setBorrowedBooks((current) =>
+      current.includes(book.id)
+        ? current.filter((id) => id !== book.id)
+        : [...current, book.id],
+    );
+    setNotice(
+      borrowedBooks.includes(book.id)
+        ? `${book.title} has been returned.`
+        : `${book.title} added to your borrowed books.`,
+    );
+  };
 
   return (
     <div className="space-y-8">
+      {notice && (
+        <p role="status" className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          {notice}
+        </p>
+      )}
 
       {/* PAGE HEADER */}
       <div>
@@ -155,15 +182,34 @@ const StudentLibraryPage = () => {
 
             <div className="flex gap-3 mt-6">
 
-              <button className="flex-1 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
+              <button type="button" onClick={() => setSelectedBook(book)} className="flex-1 py-3 rounded-2xl border border-blue-600 text-blue-600 hover:bg-blue-50">
                 View
               </button>
 
-              <button className="flex-1 py-3 rounded-2xl border border-green-600 text-green-600 hover:bg-green-50">
-                Borrow
+              <button type="button" disabled={!book.available && !borrowedBooks.includes(book.id)} onClick={() => toggleBorrow(book)} className="flex-1 py-3 rounded-2xl border border-green-600 text-green-600 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40">
+                {borrowedBooks.includes(book.id) ? "Return" : "Borrow"}
               </button>
 
             </div>
+
+            {selectedBook && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label={selectedBook.title}>
+                <div className="w-full max-w-md rounded-2xl bg-white p-6">
+                  <BookOpen className="h-10 w-10 text-blue-600" />
+                  <h2 className="mt-4 text-xl font-semibold">{selectedBook.title}</h2>
+                  <p className="mt-2 text-sm text-gray-600">by {selectedBook.author}</p>
+                  <p className="mt-3 text-sm text-blue-600">{selectedBook.category}</p>
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button type="button" onClick={() => setSelectedBook(null)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm">Close</button>
+                    {selectedBook.available && (
+                      <button type="button" onClick={() => toggleBorrow(selectedBook)} className="rounded-xl bg-blue-600 px-4 py-2 text-sm text-white">
+                        {borrowedBooks.includes(selectedBook.id) ? "Return Book" : "Borrow Book"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         ))}

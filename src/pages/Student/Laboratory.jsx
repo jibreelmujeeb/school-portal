@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FlaskConical,
   Calendar,
@@ -35,8 +35,45 @@ const practicals = [
 ];
 
 const StudentLaboratoryPage = () => {
+  const [title, setTitle] = useState("");
+  const [report, setReport] = useState("");
+  const [file, setFile] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [submittedReports, setSubmittedReports] = useState([]);
+
+  const submitReport = (event) => {
+    event.preventDefault();
+    if (!title.trim() || !report.trim()) {
+      setNotice("Enter an experiment title and report before submitting.");
+      return;
+    }
+    setSubmittedReports((current) => [
+      ...current,
+      { title: title.trim(), report: report.trim(), fileName: file?.name || "No attachment" },
+    ]);
+    setTitle("");
+    setReport("");
+    setFile(null);
+    setNotice("Practical report submitted successfully.");
+  };
+
+  const downloadGuide = (guideName) => {
+    const content = `${guideName}\n\nExperiment safety and procedure guide.\nFollow all laboratory instructions and wear protective equipment.`;
+    const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${guideName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8">
+      {notice && (
+        <p role="status" className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          {notice}
+        </p>
+      )}
 
       {/* HEADER */}
       <div>
@@ -151,7 +188,7 @@ const StudentLaboratoryPage = () => {
             <div className="flex items-center justify-between border border-gray-200 rounded-xl p-3">
               <span>Physics Practical Manual</span>
 
-              <button>
+              <button type="button" onClick={() => downloadGuide("Physics Practical Manual")} aria-label="Download Physics Practical Manual">
                 <Download className="w-5 h-5 text-blue-600" />
               </button>
             </div>
@@ -159,7 +196,7 @@ const StudentLaboratoryPage = () => {
             <div className="flex items-center justify-between border border-gray-200 rounded-xl p-3">
               <span>Chemistry Lab Guide</span>
 
-              <button>
+              <button type="button" onClick={() => downloadGuide("Chemistry Lab Guide")} aria-label="Download Chemistry Lab Guide">
                 <Download className="w-5 h-5 text-blue-600" />
               </button>
             </div>
@@ -213,22 +250,27 @@ const StudentLaboratoryPage = () => {
           Submit Practical Report
         </h2>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={submitReport}>
 
           <input
             type="text"
             placeholder="Experiment Title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
             className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none"
           />
 
           <textarea
             rows="5"
             placeholder="Write your report..."
+            value={report}
+            onChange={(event) => setReport(event.target.value)}
             className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none resize-none"
           />
 
           <input
             type="file"
+            onChange={(event) => setFile(event.target.files?.[0] || null)}
             className="w-full border border-gray-200 rounded-2xl px-4 py-3"
           />
 
@@ -240,6 +282,19 @@ const StudentLaboratoryPage = () => {
           </button>
 
         </form>
+        {submittedReports.length > 0 && (
+          <div className="mt-5 border-t border-gray-200 pt-5">
+            <h3 className="text-sm font-semibold">Recently Submitted</h3>
+            <div className="mt-3 space-y-2">
+              {submittedReports.map((submitted, index) => (
+                <div key={`${submitted.title}-${index}`} className="flex flex-col gap-1 rounded-xl border border-gray-200 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                  <span className="font-medium">{submitted.title}</span>
+                  <span className="text-gray-500">{submitted.fileName}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
 

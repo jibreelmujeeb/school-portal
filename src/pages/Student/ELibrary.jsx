@@ -46,6 +46,32 @@ const resources = [
 
 const StudentELibraryPage = () => {
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [favorites, setFavorites] = useState([]);
+  const [notice, setNotice] = useState("");
+  const filteredResources = resources.filter((resource) =>
+    `${resource.title} ${resource.subject} ${resource.author}`.toLowerCase().includes(search.toLowerCase()) &&
+    (typeFilter === "All" || resource.type === typeFilter),
+  );
+
+  const toggleFavorite = (resource) => {
+    setFavorites((current) =>
+      current.includes(resource.id)
+        ? current.filter((id) => id !== resource.id)
+        : [...current, resource.id],
+    );
+  };
+
+  const downloadResource = (resource) => {
+    const content = `${resource.title}\nBy ${resource.author}\nSubject: ${resource.subject}\nType: ${resource.type}`;
+    const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${resource.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice(`${resource.title} downloaded.`);
+  };
 
   const getTypeIcon = (type) => {
     switch (type) {
@@ -68,6 +94,11 @@ const StudentELibraryPage = () => {
 
   return (
     <div className="space-y-8">
+      {notice && (
+        <p role="status" className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {notice}
+        </p>
+      )}
 
       {/* HEADER */}
       <section>
@@ -146,17 +177,19 @@ const StudentELibraryPage = () => {
 
         </div>
 
-        <button className="flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 rounded-2xl">
-          <Filter className="w-4 h-4" />
-          Filter
-        </button>
+        <label className="flex items-center gap-2 rounded-2xl border border-gray-200 px-4 py-3">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="outline-none">
+            {["All", "Book", "Video", "Audio"].map((type) => <option key={type}>{type}</option>)}
+          </select>
+        </label>
 
       </section>
 
       {/* RESOURCE GRID */}
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-        {resources.map((resource) => (
+        {filteredResources.map((resource) => (
           <div
             key={resource.id}
             className="border border-gray-200 rounded-3xl p-6"
@@ -169,8 +202,8 @@ const StudentELibraryPage = () => {
                 {getTypeIcon(resource.type)}
               </div>
 
-              <button>
-                <Star className="w-5 h-5 text-gray-400" />
+              <button type="button" onClick={() => toggleFavorite(resource)} aria-label={`${favorites.includes(resource.id) ? "Remove" : "Add"} ${resource.title} ${favorites.includes(resource.id) ? "from" : "to"} favorites`}>
+                <Star className={`w-5 h-5 ${favorites.includes(resource.id) ? "fill-yellow-400 text-yellow-500" : "text-gray-400"}`} />
               </button>
 
             </div>
@@ -199,7 +232,7 @@ const StudentELibraryPage = () => {
                 {resource.downloads} Downloads
               </span>
 
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 transition">
+              <button type="button" onClick={() => downloadResource(resource)} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 transition">
 
                 <Download className="w-4 h-4" />
 
@@ -213,6 +246,11 @@ const StudentELibraryPage = () => {
         ))}
 
       </section>
+      {filteredResources.length === 0 && (
+        <p className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+          No resources match your search and filter.
+        </p>
+      )}
 
     </div>
   );
